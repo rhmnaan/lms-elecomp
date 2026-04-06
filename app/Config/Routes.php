@@ -49,6 +49,12 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('quiz/submit/(:num)', 'DashboardPeserta::submitQuiz/$1');
         $routes->post('dashboard/peserta/quiz/simpan-materi', 'DashboardPeserta::simpanHasilQuizMateri');
 
+         // ✅ PRETEST
+        $routes->get('pretest/(:num)', 'Peserta\Pretest::index/$1');
+        $routes->post('pretest/submit', 'Peserta\Pretest::submit');
+
+        $routes->get('posttest/(:num)', 'Peserta\Posttest::index/$1');
+        $routes->post('posttest/submit', 'Peserta\Posttest::submit');
 
         // ========== ROUTE PROFIL PESERTA (DIPERBAIKI) ==========
         $routes->get('profil', 'ProfilController::index');
@@ -118,8 +124,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('quiz/hasil/(:num)', 'DashboardPengajar::quizHasil/$1');
 
         // Profil
-        $routes->get('profil', 'ProfilController::index');
-        $routes->get('profil/edit', 'ProfilController::edit');
-        $routes->post('profil/update', 'ProfilController::update');
+        $routes->get('profil', 'DashboardPengajar::profil');
+        $routes->post('profil/update', 'DashboardPengajar::profilUpdate');
     });
 });

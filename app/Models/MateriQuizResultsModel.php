@@ -10,58 +10,48 @@ class MateriQuizResultsModel extends Model
     protected $table         = 'materi_quiz_results';
     protected $primaryKey    = 'id';
     protected $returnType    = 'array';
-    
-    // UPDATE: Tambahkan jenis_test dan jawaban_peserta
     protected $allowedFields = [
         'id_materi',
         'id_users',
-        'jenis_test',
         'nilai',
         'jumlah_benar',
         'jumlah_salah',
-        'jawaban_peserta'
     ];
 
     protected $useTimestamps = false; // pakai created_at manual
     protected $dateFormat    = 'datetime';
 
-    // UPDATE: Tambahkan parameter $jenisTest dan $jawabanPeserta
-    public function simpan(int $idMateri, int $idUsers, string $jenisTest, int $nilai, int $benar, int $salah, string $jawabanPeserta = null): bool
+    // Simpan hasil, hanya satu record per user per materi (upsert)
+    public function simpan(int $idMateri, int $idUsers, int $nilai, int $benar, int $salah): bool
     {
-        // Cari berdasarkan materi, user, DAN jenis test (pre/post)
         $existing = $this->where('id_materi', $idMateri)
                          ->where('id_users',  $idUsers)
-                         ->where('jenis_test', $jenisTest)
                          ->first();
 
         if ($existing) {
-            // Update jika nilai baru lebih tinggi (opsional, tergantung kebijakanmu)
+            // Update jika nilai baru lebih tinggi
             if ($nilai > (int) $existing['nilai']) {
                 return $this->update($existing['id'], [
-                    'nilai'           => $nilai,
-                    'jumlah_benar'    => $benar,
-                    'jumlah_salah'    => $salah,
-                    'jawaban_peserta' => $jawabanPeserta,
-                    'created_at'      => date('Y-m-d H:i:s'),
+                    'nilai'        => $nilai,
+                    'jumlah_benar' => $benar,
+                    'jumlah_salah' => $salah,
+                    'created_at'   => date('Y-m-d H:i:s'),
                 ]);
             }
             return true; // tidak perlu update
         }
 
-        // Insert data baru
         return (bool) $this->insert([
-            'id_materi'       => $idMateri,
-            'id_users'        => $idUsers,
-            'jenis_test'      => $jenisTest,
-            'nilai'           => $nilai,
-            'jumlah_benar'    => $benar,
-            'jumlah_salah'    => $salah,
-            'jawaban_peserta' => $jawabanPeserta,
-            'created_at'      => date('Y-m-d H:i:s'),
+            'id_materi'    => $idMateri,
+            'id_users'     => $idUsers,
+            'nilai'        => $nilai,
+            'jumlah_benar' => $benar,
+            'jumlah_salah' => $salah,
+            'created_at'   => date('Y-m-d H:i:s'),
         ]);
     }
 
-    // Ambil hasil quiz materi milik satu user (semua pre dan post)
+    // Ambil hasil quiz materi milik satu user
     public function getByUser(int $idUsers): array
     {
         return $this->select('materi_quiz_results.*, materi.judul_materi, modul.judul_modul, kelas.nama_kelas')
@@ -73,12 +63,11 @@ class MateriQuizResultsModel extends Model
                     ->findAll();
     }
 
-    // UPDATE: Tambahkan pengecekan berdasarkan jenis_test
-    public function sudahDikerjakan(int $idMateri, int $idUsers, string $jenisTest): bool
+    // Cek apakah user sudah mengerjakan quiz materi ini
+    public function sudahDikerjakan(int $idMateri, int $idUsers): bool
     {
         return $this->where('id_materi', $idMateri)
                     ->where('id_users',  $idUsers)
-                    ->where('jenis_test', $jenisTest)
                     ->countAllResults() > 0;
     }
 }
