@@ -47,7 +47,7 @@ class RealtimeDatabaseMonitoring extends BaseController
         $this->startSSEHeaders();
 
         $startTime    = time();
-        $maxDuration  = 25;
+        $maxDuration  = 1;
         $pollInterval = 2;
 
         // hapus baris ini → $firstPoll = true;
