@@ -206,6 +206,14 @@ $errors  = session()->getFlashdata('errors');
     .choice-list li.correct { color: #059669; font-weight: 700; }
     .no-soal { font-size: 12px; color: #9ca3af; font-style: italic; margin-bottom: 12px; }
 
+    /* ── Validasi alert PDF/Video ── */
+    .mp-alert-warn {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px; border-radius: 10px; margin-bottom: 12px;
+        font-size: 12.5px; font-weight: 600;
+        background: #fffbeb; color: #b45309; border: 1px solid #fde68a;
+    }
+
     @media (max-width: 768px) {
         .mp-header { flex-direction: column; }
         .mpreview { max-width: 140px; }
@@ -384,7 +392,7 @@ $errors  = session()->getFlashdata('errors');
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body px-4 pt-3 pb-4">
-                <form action="<?= base_url('dashboard/pengajar/materi/store') ?>" method="POST"
+                <form id="formTambah" action="<?= base_url('dashboard/pengajar/materi/store') ?>" method="POST"
                     enctype="multipart/form-data">
                     <?= csrf_field() ?>
 
@@ -412,6 +420,12 @@ $errors  = session()->getFlashdata('errors');
                         <input type="text" class="form-control" name="judul_materi"
                             value="<?= old('judul_materi') ?>"
                             placeholder="cth: Pengertian Resistor dan Fungsinya" required>
+                    </div>
+
+                    <!-- Alert validasi PDF/Video Tambah -->
+                    <div id="alertPdfVideoTambah" class="mp-alert-warn" style="display:none;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Wajib mengisi salah satu: <strong>upload PDF</strong> atau <strong>URL Video YouTube</strong>.
                     </div>
 
                     <!-- TABS -->
@@ -450,7 +464,10 @@ $errors  = session()->getFlashdata('errors');
 
                     <!-- TAB: PDF -->
                     <div class="mtab-pane" id="tab-pdf-tambah">
-                        <label class="form-label fw-semibold small">Upload File PDF</label>
+                        <label class="form-label fw-semibold small">
+                            Upload File PDF <span class="text-danger">*</span>
+                            <span class="text-muted fw-normal">(wajib jika tidak ada video)</span>
+                        </label>
                         <div class="upload-zone" id="dropZoneTambah" onclick="document.getElementById('filePdfTambah').click()">
                             <input type="file" id="filePdfTambah" name="file_materi" accept=".pdf">
                             <i class="bi bi-cloud-arrow-up"></i>
@@ -458,12 +475,14 @@ $errors  = session()->getFlashdata('errors');
                             <p style="font-size:11px;">Format: PDF · Maks. 10 MB</p>
                             <p class="file-name" id="fileNameTambah" style="display:none;"></p>
                         </div>
-                        <div class="form-text mt-2">Opsional — file PDF sebagai referensi bacaan peserta.</div>
                     </div>
 
                     <!-- TAB: Video -->
                     <div class="mtab-pane" id="tab-video-tambah">
-                        <label class="form-label fw-semibold small">URL Video YouTube</label>
+                        <label class="form-label fw-semibold small">
+                            URL Video YouTube <span class="text-danger">*</span>
+                            <span class="text-muted fw-normal">(wajib jika tidak ada PDF)</span>
+                        </label>
                         <div class="input-group mb-2">
                             <span class="input-group-text bg-light border-end-0">
                                 <i class="bi bi-youtube text-danger"></i>
@@ -472,7 +491,6 @@ $errors  = session()->getFlashdata('errors');
                                 id="videoUrlTambah" value="<?= old('video_url_materi') ?>"
                                 placeholder="https://www.youtube.com/watch?v=...">
                         </div>
-                        <div class="form-text">Opsional — tempel link YouTube untuk video pembelajaran.</div>
                         <div class="video-preview-box" id="videoPrevTambah">
                             <iframe id="videoIframeTambah" src="" allowfullscreen></iframe>
                         </div>
@@ -540,6 +558,12 @@ $errors  = session()->getFlashdata('errors');
                         <input type="text" class="form-control" name="judul_materi" id="edit_judul_materi" required>
                     </div>
 
+                    <!-- Alert validasi PDF/Video Edit -->
+                    <div id="alertPdfVideoEdit" class="mp-alert-warn" style="display:none;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Wajib mengisi salah satu: <strong>upload PDF</strong> atau <strong>URL Video YouTube</strong>.
+                    </div>
+
                     <!-- TABS Edit -->
                     <div class="mtab-nav" id="tabNavEdit">
                         <button type="button" class="mtab-btn active" data-tab="tab-pre-edit">
@@ -576,7 +600,10 @@ $errors  = session()->getFlashdata('errors');
 
                     <!-- TAB: PDF Edit -->
                     <div class="mtab-pane" id="tab-pdf-edit">
-                        <label class="form-label fw-semibold small">Upload File PDF</label>
+                        <label class="form-label fw-semibold small">
+                            Upload File PDF <span class="text-danger">*</span>
+                            <span class="text-muted fw-normal">(wajib jika tidak ada video)</span>
+                        </label>
                         <div id="currentFileEdit" style="display:none;margin-bottom:8px;">
                             <span class="current-file-badge">
                                 <i class="bi bi-file-earmark-pdf-fill"></i>
@@ -595,7 +622,10 @@ $errors  = session()->getFlashdata('errors');
 
                     <!-- TAB: Video Edit -->
                     <div class="mtab-pane" id="tab-video-edit">
-                        <label class="form-label fw-semibold small">URL Video YouTube</label>
+                        <label class="form-label fw-semibold small">
+                            URL Video YouTube <span class="text-danger">*</span>
+                            <span class="text-muted fw-normal">(wajib jika tidak ada PDF)</span>
+                        </label>
                         <div class="input-group mb-2">
                             <span class="input-group-text bg-light border-end-0">
                                 <i class="bi bi-youtube text-danger"></i>
@@ -818,6 +848,15 @@ document.addEventListener('DOMContentLoaded', function () {
             p.classList.toggle('active', i === 0));
     }
 
+    function switchToTab(navId, tabId) {
+        const nav = document.getElementById(navId);
+        if (!nav) return;
+        nav.querySelectorAll('.mtab-btn').forEach(b =>
+            b.classList.toggle('active', b.dataset.tab === tabId));
+        nav.closest('.modal-content').querySelectorAll('.mtab-pane').forEach(p =>
+            p.classList.toggle('active', p.id === tabId));
+    }
+
     /* ══════════════════════════════════════
        PDF DROP ZONES
     ══════════════════════════════════════ */
@@ -864,20 +903,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ══════════════════════════════════════
        QUIZ / SOAL BUILDER
-       — Pre Test & Post Test menggunakan
-         builder yang IDENTIK, dibedakan
-         hanya lewat: fieldName & isPre
     ══════════════════════════════════════ */
     const counters = {};
 
-    /**
-     * Bangun HTML satu soal.
-     * @param {string}  fieldName   'pre_test' | 'post_test'
-     * @param {string}  containerId
-     * @param {number}  num
-     * @param {boolean} isPre
-     * @param {object|null} data   existing soal atau null
-     */
     function buildSoalHtml(fieldName, containerId, num, isPre, data) {
         const pertanyaan = data?.pertanyaan    ?? '';
         const pilihan    = data?.pilihan       ?? ['', '', '', ''];
@@ -1006,12 +1034,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             document.getElementById('previewJudul').textContent = d.judul;
 
-            /* Pre Test */
             renderQuizList('previewPreList', d.preArr, true);
             document.getElementById('previewPreWrap').style.display =
                 d.preArr.length > 0 ? 'block' : 'none';
 
-            /* PDF */
             const pdfWrap = document.getElementById('previewPdfWrap');
             if (d.file) {
                 document.getElementById('previewPdfLink').href = `${BASE_ROOT}/${d.file}`;
@@ -1020,12 +1046,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 pdfWrap.style.display = 'none';
             }
 
-            /* Video */
             const embed = ytEmbed(d.video);
             document.getElementById('previewVideoIframe').src = embed || '';
             document.getElementById('previewVideoBox').style.display = embed ? 'block' : 'none';
 
-            /* Post Test */
             if (d.postArr.length > 0) {
                 renderQuizList('previewPostList', d.postArr, false);
                 document.getElementById('previewPostWrap').style.display = 'block';
@@ -1050,14 +1074,12 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('edit_judul_materi').value = d.judul;
             document.getElementById('edit_id_modul').value     = d.modul;
 
-            /* Video */
             const vi = document.getElementById('edit_video_url');
             vi.value = d.video || '';
             const embed = ytEmbed(d.video);
             document.getElementById('videoIframeEdit').src = embed || '';
             document.getElementById('videoPrevEdit').style.display = embed ? 'block' : 'none';
 
-            /* PDF badge */
             const cfDiv  = document.getElementById('currentFileEdit');
             const cfName = document.getElementById('currentFileName');
             if (d.file) {
@@ -1068,8 +1090,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             document.getElementById('fileNameEdit').style.display = 'none';
             document.getElementById('dropZoneEdit').classList.remove('has-file');
+            document.getElementById('alertPdfVideoEdit').style.display = 'none';
 
-            /* Populate soal — pre_test & post_test identik */
             populateSoal('pre_test',  'containerPreEdit',  'emptyPreEdit',  true,  d.preArr);
             populateSoal('post_test', 'containerPostEdit', 'emptyPostEdit', false, d.postArr);
 
@@ -1088,6 +1110,73 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('hapusJudul').textContent = this.dataset.judulRaw;
             new bootstrap.Modal(document.getElementById('modalHapus')).show();
         });
+    });
+
+    /* ══════════════════════════════════════
+       VALIDASI PDF ATAU VIDEO WAJIB SALAH SATU
+    ══════════════════════════════════════ */
+
+    // Form TAMBAH
+    document.getElementById('formTambah').addEventListener('submit', function (e) {
+        const hasFile  = document.getElementById('filePdfTambah')?.files?.length > 0;
+        const hasVideo = document.getElementById('videoUrlTambah')?.value.trim() !== '';
+        const alertEl  = document.getElementById('alertPdfVideoTambah');
+
+        if (!hasFile && !hasVideo) {
+            e.preventDefault();
+            e.stopPropagation();
+            alertEl.style.display = 'flex';
+            // Arahkan ke tab PDF
+            switchToTab('tabNavTambah', 'tab-pdf-tambah');
+            alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            alertEl.style.display = 'none';
+        }
+    });
+
+    // Sembunyikan alert saat user upload PDF (form tambah)
+    document.getElementById('filePdfTambah').addEventListener('change', function () {
+        if (this.files.length > 0)
+            document.getElementById('alertPdfVideoTambah').style.display = 'none';
+    });
+
+    // Sembunyikan alert saat user isi video (form tambah)
+    document.getElementById('videoUrlTambah').addEventListener('input', function () {
+        if (this.value.trim() !== '')
+            document.getElementById('alertPdfVideoTambah').style.display = 'none';
+    });
+
+    // Form EDIT
+    document.getElementById('formEdit').addEventListener('submit', function (e) {
+        const fileInput   = document.getElementById('filePdfEdit');
+        const currentFile = document.getElementById('currentFileEdit');
+        const hasNewFile  = fileInput?.files?.length > 0;
+        const hasOldFile  = currentFile?.style.display !== 'none';
+        const hasVideo    = document.getElementById('edit_video_url')?.value.trim() !== '';
+        const alertEl     = document.getElementById('alertPdfVideoEdit');
+
+        if (!hasNewFile && !hasOldFile && !hasVideo) {
+            e.preventDefault();
+            e.stopPropagation();
+            alertEl.style.display = 'flex';
+            // Arahkan ke tab PDF
+            switchToTab('tabNavEdit', 'tab-pdf-edit');
+            alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            alertEl.style.display = 'none';
+        }
+    });
+
+    // Sembunyikan alert saat user upload PDF (form edit)
+    document.getElementById('filePdfEdit').addEventListener('change', function () {
+        if (this.files.length > 0)
+            document.getElementById('alertPdfVideoEdit').style.display = 'none';
+    });
+
+    // Sembunyikan alert saat user isi video (form edit)
+    document.getElementById('edit_video_url').addEventListener('input', function () {
+        if (this.value.trim() !== '')
+            document.getElementById('alertPdfVideoEdit').style.display = 'none';
     });
 
     /* ══════════════════════════════════════
@@ -1121,6 +1210,7 @@ document.addEventListener('DOMContentLoaded', function () {
         resetTabs('tabNavTambah');
         document.getElementById('fileNameTambah').style.display = 'none';
         document.getElementById('dropZoneTambah').classList.remove('has-file');
+        document.getElementById('alertPdfVideoTambah').style.display = 'none';
     });
 
 });

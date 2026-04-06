@@ -44,9 +44,13 @@ class DashboardPengajar extends BaseController
         $db  = \Config\Database::connect();
         $uid = $this->myId();
 
-        $total_kelas  = $db->table('kelas')->where('id_users', $uid)->countAllResults();
+        // ── Stat cards ──────────────────────────────────────────────────
+        $total_kelas = $db->table('kelas')
+            ->where('id_users', $uid)
+            ->where('deleted_at IS NULL')
+            ->countAllResults();
 
-        $total_modul  = $db->query("
+        $total_modul = $db->query("
             SELECT COUNT(*) AS total FROM modul m
             JOIN kelas k ON k.id_kelas = m.id_kelas
             WHERE k.id_users = {$uid} AND m.deleted_at IS NULL
@@ -59,83 +63,58 @@ class DashboardPengajar extends BaseController
             WHERE k.id_users = {$uid} AND mt.deleted_at IS NULL
         ")->getRow()->total;
 
-        $total_quiz   = $db->query("
-            SELECT COUNT(*) AS total FROM quiz q
-            JOIN modul m ON m.id_modul = q.id_modul
-            JOIN kelas k ON k.id_kelas = m.id_kelas
-            WHERE k.id_users = {$uid} AND q.deleted_at IS NULL
-        ")->getRow()->total;
-
         $total_peserta = $db->table('users')
             ->where('role_users', 'peserta')
             ->where('deleted_at IS NULL')
             ->countAllResults();
 
-        $dist_lulus = $db->query("
-            SELECT COUNT(*) AS total FROM quiz_results qr
-            JOIN quiz q ON q.id_quiz = qr.id_quiz
-            JOIN modul m ON m.id_modul = q.id_modul
-            JOIN kelas k ON k.id_kelas = m.id_kelas
-            WHERE k.id_users = {$uid} AND qr.nilai_quiz_results >= 70 AND qr.deleted_at IS NULL
-        ")->getRow()->total;
-
-        $dist_cukup = $db->query("
-            SELECT COUNT(*) AS total FROM quiz_results qr
-            JOIN quiz q ON q.id_quiz = qr.id_quiz
-            JOIN modul m ON m.id_modul = q.id_modul
-            JOIN kelas k ON k.id_kelas = m.id_kelas
-            WHERE k.id_users = {$uid}
-              AND qr.nilai_quiz_results >= 50 AND qr.nilai_quiz_results < 70
-              AND qr.deleted_at IS NULL
-        ")->getRow()->total;
-
-        $dist_kurang = $db->query("
-            SELECT COUNT(*) AS total FROM quiz_results qr
-            JOIN quiz q ON q.id_quiz = qr.id_quiz
-            JOIN modul m ON m.id_modul = q.id_modul
-            JOIN kelas k ON k.id_kelas = m.id_kelas
-            WHERE k.id_users = {$uid} AND qr.nilai_quiz_results < 50 AND qr.deleted_at IS NULL
-        ")->getRow()->total;
-
-        $leaderboard = $db->query("
-            SELECT u.nama_users, k.nama_kelas,
-                   ROUND(AVG(qr.nilai_quiz_results), 1) AS rata_nilai,
-                   COUNT(qr.id_quiz_results) AS total_quiz_dikerjakan
-            FROM quiz_results qr
-            JOIN users u ON u.id_users = qr.id_users
-            JOIN quiz  q ON q.id_quiz  = qr.id_quiz
-            JOIN modul m ON m.id_modul = q.id_modul
-            JOIN kelas k ON k.id_kelas = m.id_kelas
-            WHERE k.id_users = {$uid} AND u.role_users = 'peserta'
-              AND u.deleted_at IS NULL AND qr.deleted_at IS NULL
-            GROUP BY u.id_users, u.nama_users, k.id_kelas, k.nama_kelas
-            ORDER BY rata_nilai DESC LIMIT 5
+        // ── Kelas list (untuk card kiri) ────────────────────────────────
+        $kelas_list = $db->query("
+            SELECT k.id_kelas, k.nama_kelas,
+                   COUNT(DISTINCT m.id_modul)          AS jumlah_modul,
+                   COUNT(DISTINCT kp.id_kelas_peserta) AS jumlah_peserta
+            FROM kelas k
+            LEFT JOIN modul m          ON m.id_kelas  = k.id_kelas AND m.deleted_at IS NULL
+            LEFT JOIN kelas_peserta kp ON kp.id_kelas = k.id_kelas
+            WHERE k.id_users = {$uid} AND k.deleted_at IS NULL
+            GROUP BY k.id_kelas
+            ORDER BY k.created_at DESC
+            LIMIT 2
         ")->getResultArray();
 
-        $aktivitas_terbaru = $db->query("
-            SELECT u.nama_users, q.judul_quiz, k.nama_kelas,
-                   qr.nilai_quiz_results, qr.waktu_selesai_quiz_results
-            FROM quiz_results qr
-            JOIN users u ON u.id_users = qr.id_users
-            JOIN quiz  q ON q.id_quiz  = qr.id_quiz
-            JOIN modul m ON m.id_modul = q.id_modul
-            JOIN kelas k ON k.id_kelas = m.id_kelas
-            WHERE k.id_users = {$uid} AND qr.deleted_at IS NULL
-            ORDER BY qr.waktu_selesai_quiz_results DESC LIMIT 6
+        // ── Peserta terbaru (untuk card kanan atas) ─────────────────────
+        $peserta_terbaru = $db->query("
+            SELECT u.nama_users, k.nama_kelas, kp.tanggal_daftar_kelas_peserta AS created_at
+            FROM kelas_peserta kp
+            JOIN users u  ON u.id_users  = kp.id_users
+            JOIN kelas k  ON k.id_kelas  = kp.id_kelas
+            WHERE k.id_users = {$uid}
+              AND u.role_users = 'peserta'
+              AND u.deleted_at IS NULL
+            ORDER BY kp.tanggal_daftar_kelas_peserta DESC
+            LIMIT 2
+        ")->getResultArray();
+
+        // ── Materi per kelas (untuk progress bar kanan bawah) ───────────
+        $materi_per_kelas = $db->query("
+            SELECT k.nama_kelas, COUNT(mt.id_materi) AS jumlah_materi
+            FROM kelas k
+            LEFT JOIN modul m  ON m.id_kelas  = k.id_kelas AND m.deleted_at IS NULL
+            LEFT JOIN materi mt ON mt.id_modul = m.id_modul AND mt.deleted_at IS NULL
+            WHERE k.id_users = {$uid} AND k.deleted_at IS NULL
+            GROUP BY k.id_kelas
+            ORDER BY jumlah_materi DESC
         ")->getResultArray();
 
         return view('Dashboard/Pengajar/beranda', [
-            'nama_pengajar'     => session()->get('nama'),
-            'total_peserta'     => $total_peserta,
-            'total_kelas'       => $total_kelas,
-            'total_modul'       => $total_modul,
-            'total_materi'      => $total_materi,
-            'total_quiz'        => $total_quiz,
-            'dist_lulus'        => $dist_lulus,
-            'dist_cukup'        => $dist_cukup,
-            'dist_kurang'       => $dist_kurang,
-            'leaderboard'       => $leaderboard,
-            'aktivitas_terbaru' => $aktivitas_terbaru,
+            'nama_pengajar'    => session()->get('nama'),
+            'total_peserta'    => $total_peserta,
+            'total_kelas'      => $total_kelas,
+            'total_modul'      => $total_modul,
+            'total_materi'     => $total_materi,
+            'kelas_list'       => $kelas_list,
+            'peserta_terbaru'  => $peserta_terbaru,
+            'materi_per_kelas' => $materi_per_kelas,
         ]);
     }
 
@@ -514,10 +493,10 @@ class DashboardPengajar extends BaseController
         (new MateriModel())->insert([
             'id_modul'         => $idModul,
             'judul_materi'     => $this->request->getPost('judul_materi'),
-            'pre_test'         => $this->buildQuizJsonFor('pre_test'),   // ← JSON quiz soal
+            'pre_test'         => $this->buildQuizJsonFor('pre_test'),
             'file_materi'      => $filePath,
             'video_url_materi' => $this->request->getPost('video_url_materi') ?: null,
-            'post_test'        => $this->buildQuizJsonFor('post_test'),  // ← JSON quiz soal
+            'post_test'        => $this->buildQuizJsonFor('post_test'),
         ]);
 
         return redirect()->to('/dashboard/pengajar/materi')->with('success', 'Materi berhasil ditambahkan.');
@@ -559,7 +538,6 @@ class DashboardPengajar extends BaseController
             $filePath = 'uploads/materi/' . $newName;
         }
 
-        // Jika soal tidak dikirim ulang, pertahankan nilai lama
         $preTestJson  = $this->buildQuizJsonFor('pre_test');
         $postTestJson = $this->buildQuizJsonFor('post_test');
 
@@ -629,7 +607,7 @@ class DashboardPengajar extends BaseController
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  QUIZ
+    //  QUIZ  (tetap ada — dipakai di halaman lain)
     // ══════════════════════════════════════════════════════════════════════
     public function quiz()
     {
@@ -871,13 +849,6 @@ class DashboardPengajar extends BaseController
         return $row && (int) $row['id_users'] === $this->myId();
     }
 
-    /**
-     * Build JSON quiz array from POST field.
-     * Used for both pre_test and post_test.
-     *
-     * @param string $field  POST key: 'pre_test' | 'post_test'
-     * @return string|null   JSON string or null if no valid soal
-     */
     private function buildQuizJsonFor(string $field): ?string
     {
         $rawQuiz = $this->request->getPost($field);
