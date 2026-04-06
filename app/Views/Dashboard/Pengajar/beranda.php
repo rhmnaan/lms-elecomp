@@ -68,28 +68,28 @@
         <div class="card-sub">Rata-rata nilai quiz tertinggi</div>
 
         <?php if (empty($leaderboard)): ?>
-            <p style="color:#9ca3af;font-size:13px;">Belum ada data quiz.</p>
+        <p style="color:#9ca3af;font-size:13px;">Belum ada data quiz.</p>
         <?php else: ?>
-            <?php
+        <?php
             $rankClass = ['gold', 'silver', 'bronze', 'other', 'other'];
             $rankIcon  = ['🥇', '🥈', '🥉', '4', '5'];
             foreach ($leaderboard as $i => $lb):
                 $val = (int) $lb['rata_nilai'];
                 $cls = $val >= 70 ? 'high' : ($val >= 50 ? 'mid' : 'low');
             ?>
-                <div class="lb-item">
-                    <div class="lb-rank <?= $rankClass[$i] ?>"><?= $rankIcon[$i] ?></div>
-                    <div class="lb-avatar"><?= strtoupper(substr($lb['nama_users'], 0, 1)) ?></div>
-                    <div class="lb-info">
-                        <div class="lb-name"><?= esc($lb['nama_users']) ?></div>
-                        <div class="lb-meta"><?= esc($lb['total_quiz_dikerjakan']) ?> quiz dikerjakan</div>
-                    </div>
-                    <div class="lb-score">
-                        <div class="lb-score-val <?= $cls ?>"><?= $val ?></div>
-                        <div class="lb-score-label">RERATA</div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+        <div class="lb-item">
+            <div class="lb-rank <?= $rankClass[$i] ?>"><?= $rankIcon[$i] ?></div>
+            <div class="lb-avatar"><?= strtoupper(substr($lb['nama_users'], 0, 1)) ?></div>
+            <div class="lb-info">
+                <div class="lb-name"><?= esc($lb['nama_users']) ?></div>
+                <div class="lb-meta"><?= esc($lb['total_quiz_dikerjakan']) ?> quiz dikerjakan</div>
+            </div>
+            <div class="lb-score">
+                <div class="lb-score-val <?= $cls ?>"><?= $val ?></div>
+                <div class="lb-score-label">RERATA</div>
+            </div>
+        </div>
+        <?php endforeach; ?>
         <?php endif; ?>
     </div>
 
@@ -130,23 +130,23 @@
             <div class="card-sub">Pengerjaan terakhir oleh peserta</div>
 
             <?php if (empty($aktivitas_terbaru)): ?>
-                <p style="color:#9ca3af;font-size:13px;">Belum ada aktivitas.</p>
+            <p style="color:#9ca3af;font-size:13px;">Belum ada aktivitas.</p>
             <?php else: ?>
-                <?php foreach ($aktivitas_terbaru as $act):
+            <?php foreach ($aktivitas_terbaru as $act):
                     $val = (int) $act['nilai_quiz_results'];
                     $cls = $val >= 70 ? 'high' : ($val >= 50 ? 'mid' : 'low');
                     $tgl = date('d M, H:i', strtotime($act['waktu_selesai_quiz_results']));
                 ?>
-                    <div class="act-item">
-                        <div class="act-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
-                        <div class="act-info">
-                            <div class="act-name"><?= esc($act['nama_users']) ?></div>
-                            <div class="act-quiz"><?= esc($act['judul_quiz']) ?> · <?= esc($act['nama_kelas']) ?></div>
-                            <div class="act-time"><i class="bi bi-clock" style="font-size:10px;"></i> <?= $tgl ?></div>
-                        </div>
-                        <span class="act-badge <?= $cls ?>"><?= $val ?></span>
-                    </div>
-                <?php endforeach; ?>
+            <div class="act-item">
+                <div class="act-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
+                <div class="act-info">
+                    <div class="act-name"><?= esc($act['nama_users']) ?></div>
+                    <div class="act-quiz"><?= esc($act['judul_quiz']) ?> · <?= esc($act['nama_kelas']) ?></div>
+                    <div class="act-time"><i class="bi bi-clock" style="font-size:10px;"></i> <?= $tgl ?></div>
+                </div>
+                <span class="act-badge <?= $cls ?>"><?= $val ?></span>
+            </div>
+            <?php endforeach; ?>
             <?php endif; ?>
         </div>
 
@@ -158,46 +158,49 @@
 
 <?= $this->section('scripts') ?>
 <script>
-    const days   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    const months = ['Januari','Februari','Maret','April','Mei','Juni',
-                    'Juli','Agustus','September','Oktober','November','Desember'];
-    const now = new Date();
-    document.getElementById('today-date').textContent =
-        `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+const now = new Date();
+document.getElementById('today-date').textContent =
+    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 
-    window.addEventListener('load', function () {
-        const ctx = document.getElementById('donutChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Lulus', 'Cukup', 'Kurang'],
-                datasets: [{
-                    data: [
-                        <?= (int) $dist_lulus ?>,
-                        <?= (int) $dist_cukup ?>,
-                        <?= (int) $dist_kurang ?>
-                    ],
-                    backgroundColor: ['#059669', '#d97706', '#ef4444'],
-                    borderWidth: 0,
-                    hoverOffset: 4,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                cutout: '70%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#111',
-                        titleColor: '#fff',
-                        bodyColor: '#ccc',
-                        padding: 10,
-                        cornerRadius: 8,
-                    }
+window.addEventListener('load', function() {
+    const ctx = document.getElementById('donutChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Lulus', 'Cukup', 'Kurang'],
+            datasets: [{
+                data: [
+                    <?= (int) $dist_lulus ?>,
+                    <?= (int) $dist_cukup ?>,
+                    <?= (int) $dist_kurang ?>
+                ],
+                backgroundColor: ['#059669', '#d97706', '#ef4444'],
+                borderWidth: 0,
+                hoverOffset: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#111',
+                    titleColor: '#fff',
+                    bodyColor: '#ccc',
+                    padding: 10,
+                    cornerRadius: 8,
                 }
             }
-        });
+        }
     });
+});
 </script>
 <?= $this->endSection() ?>

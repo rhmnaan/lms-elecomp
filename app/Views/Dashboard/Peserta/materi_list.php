@@ -332,17 +332,6 @@
 
         <!-- ACTIONS (KANAN) -->
         <div class="materi-actions">
-
-            <?php if (!empty($m['pretest_id'])): ?>
-            <a href="<?= base_url('pretest/soal/' . $m['pretest_id']) ?>" class="btn-lihat-materi btn-pretest"
-                onclick="event.stopPropagation()">
-                Pre-Test <i class="bi bi-clipboard-check"></i>
-            </a>
-            <?php else: ?>
-            <button class="btn-lihat-materi" style="background:#f3f4f6; color:#9ca3af; border:none;" disabled>
-                No Pre-test
-            </button>
-            <?php endif; ?>
             <!-- BADGE -->
             <span class="tipe-badge <?= $m['tipe'] ?>">
                 <?= $tipeLabel ?>

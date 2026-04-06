@@ -8,6 +8,7 @@ use App\Models\MateriModel;
 use App\Models\QuizResultsModel;
 use App\Models\KelasPesertaModel;
 use App\Models\MateriQuizResultsModel;
+use App\Models\UserMateriProgressModel; 
 
 class DashboardPeserta extends BaseController
 {
@@ -301,30 +302,115 @@ class DashboardPeserta extends BaseController
             $materiAktif = $materi_list[0];
         }
 
+        $materi_locked = false;
+
+        if ($materiAktif) {
+            // Jika BELUM ada pretest → kunci materi
+            if (empty($pretestResult)) {
+                $materi_locked = true;
+            }
+        }
+
+
+        $progressModel = new UserMateriProgressModel();
+
+        // ===== CEK PROGRESS SEMUA MATERI =====
+
+        // ambil semua id materi dalam modul
+        $materiIds = array_column($materi_list, 'id_materi');
+
+        // ambil semua materi dalam modul
+        $materi_list = $this->materiModel->getWithTipe($id_modul);
+        $materiIds = array_column($materi_list, 'id_materi');
+
+        $allCompleted = $progressModel->isAllCompleted($this->idUsers, $materiIds);
+
+        if ($materiAktif) {
+            $progressModel->markAsCompleted($this->idUsers, $materiAktif['id_materi']);
+        }
+
+        $db = \Config\Database::connect();
+
+        $pretestResult = null;
+        $posttestResult = null;
+
+        if ($materiAktif) {
+            $pretestResult = $db->table('materi_quiz_results')
+                ->where('id_materi', $materiAktif['id_materi'])
+                ->where('id_users', $this->idUsers)
+                ->where('jenis_test', 'pre')
+                ->orderBy('created_at', 'DESC')
+                ->get()
+                ->getRowArray();
+
+            $posttestResult = $db->table('materi_quiz_results')
+                ->where('id_materi', $materiAktif['id_materi'])
+                ->where('id_users', $this->idUsers)
+                ->where('jenis_test', 'post')
+                ->orderBy('created_at', 'DESC')
+                ->get()
+                ->getRowArray();
+        }
+
         return view('Dashboard/Peserta/materi_modul', [
-            'modul' => $modul,
-            'materi_list' => $materi_list,
+            'modul'        => $modul,
+            'materi_list'  => $materi_list,
             'materi_aktif' => $materiAktif,
             'total_materi' => count($materi_list),
+
+            // ✅ TAMBAHAN
+            'has_pretest'  => !empty($pretestResult),
+            'nilai_pre'    => $pretestResult,
+            'has_posttest' => !empty($posttestResult),
+            'nilai_post'   => $posttestResult,
+            'all_completed' => $allCompleted,
+
+            'materi_locked' => $materi_locked,
         ]);
     }
 
     public function materi($id_materi = null)
     {
         if (!$id_materi) {
-            return redirect()->to(base_url('dashboard/peserta/materi-list'))->with('error', 'Materi tidak ditemukan');
+            return redirect()->to(base_url('dashboard/peserta/materi-list'))
+                ->with('error', 'Materi tidak ditemukan');
         }
 
         $materi = $this->materiModel->getDetail($id_materi);
 
         if (!$materi) {
-            return redirect()->to(base_url('dashboard/peserta/materi-list'))->with('error', 'Materi tidak ditemukan');
+            return redirect()->to(base_url('dashboard/peserta/materi-list'))
+                ->with('error', 'Materi tidak ditemukan');
         }
 
         if (!$this->kelasPesertaModel->isEnrolled($materi['id_kelas'], $this->idUsers)) {
-            return redirect()->to(base_url('dashboard/peserta/materi-list'))->with('error', 'Anda tidak memiliki akses ke materi ini');
+            return redirect()->to(base_url('dashboard/peserta/materi-list'))
+                ->with('error', 'Anda tidak memiliki akses ke materi ini');
         }
 
+        // --- LOGIKA TAMBAHAN UNTUK QUIZ MATERI ---
+        $db = \Config\Database::connect();
+
+        // Ambil hasil pengerjaan Pre-test terbaru
+        $pretestResult = $db->table('materi_quiz_results')
+            ->where('id_materi', $materi['id_materi'])
+            ->where('id_users', $this->idUsers)
+            ->where('jenis_test', 'pre')
+            ->orderBy('created_at', 'DESC')
+            ->get()
+            ->getRowArray();
+
+        // Ambil hasil pengerjaan Post-test terbaru
+        $posttestResult = $db->table('materi_quiz_results')
+            ->where('id_materi', $materi['id_materi'])
+            ->where('id_users', $this->idUsers)
+            ->where('jenis_test', 'post')
+            ->orderBy('created_at', 'DESC')
+            ->get()
+            ->getRowArray();
+        // ------------------------------------------
+
+        // Tentukan tipe materi
         if ($materi['video_url_materi']) {
             $materi['tipe'] = 'video';
         } elseif ($materi['file_materi']) {
@@ -333,12 +419,18 @@ class DashboardPeserta extends BaseController
             $materi['tipe'] = 'artikel';
         }
 
+        // Ambil materi sebelumnya dan berikutnya
         [$prev_materi, $next_materi] = $this->materiModel->getAdjacent($id_materi, $materi['id_modul']);
 
+        // Kirim data ke view
         return view('Dashboard/Peserta/materi_detail', [
-            'materi' => $materi,
-            'prev_materi' => $prev_materi,
-            'next_materi' => $next_materi,
+            'materi'       => $materi,
+            'prev_materi'  => $prev_materi,
+            'next_materi'  => $next_materi,
+            'has_pretest'  => !empty($pretestResult),
+            'nilai_pre'    => $pretestResult,
+            'has_posttest' => !empty($posttestResult),
+            'nilai_post'   => $posttestResult,
         ]);
     }
 
@@ -437,24 +529,23 @@ class DashboardPeserta extends BaseController
         }
 
         $idMateri    = (int) $this->request->getPost('id_materi');
+        $jenisTest   = $this->request->getPost('jenis_test'); // pre atau post
         $nilai       = (int) $this->request->getPost('nilai');
         $jumlahBenar = (int) $this->request->getPost('jumlah_benar');
         $jumlahSalah = (int) $this->request->getPost('jumlah_salah');
+        $jawaban     = $this->request->getPost('jawaban_peserta'); // string JSON
 
-        if (!$idMateri) {
-            return $this->response
-                ->setContentType('application/json')
-                ->setJSON(['success' => false, 'message' => 'ID materi tidak valid.']);
+        if (!$idMateri || !in_array($jenisTest, ['pre', 'post'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Data tidak valid.']);
         }
 
         $model  = new MateriQuizResultsModel();
-        $result = $model->simpan($this->idUsers, $idMateri, $nilai, $jumlahBenar, $jumlahSalah);
+        // Gunakan fungsi simpan yang sudah diperbaiki di Model sebelumnya
+        $result = $model->simpan($idMateri, $this->idUsers, $jenisTest, $nilai, $jumlahBenar, $jumlahSalah, $jawaban);
 
-        return $this->response
-            ->setContentType('application/json')
-            ->setJSON([
-                'success' => $result,
-                'message' => $result ? 'Hasil quiz berhasil disimpan.' : 'Gagal menyimpan hasil quiz.',
-            ]);
+        return $this->response->setJSON([
+            'success' => $result,
+            'message' => $result ? 'Hasil berhasil disimpan.' : 'Gagal menyimpan.',
+        ]);
     }
 }
