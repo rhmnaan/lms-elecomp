@@ -37,22 +37,27 @@ class Webhook extends BaseController
 
         $model = new Users();
 
+        // ── Cari user by email ATAU nama (case-insensitive) ──
         $user = $model
-            ->where('email_users', $email)
-            ->select('fingerprint_device, password_users')
+            ->groupStart()
+            ->where('LOWER(email_users)', strtolower($email))
+            ->orWhere('LOWER(nama_users)', strtolower($email))
+            ->groupEnd()
+            ->select('email_users, fingerprint_device, password_users')
             ->first();
 
-        // Validasi kredensial
         if (!$user || !password_verify($pass, $user['password_users'])) {
             return $this->response->setJSON([
                 'status'  => 'invalid',
-                'message' => 'Email atau password salah.',
+                'message' => 'Username/Email atau password salah.',
             ]);
         }
 
-        $dbFP = $user['fingerprint_device'];
+        // Gunakan email_users dari DB untuk semua query update berikutnya
+        $emailDB = $user['email_users'];
+        $dbFP    = $user['fingerprint_device'];
 
-        // ── KASUS 1: Fingerprint sama → langsung izinkan ──
+        // ── KASUS 1: Fingerprint sama ──
         if ($fp === $dbFP && $dbFP !== null) {
             return $this->response->setJSON([
                 'status' => 'sama',
@@ -61,14 +66,14 @@ class Webhook extends BaseController
             ]);
         }
 
-        // ── KASUS 2: Fingerprint belum ada di DB → simpan, izinkan ──
+        // ── KASUS 2: Fingerprint belum ada di DB ──
         if ($dbFP === null || $dbFP === '') {
-            $model->where('email_users', $email)
-                  ->set([
-                      'fingerprint_device' => $fp,
-                      'action'             => 'baru',
-                  ])
-                  ->update();
+            $model->where('email_users', $emailDB)
+                ->set([
+                    'fingerprint_device' => $fp,
+                    'action'             => 'baru',
+                ])
+                ->update();
 
             return $this->response->setJSON([
                 'status' => 'baru',
@@ -77,15 +82,14 @@ class Webhook extends BaseController
             ]);
         }
 
-        // ── KASUS 3: Fingerprint BEDA, user pilih 'keep' (tetap di sini) ──
-        // → Update fingerprint ke FP baru, tab lama akan ter-logout via SSE
+        // ── KASUS 3: Fingerprint beda, pilih 'keep' ──
         if ($action === 'keep') {
-            $model->where('email_users', $email)
-                  ->set([
-                      'fingerprint_device' => $fp,
-                      'action'             => 'keep',    // ← SSE tab lama baca ini
-                  ])
-                  ->update();
+            $model->where('email_users', $emailDB)
+                ->set([
+                    'fingerprint_device' => $fp,
+                    'action'             => 'keep',
+                ])
+                ->update();
 
             return $this->response->setJSON([
                 'status' => 'updated',
@@ -94,15 +98,14 @@ class Webhook extends BaseController
             ]);
         }
 
-        // ── KASUS 4: Fingerprint BEDA, user pilih 'other' (logout perangkat lain) ──
-        // → Update fingerprint, sesi di perangkat lama logout otomatis via SSE
+        // ── KASUS 4: Fingerprint beda, pilih 'other' ──
         if ($action === 'other') {
-            $model->where('email_users', $email)
-                  ->set([
-                      'fingerprint_device' => $fp,
-                      'action'             => 'other',   // ← SSE tab lama baca ini
-                  ])
-                  ->update();
+            $model->where('email_users', $emailDB)
+                ->set([
+                    'fingerprint_device' => $fp,
+                    'action'             => 'other',
+                ])
+                ->update();
 
             return $this->response->setJSON([
                 'status' => 'switched',
@@ -111,7 +114,7 @@ class Webhook extends BaseController
             ]);
         }
 
-        // ── KASUS 5: Fingerprint BEDA, belum ada aksi → minta konfirmasi frontend ──
+        // ── KASUS 5: Fingerprint beda, belum ada aksi ──
         return $this->response->setJSON([
             'status' => 'beda',
             'valid'  => false,

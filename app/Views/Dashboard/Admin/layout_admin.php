@@ -446,24 +446,6 @@
                         <?php if (str_starts_with(uri_string(), 'dashboard/admin/pengguna')): ?><span class="dot"></span><?php endif; ?>
                     </a>
                 </li>
-                <li <?= (str_starts_with(uri_string(), 'dashboard/admin/kelas')) ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/admin/kelas') ?>">
-                        <i class="bi bi-book-fill"></i> Kelas
-                        <?php if (str_starts_with(uri_string(), 'dashboard/admin/kelas')): ?><span class="dot"></span><?php endif; ?>
-                    </a>
-                </li>
-                <li <?= (str_starts_with(uri_string(), 'dashboard/admin/evaluasi-kuis')) ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/admin/evaluasi-kuis') ?>">
-                        <i class="bi bi-clipboard-fill"></i> Evaluasi Quiz
-                        <?php if (str_starts_with(uri_string(), 'dashboard/admin/evaluasi-kuis')): ?><span class="dot"></span><?php endif; ?>
-                    </a>
-                </li>
-                <li <?= (str_starts_with(uri_string(), 'dashboard/admin/hasil-kuis')) ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/admin/hasil-kuis') ?>">
-                        <i class="bi bi-check2-square"></i> Hasil Quiz
-                        <?php if (str_starts_with(uri_string(), 'dashboard/admin/hasil-kuis')): ?><span class="dot"></span><?php endif; ?>
-                    </a>
-                </li>
             </ul>
 
             <div class="sidebar-logout">

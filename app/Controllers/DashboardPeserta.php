@@ -8,7 +8,7 @@ use App\Models\MateriModel;
 use App\Models\QuizResultsModel;
 use App\Models\KelasPesertaModel;
 use App\Models\MateriQuizResultsModel;
-use App\Models\UserMateriProgressModel; 
+use App\Models\UserMateriProgressModel;
 
 class DashboardPeserta extends BaseController
 {
@@ -36,196 +36,173 @@ class DashboardPeserta extends BaseController
     }
 
     public function beranda()
-    {
-        $db = \Config\Database::connect();
+{
+    $db = \Config\Database::connect();
 
-        // ── Kelas yang diikuti ──────────────────────────────────────────
-        $kelas_list = $db->table('kelas_peserta kp')
-            ->select('k.id_kelas, k.nama_kelas,
+    // ── Kelas yang diikuti ──────────────────────────────────────────
+    $kelas_list = $db->table('kelas_peserta kp')
+        ->select('k.id_kelas, k.nama_kelas,
                   u.nama_users AS nama_pengajar,
                   COUNT(DISTINCT m.id_modul) AS total_modul')
-            ->join('kelas k', 'k.id_kelas = kp.id_kelas')
-            ->join('users u', 'u.id_users = k.id_users', 'left')
-            ->join('modul m', 'm.id_kelas = k.id_kelas', 'left')
-            ->where('kp.id_users', $this->idUsers)
-            ->where('kp.deleted_at', null)
-            ->groupBy('k.id_kelas')
-            ->get()->getResultArray();
+        ->join('kelas k', 'k.id_kelas = kp.id_kelas')
+        ->join('users u', 'u.id_users = k.id_users', 'left')
+        ->join('modul m', 'm.id_kelas = k.id_kelas AND m.deleted_at IS NULL', 'left')
+        ->where('kp.id_users', $this->idUsers)
+        ->where('kp.deleted_at IS NULL')
+        ->where('k.deleted_at IS NULL')
+        ->groupBy('k.id_kelas')
+        ->get()->getResultArray();
 
-        // Tambahkan modul_selesai (default 0 karena belum ada progress)
-        foreach ($kelas_list as &$k) {
-            $k['modul_selesai'] = 0;
-        }
-        unset($k);
+    foreach ($kelas_list as &$k) {
+        $k['modul_selesai'] = 0;
+    }
+    unset($k);
 
-        $id_kelas_list = array_column($kelas_list, 'id_kelas');
-        $total_kelas = count($kelas_list);
+    $id_kelas_list = array_column($kelas_list, 'id_kelas');
+    $total_kelas   = count($kelas_list);
 
-        // ── Total materi ────────────────────────────────────────────────
-        $total_materi = 0;
-        if (!empty($id_kelas_list)) {
-            $total_materi = $db->table('materi ma')
-                ->join('modul m', 'm.id_modul = ma.id_modul')
-                ->whereIn('m.id_kelas', $id_kelas_list)
-                ->where('ma.deleted_at', null)
-                ->countAllResults();
-        }
-
-        // ── Total quiz tersedia ─────────────────────────────────────────
-        $total_quiz_tersedia = 0;
-        if (!empty($id_kelas_list)) {
-            $total_quiz_tersedia = $db->table('quiz q')
-                ->join('modul m', 'm.id_modul = q.id_modul')
-                ->whereIn('m.id_kelas', $id_kelas_list)
-                ->where('q.deleted_at', null)
-                ->countAllResults();
-        }
-
-        // ── Quiz yang sudah dikerjakan siswa ini ────────────────────────
-        $total_quiz_dikerjakan = $db->table('quiz_results')
-            ->where('id_users', $this->idUsers)
-            ->where('deleted_at', null)
+    // ── Total materi ────────────────────────────────────────────────
+    $total_materi = 0;
+    if (!empty($id_kelas_list)) {
+        $total_materi = $db->table('materi ma')
+            ->join('modul m', 'm.id_modul = ma.id_modul')
+            ->whereIn('m.id_kelas', $id_kelas_list)
+            ->where('ma.deleted_at IS NULL')
+            ->where('m.deleted_at IS NULL')
             ->countAllResults();
+    }
 
-        // ── Rata-rata nilai ─────────────────────────────────────────────
-        $rata_row = $db->table('quiz_results')
-            ->selectAvg('nilai_quiz_results', 'rata')
-            ->where('id_users', $this->idUsers)
-            ->where('deleted_at', null)
-            ->get()->getRowArray();
-        $rata_nilai = $rata_row ? round($rata_row['rata'] ?? 0, 1) : 0;
+    // ── Total quiz tersedia (materi yang punya post_test) ───────────
+    // Quiz di LMS ini ada di kolom post_test dan pre_test di tabel materi
+    $total_quiz_tersedia = 0;
+    if (!empty($id_kelas_list)) {
+        $total_quiz_tersedia = $db->table('materi ma')
+            ->join('modul m', 'm.id_modul = ma.id_modul')
+            ->whereIn('m.id_kelas', $id_kelas_list)
+            ->where('ma.deleted_at IS NULL')
+            ->where('m.deleted_at IS NULL')
+            ->groupStart()
+                ->where('ma.post_test IS NOT NULL')
+                ->orWhere('ma.pre_test IS NOT NULL')
+            ->groupEnd()
+            ->countAllResults();
+    }
 
-        // ── Distribusi nilai ────────────────────────────────────────────
-        $dist_lulus = $dist_cukup = $dist_kurang = 0;
-        if ($total_quiz_dikerjakan > 0) {
-            $rows = $db->table('quiz_results')
-                ->select('nilai_quiz_results')
-                ->where('id_users', $this->idUsers)
-                ->where('deleted_at', null)
-                ->get()->getResultArray();
+    // ── Quiz dikerjakan + distribusi nilai + rata-rata ──────────────
+    // Ambil semua hasil quiz (pre & post) milik user ini
+    $rows = [];
+    if (!empty($id_kelas_list)) {
+        $rows = $db->table('materi_quiz_results mqr')
+            ->select('mqr.nilai, mqr.jenis_test')
+            ->join('materi ma', 'ma.id_materi = mqr.id_materi')
+            ->join('modul mo',  'mo.id_modul  = ma.id_modul')
+            ->whereIn('mo.id_kelas', $id_kelas_list)
+            ->where('mqr.id_users', $this->idUsers)
+            ->get()->getResultArray();
+    }
 
-            foreach ($rows as $r) {
-                $n = (int) $r['nilai_quiz_results'];
-                if ($n >= 70) $dist_lulus++;
-                elseif ($n >= 50) $dist_cukup++;
-                else $dist_kurang++;
-            }
-        }
+    $total_quiz_dikerjakan = count($rows);
+    $dist_lulus = $dist_cukup = $dist_kurang = 0;
+    $sum_nilai  = 0;
 
-        // ── Riwayat quiz terbaru ────────────────────────────────────────
-        $riwayat_quiz = $db->table('quiz_results qr')
-            ->select('qr.nilai_quiz_results, qr.waktu_selesai_quiz_results,
-                  q.judul_quiz, k.nama_kelas')
-            ->join('quiz q', 'q.id_quiz = qr.id_quiz')
-            ->join('modul m', 'm.id_modul = q.id_modul')
-            ->join('kelas k', 'k.id_kelas = m.id_kelas')
-            ->where('qr.id_users', $this->idUsers)
-            ->where('qr.deleted_at', null)
-            ->orderBy('qr.waktu_selesai_quiz_results', 'DESC')
+    foreach ($rows as $r) {
+        $n = (int) $r['nilai'];
+        $sum_nilai += $n;
+        if ($n >= 70)     $dist_lulus++;
+        elseif ($n >= 50) $dist_cukup++;
+        else              $dist_kurang++;
+    }
+
+    $rata_nilai = $total_quiz_dikerjakan > 0
+        ? round($sum_nilai / $total_quiz_dikerjakan, 1)
+        : 0;
+
+    // ── Riwayat quiz terbaru ────────────────────────────────────────
+    $riwayat_quiz = [];
+    if (!empty($id_kelas_list)) {
+        $riwayat_quiz = $db->table('materi_quiz_results mqr')
+            ->select('mqr.nilai             AS nilai_quiz_results,
+                      mqr.created_at        AS waktu_selesai_quiz_results,
+                      CONCAT(ma.judul_materi, " (", mqr.jenis_test, "-test)") AS judul_quiz,
+                      k.nama_kelas')
+            ->join('materi ma', 'ma.id_materi = mqr.id_materi')
+            ->join('modul mo',  'mo.id_modul  = ma.id_modul')
+            ->join('kelas k',   'k.id_kelas   = mo.id_kelas')
+            ->where('mqr.id_users', $this->idUsers)
+            ->whereIn('mo.id_kelas', $id_kelas_list)
+            ->orderBy('mqr.created_at', 'DESC')
             ->limit(5)
             ->get()->getResultArray();
+    }
 
-        // ── Materi terbaru ──────────────────────────────────────────────
-        $materi_terbaru = [];
-        if (!empty($id_kelas_list)) {
-            $materi_terbaru = $db->table('materi ma')
-                ->select('ma.id_materi, ma.judul_materi,
+    // ── Materi terbaru ──────────────────────────────────────────────
+    $materi_terbaru = [];
+    if (!empty($id_kelas_list)) {
+        $materi_terbaru = $db->table('materi ma')
+            ->select('ma.id_materi, ma.judul_materi,
                       ma.file_materi, ma.video_url_materi,
-                      mo.judul_modul, k.nama_kelas')
-                ->join('modul mo', 'mo.id_modul = ma.id_modul')
-                ->join('kelas k', 'k.id_kelas = mo.id_kelas')
-                ->whereIn('mo.id_kelas', $id_kelas_list)
-                ->where('ma.deleted_at', null)
-                ->orderBy('ma.created_at', 'DESC')
-                ->limit(6)
+                      mo.id_modul, mo.judul_modul, k.nama_kelas')
+            ->join('modul mo', 'mo.id_modul = ma.id_modul')
+            ->join('kelas k',  'k.id_kelas  = mo.id_kelas')
+            ->whereIn('mo.id_kelas', $id_kelas_list)
+            ->where('ma.deleted_at IS NULL')
+            ->where('mo.deleted_at IS NULL')
+            ->orderBy('ma.created_at', 'DESC')
+            ->limit(6)
+            ->get()->getResultArray();
+    }
+
+    // ── Peringkat di kelas pertama ──────────────────────────────────
+    $peringkat           = null;
+    $total_peserta_kelas = null;
+
+    if (!empty($id_kelas_list)) {
+        $id_kelas_pertama = $id_kelas_list[0];
+
+        $peserta_ids = $db->table('kelas_peserta')
+            ->select('id_users')
+            ->where('id_kelas', $id_kelas_pertama)
+            ->where('deleted_at IS NULL')
+            ->get()->getResultArray();
+        $peserta_ids         = array_column($peserta_ids, 'id_users');
+        $total_peserta_kelas = count($peserta_ids);
+
+        if (!empty($peserta_ids)) {
+            $rank_rows = $db->table('materi_quiz_results mqr')
+                ->select('mqr.id_users, AVG(mqr.nilai) AS avg_val')
+                ->join('materi ma', 'ma.id_materi = mqr.id_materi')
+                ->join('modul mo',  'mo.id_modul  = ma.id_modul')
+                ->whereIn('mqr.id_users', $peserta_ids)
+                ->where('mo.id_kelas', $id_kelas_pertama)
+                ->groupBy('mqr.id_users')
+                ->orderBy('avg_val', 'DESC')
                 ->get()->getResultArray();
-        }
 
-        // ── Peringkat di kelas (opsional, ambil kelas pertama) ──────────
-        $peringkat = null;
-        $total_peserta_kelas = null;
-        if (!empty($id_kelas_list)) {
-            $id_kelas_pertama = $id_kelas_list[0];
-
-            $peserta_ids = $db->table('kelas_peserta')
-                ->select('id_users')
-                ->where('id_kelas', $id_kelas_pertama)
-                ->where('deleted_at', null)
-                ->get()->getResultArray();
-            $peserta_ids = array_column($peserta_ids, 'id_users');
-            $total_peserta_kelas = count($peserta_ids);
-
-            if (!empty($peserta_ids)) {
-                $rank_rows = $db->table('quiz_results qr')
-                    ->select('qr.id_users, AVG(qr.nilai_quiz_results) AS avg_val')
-                    ->join('quiz q', 'q.id_quiz = qr.id_quiz')
-                    ->join('modul m', 'm.id_modul = q.id_modul')
-                    ->whereIn('qr.id_users', $peserta_ids)
-                    ->where('m.id_kelas', $id_kelas_pertama)
-                    ->where('qr.deleted_at', null)
-                    ->groupBy('qr.id_users')
-                    ->orderBy('avg_val', 'DESC')
-                    ->get()->getResultArray();
-
-                foreach ($rank_rows as $pos => $row) {
-                    if ((int) $row['id_users'] === $this->idUsers) {
-                        $peringkat = $pos + 1;
-                        break;
-                    }
+            foreach ($rank_rows as $pos => $row) {
+                if ((int) $row['id_users'] === $this->idUsers) {
+                    $peringkat = $pos + 1;
+                    break;
                 }
             }
         }
-
-        // ── Materi terbaru ──────────────────────────────────────────────
-        $materi_terbaru = [];
-        if (!empty($id_kelas_list)) {
-            $materi_terbaru = $db->table('materi ma')
-                ->select('ma.id_materi, ma.judul_materi,
-                  ma.file_materi, ma.video_url_materi,
-                  mo.id_modul, mo.judul_modul, k.nama_kelas') // TAMBAHKAN mo.id_modul
-                ->join('modul mo', 'mo.id_modul = ma.id_modul')
-                ->join('kelas k', 'k.id_kelas = mo.id_kelas')
-                ->whereIn('mo.id_kelas', $id_kelas_list)
-                ->where('ma.deleted_at', null)
-                ->orderBy('ma.created_at', 'DESC')
-                ->limit(6)
-                ->get()->getResultArray();
-        }
-
-        return view('Dashboard/Peserta/beranda', [
-            'kelas_list' => $kelas_list,
-            'total_kelas' => $total_kelas,
-            'total_materi' => $total_materi,
-            'total_quiz_tersedia' => $total_quiz_tersedia,
-            'total_quiz_dikerjakan' => $total_quiz_dikerjakan,
-            'rata_nilai' => $rata_nilai,
-            'dist_lulus' => $dist_lulus,
-            'dist_cukup' => $dist_cukup,
-            'dist_kurang' => $dist_kurang,
-            'riwayat_quiz' => $riwayat_quiz,
-            'materi_terbaru' => $materi_terbaru,
-            'peringkat' => $peringkat,
-            'total_peserta_kelas' => $total_peserta_kelas,
-        ]);
     }
 
-    public function kelas()
-    {
-        $kelas_list = $this->kelasPesertaModel->getKelasByPeserta($this->idUsers);
-
-        foreach ($kelas_list as &$k) {
-            $quiz_done = $this->quizResultModel->getQuizDoneCountByKelas($this->idUsers, $k['id_kelas']);
-            $k['quiz_dikerjakan'] = $quiz_done;
-            $k['persen'] = $k['total_quiz'] > 0
-                ? min(100, round(($quiz_done / $k['total_quiz']) * 100))
-                : 0;
-        }
-
-        return view('Dashboard/Peserta/kelas', [
-            'kelas_list' => $kelas_list,
-            'total_kelas' => count($kelas_list),
-        ]);
-    }
+    return view('Dashboard/Peserta/beranda', [
+        'kelas_list'            => $kelas_list,
+        'total_kelas'           => $total_kelas,
+        'total_materi'          => $total_materi,
+        'total_quiz_tersedia'   => $total_quiz_tersedia,
+        'total_quiz_dikerjakan' => $total_quiz_dikerjakan,
+        'rata_nilai'            => $rata_nilai,
+        'dist_lulus'            => $dist_lulus,
+        'dist_cukup'            => $dist_cukup,
+        'dist_kurang'           => $dist_kurang,
+        'riwayat_quiz'          => $riwayat_quiz,
+        'materi_terbaru'        => $materi_terbaru,
+        'peringkat'             => $peringkat,
+        'total_peserta_kelas'   => $total_peserta_kelas,
+    ]);
+}
 
     public function modul()
     {

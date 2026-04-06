@@ -820,14 +820,13 @@
                     <span id="error-msg-text"></span>
                 </div>
 
-                <div class="field">
-                    <label class="field-label" for="email">Alamat Email</label>
-                    <div class="field-wrap">
-                        <i class="fas fa-envelope field-icon"></i>
-                        <input type="email" id="email" class="field-input"
-                            placeholder="nama@elecomp.sch.id"
-                            autocomplete="email">
-                    </div>
+                <!-- SESUDAH -->
+                <label class="field-label" for="email">Username / Email</label>
+                <div class="field-wrap">
+                    <i class="fas fa-user field-icon"></i>
+                    <input type="text" id="email" class="field-input"
+                        placeholder="Username atau Email"
+                        autocomplete="username">
                 </div>
 
                 <div class="field">
@@ -1040,30 +1039,16 @@
         let _pendingEmail = '';
         let _pendingPass = '';
 
+        // SESUDAH
         function doLogin() {
             const email = $('email').value.trim();
             const pass = $('password').value;
             if (!email || !pass) {
-                showError('Email dan password wajib diisi.');
+                showError('Username/Email dan password wajib diisi.');
                 return;
             }
-            const {
-                hasLen,
-                hasLetter
-            } = checkPassword(pass);
-            if (!hasLen) {
-                showError('Password minimal 8 karakter.');
-                return;
-            }
-            if (!hasLetter) {
-                showError('Password harus mengandung huruf.');
-                return;
-            }
-
-            // Simpan untuk dipakai handleAction jika modal konflik muncul
             _pendingEmail = email;
             _pendingPass = pass;
-
             fetchHandler(email, pass);
         }
 

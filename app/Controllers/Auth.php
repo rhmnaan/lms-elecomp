@@ -18,23 +18,30 @@ class Auth extends BaseController
     // POST /auth/authenticate
     public function authenticate()
     {
-        $email    = $this->request->getPost('email');
+        $input    = $this->request->getPost('email'); // field name tetap 'email'
         $password = $this->request->getPost('password');
 
-        if (!$email || !$password) {
+        if (!$input || !$password) {
             return $this->response->setJSON([
                 'status'  => 'failed',
-                'message' => 'Email dan password wajib diisi.'
+                'message' => 'Username/Email dan password wajib diisi.'
             ]);
         }
 
         $usersModel = new Users();
-        $user = $usersModel->where('email_users', $email)->first();
+
+        // Cari berdasarkan email ATAU nama_users (username)
+        $user = $usersModel
+            ->groupStart()
+                ->where('email_users', $input)
+                ->orWhere('nama_users', $input)
+            ->groupEnd()
+            ->first();
 
         if (!$user || !password_verify($password, $user['password_users'])) {
             return $this->response->setJSON([
                 'status'  => 'failed',
-                'message' => 'Email atau password salah.'
+                'message' => 'Username/Email atau password salah.'
             ]);
         }
 
@@ -46,25 +53,21 @@ class Auth extends BaseController
             'role'      => $user['role_users'],
         ]);
 
-        // Setelah login berhasil:
-        // 1. Sync fingerprint_device di DB dengan cookie browser sekarang
-        //    Ini penting agar SSE tidak langsung detect sebagai hijack
-        // 2. Reset action ke NULL agar state DB netral
         $currentFP = $_COOKIE['device_fp'] ?? null;
         $syncData  = ['action' => null];
         if ($currentFP) {
             $syncData['fingerprint_device'] = $currentFP;
         }
         $usersModel
-            ->where('email_users', $email)
+            ->where('id_users', $user['id_users']) // pakai id agar lebih aman
             ->set($syncData)
             ->update();
 
         $redirect = match($user['role_users']) {
-            'admin' => '/dashboard/admin/beranda',
-            'pengajar'  => '/dashboard/pengajar',
-            'peserta' => '/dashboard/peserta/beranda',
-            default => '/dashboard',
+            'admin'    => '/dashboard/admin/beranda',
+            'pengajar' => '/dashboard/pengajar',
+            'peserta'  => '/dashboard/peserta/beranda',
+            default    => '/dashboard',
         };
 
         return $this->response->setJSON([
