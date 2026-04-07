@@ -30,8 +30,13 @@ class KelasPesertaModel extends Model
     public function getKelasByPeserta($id_users)
     {
         return $this->select('
-                kelas_peserta.*,
-                kelas.id_kelas,
+                MAX(kelas_peserta.id_kelas_peserta) as id_kelas_peserta,
+                kelas_peserta.id_kelas,
+                MAX(kelas_peserta.id_users) as id_users,
+                MAX(kelas_peserta.tanggal_daftar_kelas_peserta) as tanggal_daftar_kelas_peserta,
+                MAX(kelas_peserta.created_at) as created_at,
+                MAX(kelas_peserta.updated_at) as updated_at,
+                MAX(kelas_peserta.deleted_at) as deleted_at,
                 kelas.nama_kelas,
                 kelas.deskripsi_kelas,
                 users.nama_users as nama_pengajar,
@@ -47,7 +52,7 @@ class KelasPesertaModel extends Model
             ->where('kelas_peserta.id_users', $id_users)
             ->where('kelas_peserta.deleted_at', null)
             ->groupBy('kelas.id_kelas')
-            ->orderBy('kelas_peserta.tanggal_daftar_kelas_peserta', 'ASC')
+            ->orderBy('tanggal_daftar_kelas_peserta', 'ASC')
             ->findAll();
     }
     

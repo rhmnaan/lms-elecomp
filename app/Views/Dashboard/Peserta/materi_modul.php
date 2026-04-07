@@ -3,894 +3,8 @@
 <?= $this->section('meta') ?>
 <title><?= esc($modul['judul_modul']) ?> — LMS Elecomp</title>
 <?= $this->endSection() ?>
-
 <?= $this->section('styles') ?>
-<style>
-.materi-modul-container {
-    display: flex;
-    gap: 24px;
-    min-height: 600px;
-}
-
-.materi-sidebar {
-    width: 320px;
-    flex-shrink: 0;
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, .05);
-    overflow: hidden;
-}
-
-.sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid #f3f4f6;
-    background: #f9fafb;
-}
-
-.sidebar-header h3 {
-    font-size: 16px;
-    font-weight: 800;
-    color: #111;
-    margin: 0;
-}
-
-.sidebar-header p {
-    font-size: 12px;
-    color: #9ca3af;
-    margin: 4px 0 0;
-}
-
-.materi-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.materi-list-item {
-    padding: 14px 20px;
-    border-bottom: 1px solid #f3f4f6;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.materi-list-item:hover {
-    background: #f9fafb;
-}
-
-.materi-list-item.active {
-    background: #eff6ff;
-    border-left: 3px solid #2d6cdf;
-}
-
-.materi-list-number {
-    width: 28px;
-    height: 28px;
-    background: #f3f4f6;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: #6b7280;
-    flex-shrink: 0;
-}
-
-.materi-list-item.active .materi-list-number {
-    background: #2d6cdf;
-    color: #fff;
-}
-
-.materi-list-info {
-    flex: 1;
-}
-
-.materi-list-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: #111;
-    margin-bottom: 2px;
-}
-
-.materi-list-meta {
-    font-size: 11px;
-    color: #9ca3af;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.status-icon {
-    width: 20px;
-    text-align: center;
-}
-
-.status-icon.completed {
-    color: #10b981;
-}
-
-.materi-content {
-    flex: 1;
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, .05);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.content-header {
-    padding: 20px 28px;
-    border-bottom: 1px solid #f3f4f6;
-    background: #f9fafb;
-}
-
-.content-breadcrumb {
-    font-size: 12px;
-    color: #9ca3af;
-    margin-bottom: 8px;
-}
-
-.content-breadcrumb a {
-    color: #9ca3af;
-    text-decoration: none;
-}
-
-.content-breadcrumb a:hover {
-    color: #2d6cdf;
-}
-
-.content-title {
-    font-size: 24px;
-    font-weight: 800;
-    color: #111;
-    margin-bottom: 8px;
-}
-
-.content-meta {
-    display: flex;
-    gap: 16px;
-    font-size: 13px;
-    color: #6b7280;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.tipe-badges {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.tipe-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.tipe-badge.artikel {
-    background: #eff6ff;
-    color: #2d6cdf;
-}
-
-.tipe-badge.video {
-    background: #fef3c7;
-    color: #d97706;
-}
-
-.tipe-badge.pdf {
-    background: #fff1f2;
-    color: #e11d48;
-}
-
-.tipe-badge.quiz {
-    background: #ede9fe;
-    color: #7c3aed;
-}
-
-.content-body {
-    padding: 28px;
-    flex: 1;
-}
-
-.content-section {
-    margin-bottom: 32px;
-}
-
-.section-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-/* Video */
-.video-container {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
-}
-
-.video-container iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-}
-
-/* PDF — hanya tombol Lihat, tanpa Download */
-.file-preview {
-    background: #fff8f8;
-    border-radius: 16px;
-    padding: 20px 24px;
-    border: 1px solid #fecaca;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.file-icon {
-    font-size: 36px;
-    color: #ef4444;
-    flex-shrink: 0;
-}
-
-.file-info {
-    flex: 1;
-}
-
-.file-info h4 {
-    font-size: 14px;
-    font-weight: 700;
-    color: #111;
-    margin: 0 0 3px;
-}
-
-.file-info p {
-    font-size: 12px;
-    color: #9ca3af;
-    margin: 0;
-}
-
-.btn-view-pdf {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 8px 18px;
-    background: #ef4444;
-    color: #fff;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 12px;
-    transition: all .18s;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.btn-view-pdf:hover {
-    background: #dc2626;
-    color: #fff;
-    transform: translateY(-1px);
-}
-
-/* Article */
-.article-content {
-    line-height: 1.85;
-    color: #374151;
-    font-size: 15px;
-    background: #fff;
-    border-radius: 12px;
-    padding: 28px 32px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
-    border: 1px solid #f1f5f9;
-}
-
-.article-content h1 {
-    font-size: 26px;
-    margin: 32px 0 16px;
-    color: #111827;
-}
-
-.article-content h2 {
-    font-size: 22px;
-    margin: 28px 0 14px;
-    color: #1f2937;
-}
-
-.article-content h3 {
-    font-size: 18px;
-    margin: 24px 0 12px;
-    color: #374151;
-}
-
-.article-content p {
-    margin-bottom: 18px;
-}
-
-.article-content ul,
-.article-content ol {
-    margin: 16px 0 20px 28px;
-}
-
-.article-content li {
-    margin-bottom: 8px;
-}
-
-.article-content img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin: 20px 0;
-}
-
-/* Quiz */
-.quiz-wrapper {
-    background: #faf5ff;
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid #e9d5ff;
-}
-
-.quiz-intro {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #e9d5ff;
-}
-
-.quiz-intro-icon {
-    width: 48px;
-    height: 48px;
-    background: #7c3aed;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 22px;
-    flex-shrink: 0;
-}
-
-.quiz-intro h4 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #111;
-    margin: 0 0 4px;
-}
-
-.quiz-intro p {
-    font-size: 12px;
-    color: #7c3aed;
-    margin: 0;
-}
-
-.quiz-soal {
-    margin-bottom: 24px;
-}
-
-.soal-pertanyaan {
-    font-size: 14px;
-    font-weight: 700;
-    color: #111;
-    margin-bottom: 12px;
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-}
-
-.soal-num {
-    width: 24px;
-    height: 24px;
-    background: #7c3aed;
-    color: #fff;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 800;
-    flex-shrink: 0;
-    margin-top: 1px;
-}
-
-.pilihan-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.pilihan-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: #fff;
-    border: 1.5px solid #e9d5ff;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all .18s;
-    font-size: 13px;
-    color: #374151;
-    user-select: none;
-}
-
-.pilihan-item:hover {
-    border-color: #7c3aed;
-    background: #faf5ff;
-}
-
-.pilihan-item.selected {
-    border-color: #7c3aed;
-    background: #ede9fe;
-    font-weight: 600;
-    color: #5b21b6;
-}
-
-.pilihan-item.correct {
-    border-color: #10b981;
-    background: #d1fae5;
-    color: #065f46;
-    font-weight: 700;
-    pointer-events: none;
-}
-
-.pilihan-item.wrong {
-    border-color: #ef4444;
-    background: #fee2e2;
-    color: #991b1b;
-    pointer-events: none;
-}
-
-.pilihan-item.not-selected-lock {
-    pointer-events: none;
-    opacity: .7;
-}
-
-.pilihan-radio {
-    width: 18px;
-    height: 18px;
-    border: 2px solid #d1d5db;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all .18s;
-}
-
-.pilihan-item.selected .pilihan-radio {
-    border-color: #7c3aed;
-    background: #7c3aed;
-}
-
-.pilihan-item.selected .pilihan-radio::after {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background: #fff;
-    border-radius: 50%;
-}
-
-.pilihan-item.correct .pilihan-radio {
-    border-color: #10b981;
-    background: #10b981;
-}
-
-.pilihan-item.correct .pilihan-radio::after {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background: #fff;
-    border-radius: 50%;
-}
-
-.pilihan-item.wrong .pilihan-radio {
-    border-color: #ef4444;
-    background: #ef4444;
-}
-
-.pilihan-item.wrong .pilihan-radio::after {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background: #fff;
-    border-radius: 50%;
-}
-
-.quiz-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid #e9d5ff;
-    gap: 10px;
-    align-items: center;
-}
-
-.quiz-progress-text {
-    font-size: 12px;
-    color: #7c3aed;
-    flex: 1;
-}
-
-.btn-submit-quiz {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 24px;
-    background: #7c3aed;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all .18s;
-}
-
-.btn-submit-quiz:hover {
-    background: #6d28d9;
-    transform: translateY(-1px);
-}
-
-.btn-submit-quiz:disabled {
-    opacity: .55;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Spinner */
-.btn-submit-quiz .spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255, 255, 255, .4);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    display: none;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.quiz-result-box {
-    border-radius: 14px;
-    margin-top: 20px;
-    padding: 28px;
-    text-align: center;
-    display: none;
-}
-
-.quiz-result-box.lulus {
-    background: #d1fae5;
-    border: 1px solid #6ee7b7;
-    color: #065f46;
-}
-
-.quiz-result-box.tidak-lulus {
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-    color: #991b1b;
-}
-
-.nilai-besar {
-    font-size: 52px;
-    font-weight: 800;
-    margin: 8px 0;
-    line-height: 1;
-}
-
-.btn-ulangi {
-    margin-top: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 18px;
-    background: #fff;
-    border: 1.5px solid currentColor;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: opacity .18s;
-    color: inherit;
-}
-
-.btn-ulangi:hover {
-    opacity: .75;
-}
-
-/* Empty state */
-.empty-content {
-    text-align: center;
-    padding: 60px 32px;
-    background: #f9fafb;
-    border-radius: 16px;
-    border: 1px solid #e5e7eb;
-    color: #9ca3af;
-}
-
-.empty-content i {
-    font-size: 56px;
-    margin-bottom: 16px;
-    display: inline-block;
-}
-
-/* Nav buttons */
-.nav-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid #f3f4f6;
-}
-
-.nav-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 13px;
-    text-decoration: none;
-    transition: all .2s;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-}
-
-.nav-btn.prev {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.nav-btn.prev:hover {
-    background: #e5e7eb;
-    transform: translateX(-2px);
-}
-
-.nav-btn.next {
-    background: #2d6cdf;
-    color: #fff;
-}
-
-.nav-btn.next:hover {
-    background: #1e40af;
-    transform: translateX(2px);
-    color: #fff;
-}
-
-.nav-btn.modul {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.nav-btn.modul:hover {
-    background: #e5e7eb;
-}
-
-.nav-btn.disabled {
-    opacity: .5;
-    pointer-events: none;
-}
-
-@media (max-width: 768px) {
-    .materi-modul-container {
-        flex-direction: column;
-    }
-
-    .materi-sidebar {
-        width: 100%;
-    }
-
-    .content-title {
-        font-size: 20px;
-    }
-
-    .content-header {
-        padding: 16px 20px;
-    }
-
-    .content-body {
-        padding: 20px;
-    }
-
-    .file-preview {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-/* PRE TEST CARD */
-.pretest-card {
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
-    border-radius: 16px;
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.pretest-icon {
-    width: 50px;
-    height: 50px;
-    background: #0ea5e9;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    color: #fff;
-    flex-shrink: 0;
-}
-
-.pretest-info {
-    flex: 1;
-}
-
-.pretest-info h4 {
-    margin: 0 0 4px;
-    font-size: 15px;
-    font-weight: 700;
-    color: #111;
-}
-
-.pretest-info p {
-    margin: 0;
-    font-size: 12px;
-    color: #0369a1;
-}
-
-.btn-pretest {
-    background: #0ea5e9;
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all .2s;
-}
-
-.btn-pretest:hover {
-    background: #0284c7;
-    transform: translateY(-1px);
-    color: #fff;
-}
-
-/* pretest card end */
-
-/* POST TEST CARD */
-.posttest-card {
-    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
-    border: 1px solid #e9d5ff;
-    border-radius: 16px;
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: all .2s ease;
-}
-
-/* Hover biar hidup */
-.posttest-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.12);
-}
-
-/* Icon */
-.posttest-icon {
-    width: 50px;
-    height: 50px;
-    background: #7c3aed;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    color: #fff;
-    flex-shrink: 0;
-    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
-}
-
-/* Info */
-.posttest-info {
-    flex: 1;
-}
-
-.posttest-info h4 {
-    margin: 0 0 4px;
-    font-size: 15px;
-    font-weight: 700;
-    color: #111;
-}
-
-.posttest-info p {
-    margin: 0;
-    font-size: 12px;
-    color: #7c3aed;
-}
-
-/* Button */
-.btn-posttest {
-    background: #7c3aed;
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all .2s ease;
-    white-space: nowrap;
-}
-
-/* Hover button */
-.btn-posttest:hover {
-    background: #6d28d9;
-    transform: translateY(-1px);
-    color: #fff;
-}
-
-/* Disabled state (kalau materi belum selesai) */
-.btn-posttest.disabled {
-    background: #d1d5db;
-    cursor: not-allowed;
-    pointer-events: none;
-    color: #6b7280;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .posttest-card {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .btn-posttest {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-/* post test end */
-</style>
+<link rel="stylesheet" href="<?= base_url('css/materi-modul.css') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -925,6 +39,22 @@ $hasIsi   = !empty($currentMateri['isi_materi']);
 $hasQuiz  = !empty($quizSoal);
 ?>
 
+<?php
+// ==============================
+// SET VAR GLOBAL (ANTI ERROR)
+// ==============================
+$embedId = null;
+
+if (!empty($materi_aktif['video_url_materi'])) {
+    preg_match(
+        '/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/',
+        $materi_aktif['video_url_materi'],
+        $matches
+    );
+    $embedId = $matches[1] ?? null;
+}
+?>
+
 <div class="materi-modul-container">
 
     <!-- ══ SIDEBAR ══ -->
@@ -943,7 +73,8 @@ $hasQuiz  = !empty($quizSoal);
                 elseif ($hasF)       { $tipeIcon = '<i class="bi bi-file-earmark-pdf-fill"></i>'; $tipeLabel = 'PDF'; }
                 else                 { $tipeIcon = '<i class="bi bi-file-text-fill"></i>';        $tipeLabel = 'Artikel'; }
             ?>
-            <li class="materi-list-item <?= $isActive ? 'active' : '' ?>" onclick="loadMateri(<?= $m['id_materi'] ?>)">
+            <li class="materi-list-item <?= $isActive ? 'active' : '' ?> <?= !$m['is_accessible'] ? 'disabled' : '' ?>"
+                <?= $m['is_accessible'] ? 'onclick="loadMateri(' . $m['id_materi'] . ')"' : '' ?>>
                 <div class="materi-list-number"><?= $index + 1 ?></div>
                 <div class="materi-list-info">
                     <div class="materi-list-title"><?= esc($m['judul_materi']) ?></div>
@@ -1019,8 +150,12 @@ $hasQuiz  = !empty($quizSoal);
                         <h4>Pre Test Modul</h4>
                         <p>Kerjakan pre test untuk mengetahui pemahaman awal kamu sebelum memulai materi.</p>
                     </div>
-                    <a href="<?= base_url('dashboard/peserta/pretest/' . $currentMateri['id_materi']) ?>?redirect=<?= current_url() ?>"
-                        class="btn-pretest">
+                    <a href="<?= base_url('dashboard/peserta/pretest/' . $currentMateri['id_materi']) .
+                        '?redirect=' . urlencode(
+                            base_url('dashboard/peserta/materi-modul/' . $modul['id_modul']) .
+                            '?materi=' . $currentMateri['id_materi']
+                        )
+                    ?>" class="btn-pretest">
                         <i class="bi bi-play-fill"></i> Mulai Pre Test
                     </a>
                 </div>
@@ -1048,7 +183,9 @@ $hasQuiz  = !empty($quizSoal);
                     $embedId = $matches[1] ?? null;
                     ?>
                     <?php if ($embedId): ?>
-                    <iframe src="https://www.youtube.com/embed/<?= esc($embedId) ?>" allowfullscreen></iframe>
+                    <div class="mb-4">
+                        <div id="player"></div>
+                    </div>
                     <?php else: ?>
                     <iframe src="<?= esc($currentMateri['video_url_materi']) ?>" allowfullscreen></iframe>
                     <?php endif; ?>
@@ -1058,39 +195,73 @@ $hasQuiz  = !empty($quizSoal);
             </div>
             <?php endif; ?>
 
-            <!-- 2. FILE PDF (hanya tombol Lihat, tanpa Download) -->
+            <!-- 2. FILE PDF - MODAL FULLSCREEN -->
             <?php if ($hasFile): ?>
             <div class="content-section">
-
                 <?php if (!$has_pretest): ?>
-                <!-- 🔒 PDF TERKUNCI -->
-                <div class="file-preview locked" style="opacity:.6;">
-                    <div class="file-icon">
-                        <i class="bi bi-lock-fill"></i>
+                <!-- 🔒 FILE TERKUNCI - BELUM PRETEST -->
+                <div class="file-preview locked">
+                    <div class="file-icon locked">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        <div class="lock-overlay">
+                            <i class="bi bi-lock-fill"></i>
+                        </div>
                     </div>
                     <div class="file-info">
-                        <h4>File PDF Terkunci</h4>
-                        <p>Selesaikan Pre Test untuk membuka materi PDF</p>
+                        <h4><?= esc($currentMateri['judul_materi']) ?></h4>
+                        <p>Materi PDF terkunci. Selesaikan Pre Test terlebih dahulu untuk membuka materi.</p>
                     </div>
                     <span class="btn-view-pdf disabled">Terkunci</span>
                 </div>
-
                 <?php else: ?>
-                <!-- 📄 PDF AKTIF -->
+                <!-- ✅ FILE TERBUKA - SUDAH PRETEST -->
                 <div class="file-preview">
                     <div class="file-icon">
                         <i class="bi bi-file-earmark-pdf-fill"></i>
                     </div>
                     <div class="file-info">
                         <h4><?= esc($currentMateri['judul_materi']) ?></h4>
-                        <p>Klik tombol untuk membuka file PDF materi ini.</p>
+                        <p>Klik tombol di bawah untuk membaca materi PDF. Sistem akan otomatis membuka posttest setelah
+                            Anda selesai membaca.</p>
                     </div>
-                    <a href="<?= base_url(esc($currentMateri['file_materi'])) ?>" class="btn-view-pdf" target="_blank">
-                        <i class="bi bi-eye"></i> Lihat PDF
-                    </a>
+                    <button class="btn-view-pdf" onclick="openPDFModal()">Baca Materi</button>
                 </div>
                 <?php endif; ?>
 
+                <!-- MODAL PDF FULLSCREEN -->
+                <div id="pdfModal" class="pdf-modal" style="display:none;">
+                    <div class="pdf-modal-content">
+                        <!-- Header Modal -->
+                        <div class="pdf-modal-header">
+                            <h3><?= esc($currentMateri['judul_materi']) ?></h3>
+                            <div class="pdf-modal-progress">
+                                <div class="pdf-progress-bar">
+                                    <div id="pdfProgressFill" class="pdf-progress-fill" style="width:0%"></div>
+                                </div>
+                                <span id="pdfProgressText" class="pdf-progress-text">0%</span>
+                            </div>
+                            <button class="pdf-modal-close" onclick="closePDFModal()">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- PDF Container dengan Scroll -->
+                        <div id="pdfContainer" class="pdf-container">
+                            <div id="pdfViewer" style="overflow-y:auto;height:100%;padding:20px;">
+                                <p>Browser Anda tidak mendukung PDF.
+                                    <a href="<?= base_url($currentMateri['file_materi']) ?>" target="_blank">Download
+                                        PDF</a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Footer Modal -->
+                        <div class="pdf-modal-footer">
+                            <p id="pdfStatusText" class="pdf-status">Scrolling untuk membaca...</p>
+                            <button class="btn-secondary" onclick="closePDFModal()">Tutup</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <?php endif; ?>
 
@@ -1119,25 +290,40 @@ $hasQuiz  = !empty($quizSoal);
                     <i class="bi bi-patch-question-fill" style="color:#7c3aed;"></i> Post Test
                 </div>
 
-                <?php if ($has_posttest): ?>
-                <!-- ✅ SUDAH -->
-                <div class="posttest-card" style="background:#ecfdf5;border-color:#86efac;">
-                    <div class="posttest-icon" style="background:#10b981;">
-                        <i class="bi bi-check2-circle"></i>
-                    </div>
-                    <div class="posttest-info">
-                        <h4>Hasil Post Test</h4>
-                        <p>Kamu sudah mengerjakan post test</p>
-                        <strong style="font-size:18px;color:#065f46;">
+                <?php if ($has_posttest): 
+                    $posttestPassed = !empty($nilai_post['nilai']) && $nilai_post['nilai'] >= 70;
+                    $cardBg = $posttestPassed ? '#ecfdf5' : '#fee2e2';
+                    $borderColor = $posttestPassed ? '#86efac' : '#fca5a5';
+                    $iconBg = $posttestPassed ? '#10b981' : '#dc2626';
+                    $textColor = $posttestPassed ? '#065f46' : '#991b1b';
+                    $statusLabel = $posttestPassed ? 'Lulus Post Test' : 'Belum Lulus Post Test';
+                ?>
+                <div class="posttest-card"
+                    style="background:<?= $cardBg ?>;border-color:<?= $borderColor ?>;display:flex;align-items:center;justify-content:space-between;">
+                    <div class="posttest-info" style="max-width: calc(100% - 180px);">
+                        <h4><?= $statusLabel ?></h4>
+                        <p>Nilai terakhir post test kamu.</p>
+                        <strong style="font-size:18px;color:<?= $textColor ?>;">
                             Nilai: <?= esc($nilai_post['nilai']) ?>
                         </strong>
                     </div>
+                    <?php if (!$posttestPassed): ?>
+                    <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] . '?redirect=' . urlencode(current_url())) ?>"
+                        class="btn-posttest" style="margin-left:20px;background:#dc2626;border-color:#dc2626;">
+                        Mulai ulang Post Test
+                    </a>
+                    <?php else: ?>
+                    <span
+                        style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;background:#d1fae5;color:#065f46;font-weight:700;">
+                        <i class="bi bi-check-circle-fill"></i> Lulus
+                    </span>
+                    <?php endif; ?>
                 </div>
 
                 <?php else: ?>
 
                 <?php if (!$has_pretest): ?>
-                <!-- ❌ BELUM PRETEST -->
+                <!-- BELUM PRE TEST -->
                 <div class="posttest-card" style="opacity:.6;">
                     <div class="posttest-icon">
                         <i class="bi bi-lock-fill"></i>
@@ -1149,22 +335,22 @@ $hasQuiz  = !empty($quizSoal);
                     <span class="btn-posttest disabled">Terkunci</span>
                 </div>
 
-                <?php elseif (!$all_completed): ?>
-                <!-- ❌ MATERI BELUM SELESAI -->
-                <div class="posttest-card" style="opacity:.6;">
+                <?php elseif (!$materi_selesai): ?>
+                <!-- MATERI BELUM SELESAI -->
+                <div class="posttest-card" style="opacity:.6;" id="posttestLocked">
                     <div class="posttest-icon">
                         <i class="bi bi-lock-fill"></i>
                     </div>
                     <div class="posttest-info">
                         <h4>Post Test Terkunci</h4>
-                        <p>Selesaikan semua materi terlebih dahulu</p>
+                        <p>Tonton video / scroll PDF sampai selesai</p>
                     </div>
                     <span class="btn-posttest disabled">Terkunci</span>
                 </div>
 
                 <?php else: ?>
-                <!-- ✅ BOLEH POST TEST -->
-                <div class="posttest-card">
+                <!-- BOLEH POST TEST -->
+                <div class="posttest-card" id="posttestUnlocked">
                     <div class="posttest-icon">
                         <i class="bi bi-patch-question-fill"></i>
                     </div>
@@ -1172,7 +358,7 @@ $hasQuiz  = !empty($quizSoal);
                         <h4>Post Test Modul</h4>
                         <p>Kerjakan test setelah menyelesaikan semua materi.</p>
                     </div>
-                    <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi']) ?>?redirect=<?= current_url() ?>"
+                    <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] . '?redirect=' . urlencode(current_url())) ?>"
                         class="btn-posttest">
                         Mulai Post Test
                     </a>
@@ -1197,10 +383,14 @@ $hasQuiz  = !empty($quizSoal);
                     <i class="bi bi-grid"></i> Daftar Modul
                 </a>
 
-                <?php if ($nextMateri): ?>
+                <?php if ($nextMateri && $nextMateri['is_accessible']): ?>
                 <button onclick="loadMateri(<?= $nextMateri['id_materi'] ?>)" class="nav-btn next">
                     Selanjutnya <i class="bi bi-arrow-right"></i>
                 </button>
+                <?php elseif ($nextMateri): ?>
+                <span class="nav-btn next disabled" title="Selesaikan materi sebelumnya dengan posttest >=70">
+                    Belum Bisa <i class="bi bi-lock"></i>
+                </span>
                 <?php else: ?>
                 <span class="nav-btn next disabled">Selanjutnya <i class="bi bi-arrow-right"></i></span>
                 <?php endif; ?>
@@ -1219,6 +409,21 @@ $hasQuiz  = !empty($quizSoal);
 
 </div>
 
+<script>
+const pdfUrl = <?= !empty($currentMateri['file_materi'])
+    ? '"' . base_url($currentMateri['file_materi']) . '"'
+    : 'null'
+?>;
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
+<script>
+const MATERI_SELESAI = <?= $materi_selesai ? 'true' : 'false' ?>;
+</script>
 <script>
 /* ── Data dari PHP ── */
 const SOAL_DATA = <?= json_encode($quizSoal, JSON_UNESCAPED_UNICODE) ?>;
@@ -1299,7 +504,8 @@ async function kumpulkanQuiz() {
     const resultBox = document.getElementById('quizResult');
     const lulus = nilai >= 70;
     document.getElementById('nilaiAngka').textContent = nilai;
-    document.getElementById('nilaiKeterangan').textContent = lulus ? '🎉 Selamat! Kamu Lulus' : '😔 Belum Lulus';
+    document.getElementById('nilaiKeterangan').textContent = lulus ? '🎉 Selamat! Kamu Lulus' :
+        '😔 Belum Lulus';
     document.getElementById('nilaiDetail').textContent = `${benar} benar dari ${TOTAL_SOAL} soal`;
     resultBox.className = 'quiz-result-box ' + (lulus ? 'lulus' : 'tidak-lulus');
     resultBox.style.display = 'block';
@@ -1374,4 +580,337 @@ function ulangiQuiz() {
 }
 </script>
 
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+/* ===============================
+   YOUTUBE PLAYER
+================================ */
+
+let player;
+
+function onYouTubeIframeAPIReady() {
+    <?php if ($hasVideo && $embedId): ?>
+    player = new YT.Player('player', {
+        height: '390',
+        width: '640',
+        videoId: '<?= $embedId ?>',
+        events: {
+            'onStateChange': onPlayerStateChange
+        }
+    });
+    <?php endif; ?>
+}
+
+function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.ENDED) {
+        kirimProgressMateri();
+    }
+}
+
+// ===============================
+
+window.materiTerkirim = window.materiTerkirim ?? false;
+window.pdfSelesai = window.pdfSelesai ?? false;
+
+function openPDFModal() {
+    // Cek apakah sudah pretest
+    <?php if (!$has_pretest): ?>
+    alert('Anda harus menyelesaikan Pre Test terlebih dahulu untuk membuka materi PDF.');
+    return;
+    <?php endif; ?>
+
+    const modal = document.getElementById('pdfModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        // Setup scroll detection untuk container
+        if (!MATERI_SELESAI) {
+            setupPDFScrollDetection();
+        } else {
+            hidePDFProgressUI();
+        }
+    }
+}
+
+function setupPDFScrollDetection() {
+    const viewer = document.getElementById('pdfViewer');
+    if (!viewer) return;
+
+    highestPageSeen = 0;
+
+    function onScroll() {
+        detectPageProgress();
+    }
+
+    viewer.addEventListener('scroll', onScroll);
+
+    // simpan cleanup supaya bisa dilepas saat modal ditutup
+    window.pdfScrollCleanup = () => {
+        viewer.removeEventListener('scroll', onScroll);
+    };
+}
+
+function closePDFModal() {
+    const modal = document.getElementById('pdfModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+
+        if (window.pdfScrollCleanup) {
+            window.pdfScrollCleanup();
+            window.pdfScrollCleanup = null;
+        }
+    }
+}
+
+function hidePDFProgressUI() {
+    const progressWrap = document.querySelector('.pdf-modal-progress');
+    const statusText = document.getElementById('pdfStatusText');
+
+    if (progressWrap) progressWrap.style.display = 'none';
+    if (statusText) {
+        statusText.textContent = 'Materi telah selesai. Anda dapat membaca kembali.';
+    }
+}
+
+
+
+
+let pdfDoc = null;
+let totalPages = 0;
+let highestPageSeen = 0;
+let renderedPages = new Set();
+
+if (pdfUrl) {
+    pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+        pdfDoc = pdf;
+        totalPages = pdf.numPages;
+        renderAllPages();
+    }).catch(err => {
+        console.error('Gagal memuat PDF:', err);
+    });
+}
+
+function renderAllPages() {
+    const viewer = document.getElementById('pdfViewer');
+    viewer.innerHTML = '';
+
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        renderPage(pageNum, viewer);
+    }
+    viewer.addEventListener('scroll', detectPageProgress);
+}
+
+function renderPage(pageNum, container) {
+    pdfDoc.getPage(pageNum).then(page => {
+        const viewport = page.getViewport({
+            scale: 1.2
+        });
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        canvas.dataset.page = pageNum;
+        canvas.style.display = 'block';
+        canvas.style.margin = '0 auto 20px';
+
+        container.appendChild(canvas);
+
+        page.render({
+            canvasContext: ctx,
+            viewport
+        });
+    });
+}
+
+function detectPageProgress() {
+    if (MATERI_SELESAI) return;
+
+    const viewer = document.getElementById('pdfViewer');
+    const canvases = viewer.querySelectorAll('canvas');
+
+    canvases.forEach(canvas => {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.8) {
+            const page = parseInt(canvas.dataset.page);
+            if (page > highestPageSeen) {
+                highestPageSeen = page;
+                updateProgress();
+            }
+        }
+    });
+
+    if (highestPageSeen === totalPages) {
+        selesaiBacaPDF();
+    }
+}
+
+function updateProgress() {
+    const percent = Math.round((highestPageSeen / totalPages) * 100);
+    updateProgressBar(percent);
+
+    document.getElementById('pdfStatusText').textContent =
+        `Halaman ${highestPageSeen} dari ${totalPages}`;
+}
+
+function kirimProgressMateri() {
+    if (window.materiTerkirim) {
+        //console.log('[DEBUG] Material sudah dikirim sebelumnya, skip');
+        return;
+    }
+
+    window.materiTerkirim = true;
+    //console.log('[DEBUG] ========== MENGIRIM PROGRESS ==========');
+
+    const idMateri = <?= (int)($materi_aktif['id_materi'] ?? 0) ?>;
+    const csrfName = '<?= csrf_token() ?>';
+    const csrfHash = '<?= csrf_hash() ?>';
+    const baseUrl = '<?= base_url() ?>';
+
+    // console.log('[DEBUG] ID Materi:', idMateri);
+    // console.log('[DEBUG] CSRF Name:', csrfName);
+    // console.log('[DEBUG] CSRF Hash:', csrfHash);
+    // console.log('[DEBUG] Base URL:', baseUrl);
+    // console.log('[DEBUG] Full Fetch URL:', baseUrl + 'dashboard/peserta/materi/selesai');
+
+    const fd = new FormData();
+    fd.append(csrfName, csrfHash);
+    fd.append('id_materi', idMateri);
+
+    fetch(baseUrl + 'dashboard/peserta/materi/selesai', {
+            method: 'POST',
+            body: fd,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => {
+            //console.log('[DEBUG] Response status:', res.status);
+            return res.json();
+        })
+        .then(res => {
+            // console.log('[DEBUG] Response JSON:', res);
+            if (res.success) {
+                // console.log('[SUCCESS] Progress berhasil disimpan!');
+
+                // Tampilkan notifikasi visual
+                showSuccessNotification();
+
+
+                // 🔁 tunggu 1 detik lalu reload halaman
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+
+
+
+                // console.log('[DEBUG] Posttest unlocked. User dapat melanjutkan membaca materi.');
+
+            } else {
+                // console.error('[ERROR] Server returned success=false');
+                // console.error('[ERROR] Error message:', res.error);
+                // console.error('[ERROR] Full response:', res);
+                window.materiTerkirim = false;
+
+                // Tampilkan error notification
+                showErrorNotification(res.error || 'Gagal menyimpan progress');
+            }
+        })
+        .catch(err => {
+            // console.error('[ERROR] Fetch error:', err);
+            window.materiTerkirim = false;
+        });
+}
+
+function showSuccessNotification() {
+    const notification = document.createElement('div');
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+        ">
+            <strong>✓ Sukses!</strong> Materi sudah ditandai selesai. Posttest sekarang tersedia.
+        </div>
+        `;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.remove(), 3000);
+}
+
+function showErrorNotification(message) {
+    const notification = document.createElement('div');
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+        ">
+            <strong>✗ Error!</strong> ${message}
+        </div>
+        `;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.remove(), 5000);
+}
+
+function updateProgressBar(percent) {
+    const progressFill = document.getElementById('pdfProgressFill');
+    const progressText = document.getElementById('pdfProgressText');
+
+    if (progressFill) {
+        progressFill.style.width = percent + '%';
+    }
+    if (progressText) {
+        progressText.textContent = Math.round(percent) + '%';
+    }
+}
+
+function unlockPosttest() {
+    // console.log('[DEBUG] Menjalankan unlockPosttest()');
+    const lockedCard = document.getElementById('posttestLocked');
+    const unlockedCard = document.getElementById('posttestUnlocked');
+
+    //console.log('[DEBUG] lockedCard:', lockedCard);
+    //console.log('[DEBUG] unlockedCard:', unlockedCard);
+
+    if (lockedCard) {
+        //console.log('[DEBUG] Menyembunyikan locked card...');
+        lockedCard.style.opacity = '0';
+        lockedCard.style.pointerEvents = 'none';
+        lockedCard.style.height = '0';
+        lockedCard.style.overflow = 'hidden';
+    }
+
+    if (unlockedCard) {
+        //console.log('[DEBUG] Menampilkan unlocked card...');
+        unlockedCard.style.display = 'block';
+        unlockedCard.style.opacity = '1';
+        unlockedCard.style.height = 'auto';
+        unlockedCard.style.animation = 'slideIn 0.3s ease-out';
+    }
+}
+
+function selesaiBacaPDF() {
+    if (window.pdfSelesai) return;
+    window.pdfSelesai = true;
+    kirimProgressMateri();
+}
+</script>
 <?= $this->endSection() ?>

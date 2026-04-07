@@ -8,6 +8,21 @@
         Post Test: <?= esc($materi['judul_materi']) ?>
     </h2>
 
+    <?php if (session()->getFlashdata('retry_posttest')): ?>
+        <div style="margin-bottom:20px;padding:20px;background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;">
+            <p style="margin:0 0 12px;color:#b91c1c;font-weight:700;">Nilai kurang dari 70. Silakan ulang post test dengan menekan tombol di bawah.</p>
+            <a href="<?= base_url('dashboard/peserta/posttest/' . $materi['id_materi']) ?>" style="
+                display:inline-block;
+                background:#ef4444;
+                color:#fff;
+                padding:12px 20px;
+                border-radius:10px;
+                text-decoration:none;
+                font-weight:700;
+            ">Mulai ulang Post Test</a>
+        </div>
+    <?php endif; ?>
+
     <form method="post" action="<?= base_url('dashboard/peserta/posttest/submit') ?>">
         <input type="hidden" name="id_materi" value="<?= $materi['id_materi'] ?>">
 

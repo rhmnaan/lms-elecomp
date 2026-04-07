@@ -57,28 +57,29 @@ class ModulModel extends Model
     }
     
     /**
-     * Get modul with progress for a user (tanpa materi_progress)
+     * Get modul with progress for a user (berdasarkan materi yang sudah diselesaikan)
      */
     public function getWithProgress($id_kelas, $id_users)
     {
         $moduls = $this->getWithCounts($id_kelas);
         $db = \Config\Database::connect();
-        
+
         foreach ($moduls as &$modul) {
-            // Hitung quiz yang sudah dikerjakan
-            $quiz_done = $db->table('quiz_results qr')
-                ->join('quiz q', 'q.id_quiz = qr.id_quiz')
-                ->where('qr.id_users', $id_users)
-                ->where('q.id_modul', $modul['id_modul'])
-                ->where('qr.deleted_at', null)
+            // Hitung materi yang sudah diselesaikan dengan JOIN yang lebih efisien
+            $materi_completed = $db->table('user_materi_progress ump')
+                ->join('materi m', 'm.id_materi = ump.id_materi')
+                ->where('ump.id_users', $id_users)
+                ->where('m.id_modul', $modul['id_modul'])
+                ->where('m.deleted_at IS NULL')
+                ->where('ump.is_completed', 1)
                 ->countAllResults();
-            
-            $modul['quiz_dikerjakan'] = $quiz_done;
+
+            $modul['materi_selesai'] = $materi_completed;
             $modul['persen'] = $modul['total_materi'] > 0
-                ? min(100, round(($quiz_done / max($modul['total_materi'], 1)) * 100))
+                ? min(100, round(($materi_completed / $modul['total_materi']) * 100))
                 : 0;
         }
-        
+
         return $moduls;
     }
 

@@ -10,25 +10,23 @@
 
         <form method="post" action="<?= base_url('dashboard/peserta/pretest/submit') ?>">
             <input type="hidden" name="id_materi" value="<?= $materi['id_materi'] ?>">
+            <input type="hidden" name="redirect" value="<?= esc($redirect) ?>">
 
             <?php foreach ($soal as $i => $s): ?>
-                <div style="margin-bottom:24px;padding:20px;background:#fff;border-radius:12px;border:1px solid #eee;">
-                    
-                    <div style="font-weight:700;margin-bottom:10px;">
-                        <?= ($i+1) ?>. <?= esc($s['pertanyaan']) ?>
-                    </div>
+            <div style="margin-bottom:24px;padding:20px;background:#fff;border-radius:12px;border:1px solid #eee;">
 
-                    <?php foreach ($s['pilihan'] as $pi => $p): ?>
-                        <label style="display:block;margin-bottom:6px;cursor:pointer;">
-                            <input type="radio"
-                                name="jawaban[<?= $i ?>]"
-                                value="<?= $pi ?>"
-                                required>
-                            <?= esc($p) ?>
-                        </label>
-                    <?php endforeach; ?>
-
+                <div style="font-weight:700;margin-bottom:10px;">
+                    <?= ($i+1) ?>. <?= esc($s['pertanyaan']) ?>
                 </div>
+
+                <?php foreach ($s['pilihan'] as $pi => $p): ?>
+                <label style="display:block;margin-bottom:6px;cursor:pointer;">
+                    <input type="radio" name="jawaban[<?= $i ?>]" value="<?= $pi ?>" required>
+                    <?= esc($p) ?>
+                </label>
+                <?php endforeach; ?>
+
+            </div>
             <?php endforeach; ?>
 
             <button type="submit" style="
@@ -46,5 +44,30 @@
         </form>
 
     </div>
+
+    <script>
+document.getElementById('formPretest').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const form = this;
+    const formData = new FormData(form);
+
+    fetch("<?= base_url('dashboard/peserta/pretest/submit') ?>", {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                window.location.href = res.redirect; // 🔥 BALIK KE MATERI
+            } else {
+                alert('Gagal menyimpan pretest');
+            }
+        });
+});
+    </script>
 
     <?= $this->endSection() ?>

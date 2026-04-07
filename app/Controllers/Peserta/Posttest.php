@@ -78,12 +78,29 @@ class Posttest extends BaseController
             'created_at'    => date('Y-m-d H:i:s')
         ]);
 
-        $redirectUrl = session()->get('redirect_url_posttest');
-
-        if ($redirectUrl) {
-            return redirect()->to($redirectUrl)->with('success', "Nilai Post Test: $nilai");
+        // Jika nilai >= 70, mark materi sebagai completed
+        if ($nilai >= 70) {
+            $progressModel = new \App\Models\UserMateriProgressModel();
+            $progressModel->markAsCompleted(session()->get('id_users'), $idMateri);
         }
 
-        return redirect()->to('dashboard/peserta/modul')->with('success', "Nilai Post Test: $nilai");
+        $redirectUrl = session()->get('redirect_url_posttest');
+        $fallbackRedirect = base_url('dashboard/peserta/materi-modul/' . ($materi['id_modul'] ?? '') . '?materi=' . $idMateri);
+
+        if ($nilai >= 70) {
+            $message = "Selamat! Nilai Post Test: $nilai. Materi selesai.";
+        } else {
+            $message = "Nilai Post Test: $nilai. Kurang dari 70, silakan ulang post test.";
+            return redirect()
+                ->to($redirectUrl ?: $fallbackRedirect)
+                ->with('error', $message)
+                ->with('posttest_failed', true);
+        }
+
+        if ($redirectUrl) {
+            return redirect()->to($redirectUrl)->with('success', $message);
+        }
+
+        return redirect()->to($fallbackRedirect)->with('success', $message);
     }
 }

@@ -17,6 +17,7 @@ class DashboardPeserta extends BaseController
     protected ModulModel $modulModel;
     protected MateriModel $materiModel;
     protected QuizResultsModel $quizResultModel;
+    protected $userMateriProgressModel;
 
     public function __construct()
     {
@@ -24,6 +25,7 @@ class DashboardPeserta extends BaseController
         $this->modulModel = new ModulModel();
         $this->materiModel = new MateriModel();
         $this->quizResultModel = new QuizResultsModel();
+        $this->userMateriProgressModel = new UserMateriProgressModel();
     }
 
     public function initController(
@@ -57,6 +59,42 @@ class DashboardPeserta extends BaseController
         $k['modul_selesai'] = 0;
     }
     unset($k);
+
+    // Hitung modul yang sudah selesai untuk setiap kelas
+    if (!empty($id_kelas_list)) {
+        foreach ($kelas_list as &$k) {
+            // Ambil semua modul di kelas ini
+            $moduls_in_kelas = $db->table('modul')
+                ->where('id_kelas', $k['id_kelas'])
+                ->where('deleted_at IS NULL')
+                ->get()->getResultArray();
+
+            foreach ($moduls_in_kelas as $modul) {
+                // Hitung total materi di modul ini
+                $total_materi_modul = $db->table('materi')
+                    ->where('id_modul', $modul['id_modul'])
+                    ->where('deleted_at IS NULL')
+                    ->countAllResults();
+
+                if ($total_materi_modul > 0) {
+                    // Hitung materi yang sudah diselesaikan user
+                    $materi_selesai = $db->table('user_materi_progress ump')
+                        ->join('materi m', 'm.id_materi = ump.id_materi')
+                        ->where('ump.id_users', $this->idUsers)
+                        ->where('m.id_modul', $modul['id_modul'])
+                        ->where('m.deleted_at IS NULL')
+                        ->where('ump.is_completed', 1)
+                        ->countAllResults();
+
+                    // Jika semua materi di modul sudah selesai, hitung sebagai modul selesai
+                    if ($materi_selesai >= $total_materi_modul) {
+                        $k['modul_selesai']++;
+                    }
+                }
+            }
+        }
+        unset($k);
+    }
 
     $id_kelas_list = array_column($kelas_list, 'id_kelas');
     $total_kelas   = count($kelas_list);
@@ -204,6 +242,55 @@ class DashboardPeserta extends BaseController
     ]);
 }
 
+    public function kelas()
+    {
+        $db = \Config\Database::connect();
+
+        $kelas_list = $db->table('kelas_peserta kp')
+            ->select('k.id_kelas, k.nama_kelas, k.deskripsi_kelas,
+                      u.nama_users AS nama_pengajar,
+                      COUNT(DISTINCT m.id_modul) AS total_modul,
+                      COUNT(DISTINCT ma.id_materi) AS total_materi')
+            ->join('kelas k', 'k.id_kelas = kp.id_kelas')
+            ->join('users u', 'u.id_users = k.id_users', 'left')
+            ->join('modul m', 'm.id_kelas = k.id_kelas AND m.deleted_at IS NULL', 'left')
+            ->join('materi ma', 'ma.id_modul = m.id_modul AND ma.deleted_at IS NULL', 'left')
+            ->where('kp.id_users', $this->idUsers)
+            ->where('kp.deleted_at IS NULL')
+            ->where('k.deleted_at IS NULL')
+            ->groupBy('k.id_kelas')
+            ->get()->getResultArray();
+
+        // Calculate progress for each kelas
+        foreach ($kelas_list as &$k) {
+            $id_kelas = $k['id_kelas'];
+            
+            // Total materi in kelas
+            $total_materi = $db->table('materi ma')
+                ->join('modul m', 'm.id_modul = ma.id_modul')
+                ->where('m.id_kelas', $id_kelas)
+                ->where('ma.deleted_at IS NULL')
+                ->where('m.deleted_at IS NULL')
+                ->countAllResults();
+            
+            // Completed materi by user
+            $completed_materi = $db->table('user_materi_progress ump')
+                ->join('materi ma', 'ma.id_materi = ump.id_materi')
+                ->join('modul m', 'm.id_modul = ma.id_modul')
+                ->where('m.id_kelas', $id_kelas)
+                ->where('ump.id_users', $this->idUsers)
+                ->where('ump.is_completed', 1)
+                ->countAllResults();
+            
+            $k['persen'] = $total_materi > 0 ? round(($completed_materi / $total_materi) * 100) : 0;
+        }
+
+        return view('Dashboard/Peserta/kelas', [
+            'kelas_list' => $kelas_list,
+            'total_kelas' => count($kelas_list),
+        ]);
+    }
+
     public function modul()
     {
         $focusKelas = $this->request->getGet('kelas');
@@ -263,6 +350,26 @@ class DashboardPeserta extends BaseController
 
         $materi_list = $this->materiModel->getWithTipe($id_modul);
 
+        $db = \Config\Database::connect();
+
+        // Tambahkan logika aksesibilitas materi
+        foreach ($materi_list as $index => &$materi) {
+            if ($index == 0) {
+                // Materi pertama selalu bisa diakses
+                $materi['is_accessible'] = true;
+            } else {
+                // Cek apakah materi sebelumnya sudah diselesaikan dengan posttest >=70
+                $prevMateri = $materi_list[$index - 1];
+                $prevPosttest = $db->table('materi_quiz_results')
+                    ->where('id_materi', $prevMateri['id_materi'])
+                    ->where('id_users', $this->idUsers)
+                    ->where('jenis_test', 'post')
+                    ->where('nilai >=', 70)
+                    ->countAllResults();
+                $materi['is_accessible'] = $prevPosttest > 0;
+            }
+        }
+
         $materiAktif = null;
         $materiId = $this->request->getGet('materi');
 
@@ -279,37 +386,17 @@ class DashboardPeserta extends BaseController
             $materiAktif = $materi_list[0];
         }
 
-        $materi_locked = false;
-
-        if ($materiAktif) {
-            // Jika BELUM ada pretest → kunci materi
-            if (empty($pretestResult)) {
-                $materi_locked = true;
-            }
-        }
-
-
         $progressModel = new UserMateriProgressModel();
 
         // ===== CEK PROGRESS SEMUA MATERI =====
 
         // ambil semua id materi dalam modul
         $materiIds = array_column($materi_list, 'id_materi');
-
-        // ambil semua materi dalam modul
-        $materi_list = $this->materiModel->getWithTipe($id_modul);
-        $materiIds = array_column($materi_list, 'id_materi');
-
-        $allCompleted = $progressModel->isAllCompleted($this->idUsers, $materiIds);
-
-        if ($materiAktif) {
-            $progressModel->markAsCompleted($this->idUsers, $materiAktif['id_materi']);
-        }
-
-        $db = \Config\Database::connect();
+        
 
         $pretestResult = null;
         $posttestResult = null;
+        $materiSelesai = false;
 
         if ($materiAktif) {
             $pretestResult = $db->table('materi_quiz_results')
@@ -319,6 +406,12 @@ class DashboardPeserta extends BaseController
                 ->orderBy('created_at', 'DESC')
                 ->get()
                 ->getRowArray();
+                
+            // Check apakah materi sudah selesai dibaca
+            $materiSelesai = $progressModel->isCompleted(
+                $this->idUsers,
+                $materiAktif['id_materi']
+            );
 
             $posttestResult = $db->table('materi_quiz_results')
                 ->where('id_materi', $materiAktif['id_materi'])
@@ -340,10 +433,70 @@ class DashboardPeserta extends BaseController
             'nilai_pre'    => $pretestResult,
             'has_posttest' => !empty($posttestResult),
             'nilai_post'   => $posttestResult,
-            'all_completed' => $allCompleted,
-
-            'materi_locked' => $materi_locked,
+            'materi_selesai' => !empty($materiSelesai),
         ]);
+    }
+
+    public function selesaiMateri()
+    {
+        // Debug logging
+        log_message('debug', '[selesaiMateri] START');
+        log_message('debug', '[selesaiMateri] Is AJAX: ' . ($this->request->isAJAX() ? 'true' : 'false'));
+        log_message('debug', '[selesaiMateri] Session ID User: ' . (isset($this->idUsers) ? $this->idUsers : 'NOT SET'));
+        
+        // Check AJAX
+        if (!$this->request->isAJAX()) {
+            log_message('debug', '[selesaiMateri] Not AJAX request');
+            return $this->response->setJSON(['success' => false, 'error' => 'Not AJAX request']);
+        }
+
+        // Check user session
+        if (empty($this->idUsers)) {
+            log_message('error', '[selesaiMateri] User not authenticated');
+            return $this->response->setJSON(['success' => false, 'error' => 'User not authenticated']);
+        }
+
+        // Get ID Materi
+        $idMateri = (int) $this->request->getPost('id_materi');
+        
+        log_message('debug', '[selesaiMateri] ID Materi received: ' . $idMateri);
+
+        if ($idMateri <= 0) {
+            log_message('error', '[selesaiMateri] Invalid ID materi: ' . $idMateri);
+            return $this->response->setJSON(['success' => false, 'error' => 'Invalid ID materi']);
+        }
+
+        try {
+            $progressModel = new UserMateriProgressModel();
+            
+            // Insert/Update progress
+            $result = $progressModel->markAsCompleted(
+                $this->idUsers,
+                $idMateri
+            );
+
+            log_message('debug', '[selesaiMateri] Insert result: ' . ($result ? 'true' : 'false'));
+
+            // Verify insert
+            $check = $progressModel->isCompleted($this->idUsers, $idMateri);
+            log_message('debug', '[selesaiMateri] Verify check result: ' . ($check ? 'true' : 'false'));
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Materi berhasil ditandai selesai',
+                'id_materi' => $idMateri,
+                'id_user' => $this->idUsers,
+                'verified' => $check ? true : false
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', '[selesaiMateri] Exception: ' . $e->getMessage());
+            log_message('error', '[selesaiMateri] Stack trace: ' . $e->getTraceAsString());
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Exception: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function materi($id_materi = null)
@@ -387,6 +540,9 @@ class DashboardPeserta extends BaseController
             ->getRowArray();
         // ------------------------------------------
 
+        $materiSelesai = $this->userMateriProgressModel
+        ->isCompleted($this->idUsers, $materi['id_materi']);
+
         // Tentukan tipe materi
         if ($materi['video_url_materi']) {
             $materi['tipe'] = 'video';
@@ -408,6 +564,7 @@ class DashboardPeserta extends BaseController
             'nilai_pre'    => $pretestResult,
             'has_posttest' => !empty($posttestResult),
             'nilai_post'   => $posttestResult,
+            'materi_selesai'  => !empty($materiSelesai),
         ]);
     }
 
@@ -511,6 +668,7 @@ class DashboardPeserta extends BaseController
         $jumlahBenar = (int) $this->request->getPost('jumlah_benar');
         $jumlahSalah = (int) $this->request->getPost('jumlah_salah');
         $jawaban     = $this->request->getPost('jawaban_peserta'); // string JSON
+        $redirect    = $this->request->getPost('redirect'); // 🔥 TAMBAHAN
 
         if (!$idMateri || !in_array($jenisTest, ['pre', 'post'])) {
             return $this->response->setJSON(['success' => false, 'message' => 'Data tidak valid.']);
@@ -523,6 +681,7 @@ class DashboardPeserta extends BaseController
         return $this->response->setJSON([
             'success' => $result,
             'message' => $result ? 'Hasil berhasil disimpan.' : 'Gagal menyimpan.',
+            'redirect' => $redirect // 🔥 TAMBAHAN
         ]);
     }
 }

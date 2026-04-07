@@ -49,6 +49,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('quiz/submit/(:num)', 'DashboardPeserta::submitQuiz/$1');
         $routes->post('dashboard/peserta/quiz/simpan-materi', 'DashboardPeserta::simpanHasilQuizMateri');
 
+        $routes->post('materi/selesai', 'DashboardPeserta::selesaiMateri');
+
          // ✅ PRETEST
         $routes->get('pretest/(:num)', 'Peserta\Pretest::index/$1');
         $routes->post('pretest/submit', 'Peserta\Pretest::submit');

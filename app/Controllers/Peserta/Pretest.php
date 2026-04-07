@@ -20,13 +20,7 @@ class Pretest extends BaseController
     ========================= */
     public function index($id_materi)
     {
-        // 🔥 Ambil URL asal
         $redirect = $this->request->getGet('redirect');
-
-        // Simpan ke session
-        if ($redirect) {
-            session()->set('redirect_url_pretest', $redirect);
-        }
 
         $materi = $this->materiModel->find($id_materi);
 
@@ -43,8 +37,9 @@ class Pretest extends BaseController
         }
 
         return view('dashboard/peserta/pretest_view', [
-            'materi' => $materi,
-            'soal'   => $soal
+            'materi'   => $materi,
+            'soal'     => $soal,
+            'redirect' => $redirect // 🔥 KIRIM KE VIEW
         ]);
     }
 
@@ -86,11 +81,15 @@ class Pretest extends BaseController
             'created_at'    => date('Y-m-d H:i:s')
         ]);
 
-        $redirectUrl = session()->get('redirect_url_pretest');
+        $redirectUrl = $request->getPost('redirect');
 
         if ($redirectUrl) {
-            return redirect()->to($redirectUrl)->with('success', "Nilai kamu: $nilai");
+            return redirect()->to($redirectUrl)
+                ->with('success', "Nilai kamu: $nilai");
         }
+
+        return redirect()->to('dashboard/peserta/modul')
+            ->with('success', "Nilai kamu: $nilai");
 
         // fallback kalau gak ada
         return redirect()->to('dashboard/peserta/modul')->with('success', "Nilai kamu: $nilai");
