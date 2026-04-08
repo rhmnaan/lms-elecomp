@@ -186,6 +186,16 @@ if (!empty($materi_aktif['video_url_materi'])) {
                     <div class="mb-4">
                         <div id="player"></div>
                     </div>
+                    <?php elseif (preg_match('/\.(mp4|webm|ogg)(?:$|\?)/i', $currentMateri['video_url_materi'])):
+                        $videoExt = strtolower(pathinfo(parse_url($currentMateri['video_url_materi'], PHP_URL_PATH), PATHINFO_EXTENSION));
+                        $videoType = in_array($videoExt, ['webm', 'ogg']) ? 'video/' . $videoExt : 'video/mp4';
+                    ?>
+                    <div class="mb-4">
+                        <video id="html5Video" controls preload="metadata" style="width:100%;max-width:100%;">
+                            <source src="<?= esc($currentMateri['video_url_materi']) ?>" type="<?= esc($videoType) ?>">
+                            Browser Anda tidak mendukung pemutar video.
+                        </video>
+                    </div>
                     <?php else: ?>
                     <iframe src="<?= esc($currentMateri['video_url_materi']) ?>" allowfullscreen></iframe>
                     <?php endif; ?>
@@ -343,9 +353,33 @@ if (!empty($materi_aktif['video_url_materi'])) {
                     </div>
                     <div class="posttest-info">
                         <h4>Post Test Terkunci</h4>
-                        <p>Tonton video / scroll PDF sampai selesai</p>
+                        <p id="lockStatusMessage">
+                            <?php if ($hasVideo && $hasFile): ?>
+                                Video dan file materi harus diselesaikan terlebih dahulu
+                            <?php elseif ($hasVideo): ?>
+                                Tonton video materi sampai selesai
+                            <?php elseif ($hasFile): ?>
+                                Baca materi sampai selesai
+                            <?php else: ?>
+                                Selesaikan materi terlebih dahulu
+                            <?php endif; ?>
+                        </p>
                     </div>
                     <span class="btn-posttest disabled">Terkunci</span>
+                </div>
+
+                <div class="posttest-card" id="posttestUnlocked" style="display:none;opacity:0;pointer-events:none;transition:opacity .25s ease;">
+                    <div class="posttest-icon">
+                        <i class="bi bi-patch-question-fill"></i>
+                    </div>
+                    <div class="posttest-info">
+                        <h4>Post Test Modul</h4>
+                        <p>Kerjakan test setelah menyelesaikan semua materi.</p>
+                    </div>
+                    <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] . '?redirect=' . urlencode(current_url())) ?>"
+                        class="btn-posttest">
+                        Mulai Post Test
+                    </a>
                 </div>
 
                 <?php else: ?>
@@ -603,14 +637,37 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.ENDED) {
+        window.videoSelesai = true;
         kirimProgressMateri();
     }
 }
 
+function setupHTML5Video() {
+    const video = document.getElementById('html5Video');
+    if (!video) return;
+
+    video.addEventListener('ended', () => {
+        window.videoSelesai = true;
+        kirimProgressMateri();
+    });
+}
+
+if (document.readyState !== 'loading') {
+    setupHTML5Video();
+} else {
+    window.addEventListener('DOMContentLoaded', setupHTML5Video);
+}
+
+// ===============================
+// TRACK COMPLETION STATUS
 // ===============================
 
-window.materiTerkirim = window.materiTerkirim ?? false;
-window.pdfSelesai = window.pdfSelesai ?? false;
+const MATERI_PUNYA_VIDEO = <?= $hasVideo ? 'true' : 'false' ?>;
+const MATERI_PUNYA_FILE = <?= $hasFile ? 'true' : 'false' ?>;
+
+window.videoSelesai = false;
+window.pdfSelesai = false;
+window.progressTerkirim = false;
 
 function openPDFModal() {
     // Cek apakah sudah pretest
@@ -755,13 +812,34 @@ function updateProgress() {
         `Halaman ${highestPageSeen} dari ${totalPages}`;
 }
 
+function checkAllMateriCompleted() {
+    // Cek apakah semua materi yang ada sudah selesai
+    let allCompleted = true;
+    
+    if (MATERI_PUNYA_VIDEO && !window.videoSelesai) {
+        allCompleted = false;
+    }
+    
+    if (MATERI_PUNYA_FILE && !window.pdfSelesai) {
+        allCompleted = false;
+    }
+    
+    return allCompleted;
+}
+
 function kirimProgressMateri() {
-    if (window.materiTerkirim) {
-        //console.log('[DEBUG] Material sudah dikirim sebelumnya, skip');
+    // Cek apakah semua konten sudah diselesaikan
+    if (!checkAllMateriCompleted()) {
+        //console.log('[DEBUG] Tidak semua materi selesai. Video:', window.videoSelesai, 'PDF:', window.pdfSelesai);
+        return;
+    }
+    
+    if (window.progressTerkirim) {
+        //console.log('[DEBUG] Progress sudah dikirim sebelumnya, skip');
         return;
     }
 
-    window.materiTerkirim = true;
+    window.progressTerkirim = true;
     //console.log('[DEBUG] ========== MENGIRIM PROGRESS ==========');
 
     const idMateri = <?= (int)($materi_aktif['id_materi'] ?? 0) ?>;
@@ -797,7 +875,7 @@ function kirimProgressMateri() {
 
                 // Tampilkan notifikasi visual
                 showSuccessNotification();
-
+                unlockPosttest();
 
                 // 🔁 tunggu 1 detik lalu reload halaman
                 setTimeout(() => {
@@ -812,7 +890,7 @@ function kirimProgressMateri() {
                 // console.error('[ERROR] Server returned success=false');
                 // console.error('[ERROR] Error message:', res.error);
                 // console.error('[ERROR] Full response:', res);
-                window.materiTerkirim = false;
+                window.progressTerkirim = false;
 
                 // Tampilkan error notification
                 showErrorNotification(res.error || 'Gagal menyimpan progress');
@@ -820,7 +898,7 @@ function kirimProgressMateri() {
         })
         .catch(err => {
             // console.error('[ERROR] Fetch error:', err);
-            window.materiTerkirim = false;
+            window.progressTerkirim = false;
         });
 }
 
@@ -903,6 +981,7 @@ function unlockPosttest() {
         unlockedCard.style.display = 'block';
         unlockedCard.style.opacity = '1';
         unlockedCard.style.height = 'auto';
+        unlockedCard.style.pointerEvents = 'auto';
         unlockedCard.style.animation = 'slideIn 0.3s ease-out';
     }
 }
@@ -912,5 +991,37 @@ function selesaiBacaPDF() {
     window.pdfSelesai = true;
     kirimProgressMateri();
 }
+
+function checkProgressStatus() {
+    const status = {
+        videoRequired: MATERI_PUNYA_VIDEO,
+        videoCompleted: window.videoSelesai,
+        fileRequired: MATERI_PUNYA_FILE,
+        fileCompleted: window.pdfSelesai,
+        allCompleted: checkAllMateriCompleted()
+    };
+    
+    console.log('[Progress Status]', status);
+    
+    return status;
+}
+
+function updateLockStatusMessage() {
+    const msgEl = document.getElementById('lockStatusMessage');
+    if (!msgEl) return;
+    
+    if (MATERI_PUNYA_VIDEO && MATERI_PUNYA_FILE) {
+        const videoStatus = window.videoSelesai ? '✓ Video selesai' : '○ Tonton video sampai selesai';
+        const fileStatus = window.pdfSelesai ? '✓ PDF selesai' : '○ Scroll PDF sampai akhir';
+        msgEl.innerHTML = videoStatus + '<br>' + fileStatus;
+    }
+}
+
+// Monitor progress setiap 500ms
+setInterval(() => {
+    if (MATERI_PUNYA_VIDEO && MATERI_PUNYA_FILE) {
+        updateLockStatusMessage();
+    }
+}, 500);
 </script>
 <?= $this->endSection() ?>
