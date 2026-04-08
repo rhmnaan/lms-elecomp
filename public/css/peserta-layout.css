@@ -1046,3 +1046,101 @@ body {
     justify-content: center;
     font-weight: 600;
 }
+
+.hamburger-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    font-size: 26px;
+    color: #111;
+    cursor: pointer;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 998;
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    .hamburger-btn {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -260px;
+        height: 100vh;
+        z-index: 999;
+        transition: left .3s ease;
+        display: flex;
+    }
+
+    .sidebar.show {
+        left: 0;
+    }
+
+    .sidebar-overlay.show {
+        display: block;
+    }
+}
+
+/* ─────────────────────────────────────────
+   MOBILE TOPBAR FIX
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    .topbar {
+        padding: 12px 16px;
+        gap: 12px;
+    }
+
+    /* Hamburger */
+    .hamburger-btn {
+        font-size: 26px;
+        padding: 6px;
+        margin-right: 4px;
+        flex-shrink: 0;
+    }
+
+    /* Search jadi fleksibel */
+    .search-wrap {
+        flex: 1;
+        width: 100%;
+    }
+
+    .search-wrap input {
+        font-size: 13px;
+        padding: 9px 12px 9px 36px;
+        border-radius: 10px;
+    }
+
+    /* Right section diperkecil */
+    .topbar-right {
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    /* Notif lebih kecil */
+    .notif-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+    }
+
+    /* User info disederhanakan */
+    .user-meta {
+        display: none;
+    }
+
+    .avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 13px;
+    }
+}

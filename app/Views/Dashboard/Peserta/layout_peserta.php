@@ -40,9 +40,10 @@
     </div>
 
     <div class="wrapper">
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
         <!-- ── SIDEBAR ── -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
                 <div class="logo-mark">
                     <div class="logo-icon"><i class="fas fa-bolt"></i></div>
@@ -137,6 +138,10 @@
 
             <!-- TOPBAR -->
             <div class="topbar">
+                <!-- HAMBURGER (MOBILE ONLY) -->
+                <button class="hamburger-btn" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
                 <div class="search-wrap">
                     <i class="bi bi-search"></i>
                     <input type="text" placeholder="Cari materi, modul,...">
@@ -239,6 +244,18 @@
     });
 
     window.addEventListener('beforeunload', () => monitor.stop());
+    </script>
+
+    <script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('show');
+        document.querySelector('.sidebar-overlay').classList.toggle('show');
+    }
+
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('show');
+        document.querySelector('.sidebar-overlay').classList.remove('show');
+    }
     </script>
 
     <?= $this->renderSection('scripts'); ?>
