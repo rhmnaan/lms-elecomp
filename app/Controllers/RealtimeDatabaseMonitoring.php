@@ -85,13 +85,22 @@ class RealtimeDatabaseMonitoring extends BaseController
 
         if (!$user) return false;
 
-        $dbFP = $user['fingerprint_device'];
+        $dbFP   = $user['fingerprint_device'];
+        $action = $user['action'];
 
-        if ($dbFP !== null && $dbFP !== '' && $dbFP !== $fp) {
+        // Hanya trigger jika:
+        // 1. FP berbeda, DAN
+        // 2. action adalah 'switched' atau 'keep' atau 'other'
+        //    (bukan null — null artinya login normal, bukan hijack)
+        if (
+            $dbFP !== null && $dbFP !== '' &&
+            $dbFP !== $fp &&
+            $action !== null  // ← tambah ini
+        ) {
             $payload = json_encode([
                 'email_users'        => $user['email_users'],
                 'fingerprint_device' => $dbFP,
-                'action'             => $user['action'],
+                'action'             => $action,
             ]);
 
             echo "event: updated_attendances\ndata: {$payload}\n\n";
@@ -102,5 +111,33 @@ class RealtimeDatabaseMonitoring extends BaseController
         }
 
         return false;
+    }
+
+    // RealtimeDatabaseMonitoring.php
+    public function checkSession()
+    {
+        $fp    = $_COOKIE['device_fp'] ?? '';
+        $email = session()->get('email') ?? '';
+
+        if (!$fp || !$email) {
+            return $this->response->setJSON(['hijacked' => false]);
+        }
+
+        // Tutup session segera
+        session()->close();
+
+        $user = (new Users())
+            ->where('email_users', $email)
+            ->select('fingerprint_device')
+            ->first();
+
+        if (!$user) {
+            return $this->response->setJSON(['hijacked' => false]);
+        }
+
+        $hijacked = !empty($user['fingerprint_device'])
+            && $user['fingerprint_device'] !== $fp;
+
+        return $this->response->setJSON(['hijacked' => $hijacked]);
     }
 }

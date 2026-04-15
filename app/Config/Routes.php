@@ -18,6 +18,8 @@ $routes->post('register', 'Register::store');
 // Webhook / API ringan
 $routes->get('cekaction/(:segment)', 'Webhook::cekAction/$1');
 $routes->get('api/realtime/attendance-stream', 'RealtimeDatabaseMonitoring::attendanceStream');
+// Routes.php
+$routes->get('api/check-session', 'RealtimeDatabaseMonitoring::checkSession');
 $routes->post('cekfingerprint', 'Webhook::cekFingerprint');
 
 

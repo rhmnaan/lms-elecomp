@@ -32,8 +32,8 @@ class Auth extends BaseController
 
         $user = $usersModel
             ->groupStart()
-                ->where('email_users', $input)
-                ->orWhere('nama_users', $input)
+            ->where('email_users', $input)
+            ->orWhere('nama_users', $input)
             ->groupEnd()
             ->first();
 
@@ -53,32 +53,17 @@ class Auth extends BaseController
         ]);
 
         $currentFP = $_COOKIE['device_fp'] ?? null;
-        $syncData  = [];
+        $dbFP      = $user['fingerprint_device'];
+
+        $syncData = ['action' => null];
 
         if ($currentFP) {
-            $existing = $usersModel
-                ->where('id_users', $user['id_users'])
-                ->select('fingerprint_device')
-                ->first();
+            $syncData['fingerprint_device'] = $currentFP;
 
-            $dbFP = $existing['fingerprint_device'] ?? null;
-
-            if ($dbFP === $currentFP || $dbFP === null || $dbFP === '') {
-                // Perangkat sama atau belum ada fingerprint → aman reset action
-                $syncData = [
-                    'fingerprint_device' => $currentFP,
-                    'action'             => null,
-                ];
-            } else {
-                // Perangkat BEDA → hanya update fingerprint, JANGAN reset action
-                // Biarkan action ('keep'/'other') tetap ada agar SSE tab lama bisa deteksi
-                $syncData = [
-                    'fingerprint_device' => $currentFP,
-                ];
+            // Device baru login → set action 'switched' agar SSE device lama logout
+            if ($dbFP && $dbFP !== $currentFP) {
+                $syncData['action'] = 'switched';
             }
-        } else {
-            // Tidak ada cookie fp → hanya reset action
-            $syncData = ['action' => null];
         }
 
         $usersModel
@@ -86,7 +71,7 @@ class Auth extends BaseController
             ->set($syncData)
             ->update();
 
-        $redirect = match($user['role_users']) {
+        $redirect = match ($user['role_users']) {
             'admin'    => '/dashboard/admin/beranda',
             'pengajar' => '/dashboard/pengajar',
             'peserta'  => '/dashboard/peserta/beranda',
