@@ -30,103 +30,109 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'Dashboard::index');
     $routes->get('dashboard/siswa', 'Dashboard::siswa');
 
+    // ═══════════════════════════════════════════════════════
+    //  VIDEO ENKRIPSI — player & stream (semua user login)
+    // ═══════════════════════════════════════════════════════
+    $routes->get('video/player',                        'VideoStream::player');
+    $routes->get('api/videos/stream/(:segment)',        'VideoStream::stream/$1');
+    $routes->get('api/videos/info/(:segment)',          'VideoStream::info/$1');
+    $routes->get('api/videos/key',                      'VideoStream::getKey');
 
     // ─────────────────────────────────────
-    // DASHBOARD PESERTA (FIXED ✅)
+    // DASHBOARD PESERTA
     // ─────────────────────────────────────
     $routes->group('dashboard/peserta', function ($routes) {
-        $routes->get('beranda', 'DashboardPeserta::beranda');
-        $routes->get('kelas', 'DashboardPeserta::kelas');
-        $routes->get('materi', 'DashboardPeserta::materi');
-        $routes->get('quiz', 'DashboardPeserta::quiz');
-        $routes->get('hasil-quiz', 'DashboardPeserta::hasilQuiz');
-        $routes->get('modul', 'DashboardPeserta::modul');
-        $routes->get('materi-list', 'DashboardPeserta::materi_list');
-        $routes->get('materi/(:num)', 'DashboardPeserta::materi/$1');
-        $routes->get('materi-modul/(:num)', 'DashboardPeserta::materi_modul/$1'); // Route untuk detail materi
-        $routes->get('quiz', 'DashboardPeserta::quiz');
-        $routes->get('quiz/kerjakan/(:num)', 'DashboardPeserta::kerjakanQuiz/$1');
-        $routes->post('quiz/submit/(:num)', 'DashboardPeserta::submitQuiz/$1');
-        $routes->post('dashboard/peserta/quiz/simpan-materi', 'DashboardPeserta::simpanHasilQuizMateri');
+        $routes->get('beranda',                         'DashboardPeserta::beranda');
+        $routes->get('kelas',                           'DashboardPeserta::kelas');
+        $routes->get('materi',                          'DashboardPeserta::materi');
+        $routes->get('quiz',                            'DashboardPeserta::quiz');
+        $routes->get('hasil-quiz',                      'DashboardPeserta::hasilQuiz');
+        $routes->get('modul',                           'DashboardPeserta::modul');
+        $routes->get('materi-list',                     'DashboardPeserta::materi_list');
+        $routes->get('materi/(:num)',                   'DashboardPeserta::materi/$1');
+        $routes->get('materi-modul/(:num)',             'DashboardPeserta::materi_modul/$1');
+        $routes->get('quiz/kerjakan/(:num)',             'DashboardPeserta::kerjakanQuiz/$1');
+        $routes->post('quiz/submit/(:num)',              'DashboardPeserta::submitQuiz/$1');
+        $routes->post('quiz/simpan-materi',             'DashboardPeserta::simpanHasilQuizMateri');
+        $routes->post('materi/selesai',                 'DashboardPeserta::selesaiMateri');
 
-        $routes->post('materi/selesai', 'DashboardPeserta::selesaiMateri');
-
-         // ✅ PRETEST
+        // Pre Test & Post Test
         $routes->get('pretest/(:num)', 'Peserta\Pretest::index/$1');
         $routes->post('pretest/submit', 'Peserta\Pretest::submit');
 
         $routes->get('posttest/(:num)', 'Peserta\Posttest::index/$1');
         $routes->post('posttest/submit', 'Peserta\Posttest::submit');
 
-        // ========== ROUTE PROFIL PESERTA (DIPERBAIKI) ==========
-        $routes->get('profil', 'ProfilController::index');
-        $routes->get('profil/edit', 'ProfilController::edit');
-        $routes->post('profil/update', 'ProfilController::update');
+        // Profil Peserta
+        $routes->get('profil',                          'ProfilController::index');
+        $routes->get('profil/edit',                     'ProfilController::edit');
+        $routes->post('profil/update',                  'ProfilController::update');
     });
-
-
 
     // ─────────────────────────────────────
     // DASHBOARD ADMIN
     // ─────────────────────────────────────
     $routes->group('dashboard/admin', function ($routes) {
-
-        $routes->get('beranda', 'DashboardAdmin::beranda');
+        $routes->get('beranda',                         'DashboardAdmin::beranda');
 
         // Manajemen Pengguna
-        $routes->get('pengguna', 'DashboardAdmin::users');
-        $routes->post('pengguna/store', 'DashboardAdmin::usersStore');
-        $routes->post('pengguna/update/(:num)', 'DashboardAdmin::usersUpdate/$1');
-        $routes->post('pengguna/delete/(:num)', 'DashboardAdmin::usersDelete/$1');
+        $routes->get('pengguna',                        'DashboardAdmin::users');
+        $routes->post('pengguna/store',                 'DashboardAdmin::usersStore');
+        $routes->post('pengguna/update/(:num)',         'DashboardAdmin::usersUpdate/$1');
+        $routes->post('pengguna/delete/(:num)',         'DashboardAdmin::usersDelete/$1');
         $routes->post('pengguna/reset-password/(:num)', 'DashboardAdmin::usersReset/$1');
     });
 
-    // ─────────────────────────────────────────
+    // ─────────────────────────────────────
     // DASHBOARD PENGAJAR
-    // ─────────────────────────────────────────
+    // ─────────────────────────────────────
     $routes->group('dashboard/pengajar', function ($routes) {
 
-        $routes->get('/', 'DashboardPengajar::beranda'); // ← tambah ini
-        $routes->get('beranda', 'DashboardPengajar::beranda');
-
-        // Peserta
-        $routes->get('peserta', 'DashboardPengajar::peserta');     // ← tambah ini
-
-        // Hasil Quiz
-        $routes->get('hasil-quiz', 'DashboardPengajar::hasilQuiz');   // ← tambah ini
+        $routes->get('/',                               'DashboardPengajar::beranda');
+        $routes->get('beranda',                         'DashboardPengajar::beranda');
+        $routes->get('peserta',                         'DashboardPengajar::peserta');
+        $routes->get('hasil-quiz',                      'DashboardPengajar::hasilQuiz');
 
         // Kelas
-        $routes->get('kelas', 'DashboardPengajar::kelas');
-        $routes->post('kelas/store', 'DashboardPengajar::kelasStore');
-        $routes->post('kelas/update/(:num)', 'DashboardPengajar::kelasUpdate/$1');
-        $routes->post('kelas/delete/(:num)', 'DashboardPengajar::kelasDelete/$1');
-        // --- BARU: kelola peserta per kelas (AJAX) ---
-        $routes->get('kelas/peserta/(:num)', 'DashboardPengajar::kelasPesertaList/$1');
-        $routes->post('kelas/peserta/store', 'DashboardPengajar::kelasPesertaStore');
-        $routes->post('kelas/peserta/kick/(:num)', 'DashboardPengajar::kelasPesertaKick/$1');
+        $routes->get('kelas',                           'DashboardPengajar::kelas');
+        $routes->post('kelas/store',                    'DashboardPengajar::kelasStore');
+        $routes->post('kelas/update/(:num)',            'DashboardPengajar::kelasUpdate/$1');
+        $routes->post('kelas/delete/(:num)',            'DashboardPengajar::kelasDelete/$1');
+        $routes->get('kelas/peserta/(:num)',            'DashboardPengajar::kelasPesertaList/$1');
+        $routes->post('kelas/peserta/store',            'DashboardPengajar::kelasPesertaStore');
+        $routes->post('kelas/peserta/kick/(:num)',      'DashboardPengajar::kelasPesertaKick/$1');
 
         // Modul
-        $routes->get('modul', 'DashboardPengajar::modul');
-        $routes->post('modul/store', 'DashboardPengajar::modulStore');
-        $routes->post('modul/update/(:num)', 'DashboardPengajar::modulUpdate/$1');
-        $routes->post('modul/delete/(:num)', 'DashboardPengajar::modulDelete/$1');
+        $routes->get('modul',                           'DashboardPengajar::modul');
+        $routes->post('modul/store',                    'DashboardPengajar::modulStore');
+        $routes->post('modul/update/(:num)',            'DashboardPengajar::modulUpdate/$1');
+        $routes->post('modul/delete/(:num)',            'DashboardPengajar::modulDelete/$1');
 
         // Materi
-        $routes->get('materi', 'DashboardPengajar::materi');
-        $routes->post('materi/store', 'DashboardPengajar::materiStore');
-        $routes->post('materi/update/(:num)', 'DashboardPengajar::materiUpdate/$1');
-        $routes->post('materi/delete/(:num)', 'DashboardPengajar::materiDelete/$1');
-        $routes->get('materi-list', 'DashboardPengajar::materiList');
+        $routes->get('materi',                          'DashboardPengajar::materi');
+        $routes->post('materi/store',                   'DashboardPengajar::materiStore');
+        $routes->post('materi/update/(:num)',           'DashboardPengajar::materiUpdate/$1');
+        $routes->post('materi/delete/(:num)',           'DashboardPengajar::materiDelete/$1');
+        $routes->get('materi-list',                     'DashboardPengajar::materiList');
 
         // Quiz
-        $routes->get('quiz', 'DashboardPengajar::quiz');
-        $routes->post('quiz/store', 'DashboardPengajar::quizStore');
-        $routes->post('quiz/update/(:num)', 'DashboardPengajar::quizUpdate/$1');
-        $routes->post('quiz/delete/(:num)', 'DashboardPengajar::quizDelete/$1');
-        $routes->get('quiz/hasil/(:num)', 'DashboardPengajar::quizHasil/$1');
+        $routes->get('quiz',                            'DashboardPengajar::quiz');
+        $routes->post('quiz/store',                     'DashboardPengajar::quizStore');
+        $routes->post('quiz/update/(:num)',             'DashboardPengajar::quizUpdate/$1');
+        $routes->post('quiz/delete/(:num)',             'DashboardPengajar::quizDelete/$1');
+        $routes->get('quiz/hasil/(:num)',               'DashboardPengajar::quizHasil/$1');
 
         // Profil
-        $routes->get('profil', 'DashboardPengajar::profil');
-        $routes->post('profil/update', 'DashboardPengajar::profilUpdate');
+        $routes->get('profil', 'ProfilController::index');
+        $routes->get('profil/edit', 'ProfilController::edit');
+        $routes->post('profil/update', 'ProfilController::update');
+
+        // ═══════════════════════════════════════════════
+        //  VIDEO ENKRIPSI — manajemen video (pengajar)
+        // ═══════════════════════════════════════════════
+        $routes->get('video/upload',                    'VideoStream::uploadPage');
+        $routes->post('video/upload',                   'VideoStream::doUpload');
+        $routes->get('video/list',                      'VideoStream::listVideos');
+        $routes->post('video/delete/(:segment)',        'VideoStream::deleteVideo/$1');
     });
 });

@@ -8,16 +8,6 @@ class Webhook extends BaseController
 {
     /**
      * POST /cekfingerprint
-     *
-     * Flow:
-     *  1. Validasi email + password
-     *  2. Bandingkan fingerprint dari request dengan yang ada di DB
-     *  3. Kembalikan status: 'sama' | 'baru' | 'updated' | 'switched' | 'beda' | 'invalid'
-     *
-     * PERBAIKAN:
-     *  - Selalu simpan kolom `action` saat update fingerprint
-     *    agar SSE di tab lain tahu harus logout
-     *  - Jika fingerprint null di DB, simpan juga action='baru'
      */
     public function cekFingerprint()
     {
@@ -37,7 +27,6 @@ class Webhook extends BaseController
 
         $model = new Users();
 
-        // ── Cari user by email ATAU nama (case-insensitive) ──
         $user = $model
             ->groupStart()
             ->where('LOWER(email_users)', strtolower($email))
@@ -53,7 +42,6 @@ class Webhook extends BaseController
             ]);
         }
 
-        // Gunakan email_users dari DB untuk semua query update berikutnya
         $emailDB = $user['email_users'];
         $dbFP    = $user['fingerprint_device'];
 
@@ -82,8 +70,10 @@ class Webhook extends BaseController
             ]);
         }
 
-        // ── KASUS 3: Fingerprint beda, pilih 'keep' ──
+        // ── KASUS 3: Fingerprint beda, pilih 'keep' (pakai di sini) ──
         if ($action === 'keep') {
+            // Set action='keep' dulu, Auth::authenticate() akan update fp
+            // tapi TIDAK reset action karena fp masih beda saat itu
             $model->where('email_users', $emailDB)
                 ->set([
                     'fingerprint_device' => $fp,
@@ -98,7 +88,7 @@ class Webhook extends BaseController
             ]);
         }
 
-        // ── KASUS 4: Fingerprint beda, pilih 'other' ──
+        // ── KASUS 4: Fingerprint beda, pilih 'other' (pakai di perangkat lain) ──
         if ($action === 'other') {
             $model->where('email_users', $emailDB)
                 ->set([
@@ -123,7 +113,6 @@ class Webhook extends BaseController
 
     /**
      * GET /cekaction/:email
-     * Dipakai untuk verifikasi ringan apakah fingerprint masih sinkron.
      */
     public function cekAction($email)
     {

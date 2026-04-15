@@ -37,7 +37,7 @@ class Posttest extends BaseController
             }
         }
 
-        return view('dashboard/peserta/posttest_view', [
+        return view('Dashboard/Peserta/posttest_view', [
             'materi' => $materi,
             'soal'   => $soal
         ]);
@@ -85,7 +85,7 @@ class Posttest extends BaseController
         }
 
         $redirectUrl = session()->get('redirect_url_posttest');
-        $fallbackRedirect = base_url('dashboard/peserta/materi-modul/' . ($materi['id_modul'] ?? '') . '?materi=' . $idMateri);
+        $fallbackRedirect = base_url('Dashboard/Peserta/materi-modul/' . ($materi['id_modul'] ?? '') . '?materi=' . $idMateri);
 
         if ($nilai >= 70) {
             $message = "Selamat! Nilai Post Test: $nilai. Materi selesai.";

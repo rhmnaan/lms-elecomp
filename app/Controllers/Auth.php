@@ -18,7 +18,7 @@ class Auth extends BaseController
     // POST /auth/authenticate
     public function authenticate()
     {
-        $input    = $this->request->getPost('email'); // field name tetap 'email'
+        $input    = $this->request->getPost('email');
         $password = $this->request->getPost('password');
 
         if (!$input || !$password) {
@@ -30,7 +30,6 @@ class Auth extends BaseController
 
         $usersModel = new Users();
 
-        // Cari berdasarkan email ATAU nama_users (username)
         $user = $usersModel
             ->groupStart()
                 ->where('email_users', $input)
@@ -54,12 +53,36 @@ class Auth extends BaseController
         ]);
 
         $currentFP = $_COOKIE['device_fp'] ?? null;
-        $syncData  = ['action' => null];
+        $syncData  = [];
+
         if ($currentFP) {
-            $syncData['fingerprint_device'] = $currentFP;
+            $existing = $usersModel
+                ->where('id_users', $user['id_users'])
+                ->select('fingerprint_device')
+                ->first();
+
+            $dbFP = $existing['fingerprint_device'] ?? null;
+
+            if ($dbFP === $currentFP || $dbFP === null || $dbFP === '') {
+                // Perangkat sama atau belum ada fingerprint → aman reset action
+                $syncData = [
+                    'fingerprint_device' => $currentFP,
+                    'action'             => null,
+                ];
+            } else {
+                // Perangkat BEDA → hanya update fingerprint, JANGAN reset action
+                // Biarkan action ('keep'/'other') tetap ada agar SSE tab lama bisa deteksi
+                $syncData = [
+                    'fingerprint_device' => $currentFP,
+                ];
+            }
+        } else {
+            // Tidak ada cookie fp → hanya reset action
+            $syncData = ['action' => null];
         }
+
         $usersModel
-            ->where('id_users', $user['id_users']) // pakai id agar lebih aman
+            ->where('id_users', $user['id_users'])
             ->set($syncData)
             ->update();
 

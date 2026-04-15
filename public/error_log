@@ -1,0 +1,2 @@
+[13-Apr-2026 11:42:59 Asia/Jakarta] PHP Fatal error:  Cannot declare class App\Controllers\DashboardPengajar, because the name is already in use in /home/k4991560/public_html/lms-elecomp/app/Models/ModulModel.php on line 11
+[13-Apr-2026 11:44:33 Asia/Jakarta] PHP Fatal error:  Cannot declare class App\Controllers\DashboardPengajar, because the name is already in use in /home/k4991560/public_html/lms-elecomp/app/Models/ModulModel.php on line 11

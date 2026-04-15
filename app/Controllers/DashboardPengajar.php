@@ -381,10 +381,15 @@ class DashboardPengajar extends BaseController
     {
         if ($r = $this->guardPengajar()) return $r;
 
+        // FIX: Gunakan query langsung agar tidak terpengaruh soft-delete pada kelas
+        if (!$this->isMyModul($id)) {
+            return redirect()->to('/dashboard/pengajar/modul')->with('error', 'Modul tidak ditemukan.');
+        }
+
         $modulModel = new ModulModel();
         $modul      = $modulModel->find($id);
 
-        if (!$modul || !$this->isMyKelas(new KelasModel(), $modul['id_kelas'])) {
+        if (!$modul) {
             return redirect()->to('/dashboard/pengajar/modul')->with('error', 'Modul tidak ditemukan.');
         }
 
@@ -409,10 +414,15 @@ class DashboardPengajar extends BaseController
     {
         if ($r = $this->guardPengajar()) return $r;
 
+        // FIX: Gunakan query langsung agar tidak terpengaruh soft-delete pada kelas
+        if (!$this->isMyModul($id)) {
+            return redirect()->to('/dashboard/pengajar/modul')->with('error', 'Modul tidak ditemukan.');
+        }
+
         $modulModel = new ModulModel();
         $modul      = $modulModel->find($id);
 
-        if (!$modul || !$this->isMyKelas(new KelasModel(), $modul['id_kelas'])) {
+        if (!$modul) {
             return redirect()->to('/dashboard/pengajar/modul')->with('error', 'Modul tidak ditemukan.');
         }
 
@@ -482,6 +492,7 @@ class DashboardPengajar extends BaseController
             if ($filePdf->getExtension() !== 'pdf') {
                 return redirect()->back()->withInput()->with('error', 'File harus berformat PDF.');
             }
+            // FIX: konsisten 10 MB
             if ($filePdf->getSize() > 10 * 1024 * 1024) {
                 return redirect()->back()->withInput()->with('error', 'Ukuran file PDF maksimal 10 MB.');
             }
@@ -527,6 +538,7 @@ class DashboardPengajar extends BaseController
             if ($filePdf->getExtension() !== 'pdf') {
                 return redirect()->back()->withInput()->with('error', 'File harus berformat PDF.');
             }
+            // FIX: batas ukuran & pesan sekarang konsisten dengan materiStore (10 MB)
             if ($filePdf->getSize() > 10 * 1024 * 1024) {
                 return redirect()->back()->withInput()->with('error', 'Ukuran file PDF maksimal 10 MB.');
             }
@@ -732,6 +744,73 @@ class DashboardPengajar extends BaseController
     }
 
     // ══════════════════════════════════════════════════════════════════════
+    //  VIDEO
+    // ══════════════════════════════════════════════════════════════════════
+
+    /** GET /dashboard/pengajar/video — halaman utama video */
+    public function video()
+    {
+        if ($r = $this->guardPengajar()) return $r;
+        return view('Dashboard/Pengajar/video_upload');
+    }
+
+    /** GET /dashboard/pengajar/video/list — daftar video milik pengajar (AJAX) */
+    public function videoList()
+    {
+        if (!session()->get('id_users')) {
+            return $this->jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $db  = \Config\Database::connect();
+        $uid = (int) session()->get('id_users');
+
+        $videos = $db->table('video_encrypted')
+            ->where('id_users', $uid)
+            ->where('deleted_at IS NULL')
+            ->orderBy('created_at', 'DESC')
+            ->get()->getResultArray();
+
+        return $this->jsonResponse(['success' => true, 'data' => $videos]);
+    }
+
+    /** POST /dashboard/pengajar/video/delete/{videoId} — hapus video (AJAX) */
+    public function videoDelete($videoId = null)
+    {
+        if (!session()->get('id_users')) {
+            return $this->jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        if (empty($videoId)) {
+            return $this->jsonResponse(['success' => false, 'message' => 'Video ID diperlukan.'], 400);
+        }
+
+        $videoId = preg_replace('/[^a-zA-Z0-9_\\-.]/', '', $videoId);
+        $db      = \Config\Database::connect();
+        $uid     = (int) session()->get('id_users');
+
+        $row = $db->table('video_encrypted')
+            ->where('video_id', $videoId)
+            ->where('id_users', $uid)
+            ->where('deleted_at IS NULL')
+            ->get()->getRowArray();
+
+        if (!$row) {
+            return $this->jsonResponse(['success' => false, 'message' => 'Video tidak ditemukan.'], 404);
+        }
+
+        $encFile = WRITEPATH . 'uploads/encrypted/' . $videoId . '.enc';
+        if (file_exists($encFile)) {
+            @unlink($encFile);
+        }
+
+        $db->table('video_encrypted')
+            ->where('video_id', $videoId)
+            ->update(['deleted_at' => date('Y-m-d H:i:s')]);
+
+        return $this->jsonResponse(['success' => true, 'message' => 'Video berhasil dihapus.']);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
     //  PROFIL
     // ══════════════════════════════════════════════════════════════════════
     public function profil()
@@ -817,7 +896,7 @@ class DashboardPengajar extends BaseController
         $nilaiArr         = array_filter(array_column($pesertaArr, 'rata_nilai'));
         $rataRataNilai    = count($nilaiArr) > 0 ? round(array_sum($nilaiArr) / count($nilaiArr)) : 0;
 
-        return view('dashboard/pengajar/peserta', [
+        return view('Dashboard/Pengajar/peserta', [
             'title'            => 'Daftar Peserta',
             'peserta'          => $peserta,
             'kelasList'        => $kelasList,
@@ -830,12 +909,24 @@ class DashboardPengajar extends BaseController
     // ══════════════════════════════════════════════════════════════════════
     //  PRIVATE HELPERS
     // ══════════════════════════════════════════════════════════════════════
+
+    /**
+     * FIX: Gunakan withDeleted() agar validasi tetap berjalan
+     * meskipun kelas sudah di-soft-delete.
+     * Ini mencegah false-negative "Modul tidak ditemukan"
+     * saat modul masih aktif tapi kelasnya sudah dihapus.
+     */
     private function isMyKelas(KelasModel $model, int $idKelas): bool
     {
-        $kelas = $model->find($idKelas);
+        $kelas = $model->withDeleted()->find($idKelas);
         return $kelas && (int) $kelas['id_users'] === $this->myId();
     }
 
+    /**
+     * FIX: Aktifkan kembali filter deleted_at pada modul,
+     * dan tambahkan filter deleted_at pada kelas agar query
+     * benar-benar hanya mengembalikan data yang masih aktif.
+     */
     private function isMyModul(int $idModul): bool
     {
         $row = \Config\Database::connect()

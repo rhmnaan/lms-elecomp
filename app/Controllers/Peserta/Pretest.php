@@ -36,7 +36,7 @@ class Pretest extends BaseController
             }
         }
 
-        return view('dashboard/peserta/pretest_view', [
+        return view('Dashboard/Peserta/pretest_view', [
             'materi'   => $materi,
             'soal'     => $soal,
             'redirect' => $redirect // 🔥 KIRIM KE VIEW
@@ -92,6 +92,6 @@ class Pretest extends BaseController
             ->with('success', "Nilai kamu: $nilai");
 
         // fallback kalau gak ada
-        return redirect()->to('dashboard/peserta/modul')->with('success', "Nilai kamu: $nilai");
+        return redirect()->to('Dashboard/Peserta/modul')->with('success', "Nilai kamu: $nilai");
     }
 }
