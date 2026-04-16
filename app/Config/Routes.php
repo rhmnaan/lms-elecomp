@@ -45,6 +45,11 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     // ─────────────────────────────────────
     $routes->group('dashboard/peserta', function ($routes) {
         $routes->get('beranda',                         'DashboardPeserta::beranda');
+
+        // PROGRAM PESERTA
+        $routes->get('program', 'Peserta\Program::index');
+        $routes->get('program/(:num)', 'Peserta\Program::kelas/$1');
+        
         $routes->get('kelas',                           'DashboardPeserta::kelas');
         $routes->get('materi',                          'DashboardPeserta::materi');
         $routes->get('quiz',                            'DashboardPeserta::quiz');

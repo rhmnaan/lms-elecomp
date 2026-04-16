@@ -66,8 +66,8 @@
                     </a>
                 </li>
 
-                <li <?= str_starts_with(uri_string(), 'dashboard/peserta/kelas') ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/peserta/kelas') ?>">
+                <li <?= str_starts_with(uri_string(), 'dashboard/peserta/program') ? 'class="active"' : '' ?>>
+                    <a href="<?= base_url('dashboard/peserta/program') ?>">
                         <i class="bi bi-book-fill"></i> Program
                     </a>
                 </li>
