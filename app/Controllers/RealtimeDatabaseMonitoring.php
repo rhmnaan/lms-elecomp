@@ -35,7 +35,7 @@ class RealtimeDatabaseMonitoring extends BaseController
         $this->startSSEHeaders();
 
         $startTime    = time();
-        $maxDuration  = 5; // ✅ diperpanjang dari 5 → 25 detik
+        $maxDuration  = 1; // ✅ diperpanjang dari 5 → 25 detik
         $pollInterval = 1;
 
         while ((time() - $startTime) < $maxDuration) {

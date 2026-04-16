@@ -122,12 +122,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('materi/delete/(:num)',           'DashboardPengajar::materiDelete/$1');
         $routes->get('materi-list',                     'DashboardPengajar::materiList');
 
-        // Quiz
-        $routes->get('quiz',                            'DashboardPengajar::quiz');
-        $routes->post('quiz/store',                     'DashboardPengajar::quizStore');
-        $routes->post('quiz/update/(:num)',             'DashboardPengajar::quizUpdate/$1');
-        $routes->post('quiz/delete/(:num)',             'DashboardPengajar::quizDelete/$1');
-        $routes->get('quiz/hasil/(:num)',               'DashboardPengajar::quizHasil/$1');
+        $routes->get('program', 'DashboardPengajar::program');
+        $routes->post('program/store', 'DashboardPengajar::programStore');
+        $routes->post('program/update/(:num)', 'DashboardPengajar::programUpdate/$1');
+        $routes->post('program/delete/(:num)', 'DashboardPengajar::programDelete/$1');
 
         // Profil
         $routes->get('profil', 'ProfilController::index');

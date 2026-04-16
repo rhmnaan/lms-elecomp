@@ -118,6 +118,95 @@ class DashboardPengajar extends BaseController
     }
 
     // ══════════════════════════════════════════════════════════════════════
+    //  Program
+    public function program()
+    {
+        if ($r = $this->guardPengajar()) return $r;
+
+        $db  = \Config\Database::connect();
+        $uid = $this->myId();
+
+        $program = $db->query("
+            SELECT p.id_program, p.nama_program, p.deskripsi_program,
+                COUNT(k.id_kelas) AS total_kelas
+            FROM program p
+            LEFT JOIN kelas k ON k.id_program = p.id_program
+                AND k.deleted_at IS NULL
+            WHERE p.id_users = {$uid}
+            AND p.deleted_at IS NULL
+            GROUP BY p.id_program
+            ORDER BY p.created_at DESC
+        ")->getResultArray();
+
+        return view('Dashboard/Pengajar/program', [
+            'title'        => 'Manajemen Program',
+            'program_list' => $program,
+        ]);
+    }
+
+    public function programStore()
+    {
+        if ($r = $this->guardPengajar()) return $r;
+
+        $rules = [
+            'nama_program'      => 'required|min_length[3]|max_length[150]',
+            'deskripsi_program' => 'permit_empty|max_length[500]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Data program tidak valid.');
+        }
+
+        \Config\Database::connect()->table('program')->insert([
+            'nama_program'      => $this->request->getPost('nama_program'),
+            'deskripsi_program' => $this->request->getPost('deskripsi_program'),
+            'id_users'          => $this->myId(),
+            'created_at'        => date('Y-m-d H:i:s'),
+        ]);
+
+        return redirect()->to('/dashboard/pengajar/program')
+            ->with('success', 'Program berhasil dibuat.');
+    }
+
+    public function programUpdate(int $id)
+    {
+        if ($r = $this->guardPengajar()) return $r;
+
+        $db = \Config\Database::connect();
+
+        $cek = $db->table('program')
+            ->where('id_program', $id)
+            ->where('id_users', $this->myId())
+            ->where('deleted_at IS NULL')
+            ->get()->getRowArray();
+
+        if (!$cek) {
+            return redirect()->back()->with('error', 'Program tidak ditemukan.');
+        }
+
+        $db->table('program')->where('id_program', $id)->update([
+            'nama_program'      => $this->request->getPost('nama_program'),
+            'deskripsi_program' => $this->request->getPost('deskripsi_program'),
+        ]);
+
+        return redirect()->back()->with('success', 'Program diperbarui.');
+    }
+
+    public function programDelete(int $id)
+    {
+        if ($r = $this->guardPengajar()) return $r;
+
+        \Config\Database::connect()->table('program')
+            ->where('id_program', $id)
+            ->where('id_users', $this->myId())
+            ->update(['deleted_at' => date('Y-m-d H:i:s')]);
+
+        return redirect()->back()->with('success', 'Program dihapus.');
+    }
+
+
+    // ══════════════════════════════════════════════════════════════════════
     //  KELAS
     // ══════════════════════════════════════════════════════════════════════
     public function kelas()

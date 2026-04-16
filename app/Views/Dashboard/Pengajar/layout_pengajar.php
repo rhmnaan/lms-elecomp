@@ -75,17 +75,46 @@
                             style="margin-left:auto;font-size:11px;transition:transform .2s;"></i>
                     </a>
                     <ul class="sub-nav">
-                        <li <?= uri_string() === 'dashboard/pengajar/kelas' ? 'class="sub-active"' : '' ?>>
-                            <a href="<?= base_url('dashboard/pengajar/kelas') ?>">Daftar Kelas</a>
-                        </li>
+
+                        <!-- PROGRAM -->
                         <li
-                            <?= str_starts_with(uri_string(), 'dashboard/pengajar/modul') ? 'class="sub-active"' : '' ?>>
-                            <a href="<?= base_url('dashboard/pengajar/modul') ?>">Modul</a>
+                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/program')) ? 'class="active"' : '' ?>>
+                            <a href="<?= base_url('dashboard/pengajar/program') ?>">
+                                <i class="bi bi-grid-1x2-fill"></i>
+                                Program
+                                <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/program')): ?>
+                                <span class="dot"></span>
+                                <?php endif; ?>
+                            </a>
                         </li>
+
+                        <!-- KELAS -->
                         <li
-                            <?= str_starts_with(uri_string(), 'dashboard/pengajar/materi') ? 'class="sub-active"' : '' ?>>
-                            <a href="<?= base_url('dashboard/pengajar/materi-list') ?>">Materi</a>
+                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/kelas')) ? 'class="sub-active"' : '' ?>>
+                            <a href="<?= base_url('dashboard/pengajar/kelas') ?>">
+                                <i class="bi bi-mortarboard-fill"></i>
+                                Daftar Kelas
+                            </a>
                         </li>
+
+                        <!-- MODUL -->
+                        <li
+                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/modul')) ? 'class="sub-active"' : '' ?>>
+                            <a href="<?= base_url('dashboard/pengajar/modul') ?>">
+                                <i class="bi bi-journal-bookmark-fill"></i>
+                                Modul
+                            </a>
+                        </li>
+
+                        <!-- MATERI -->
+                        <li
+                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/materi')) ? 'class="sub-active"' : '' ?>>
+                            <a href="<?= base_url('dashboard/pengajar/materi-list') ?>">
+                                <i class="bi bi-play-circle-fill"></i>
+                                Materi
+                            </a>
+                        </li>
+
                     </ul>
                 </li>
 

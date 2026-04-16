@@ -9,17 +9,18 @@
 <div class="program-header">
     <div>
         <h1>Program Saya</h1>
-        <p>Kelola dan lanjutkan program pembelajaranmu</p>
+        <p>Lanjutkan progres belajarmu dan raih sertifikasimu.</p>
     </div>
 </div>
 
 <?php if (empty($program_list)): ?>
 <div class="program-empty">
     <div class="empty-icon-wrapper">
-        <i class="bi bi-mortarboard"></i>
+        <i class="bi bi-mortarboard-fill"></i>
     </div>
     <h3>Belum Ada Program</h3>
-    <p>Program yang kamu ikuti akan muncul di sini</p>
+    <p>Sepertinya kamu belum terdaftar di program manapun.</p>
+    <a href="<?= base_url('programs') ?>" class="btn-browse">Cari Program</a>
 </div>
 <?php else: ?>
 <div class="program-grid">
@@ -28,10 +29,11 @@
         style="animation-delay: <?= $index * 0.1 ?>s">
 
         <div class="program-banner banner-<?= $index % 3 ?>">
+            <div class="banner-pattern"></div>
             <div class="banner-overlay"></div>
 
             <span class="program-badge">
-                <i class="bi bi-journal-text"></i> <?= esc($p['total_kelas']) ?> Kelas
+                <i class="bi bi-book-half"></i> <?= esc($p['total_kelas']) ?> Modul
             </span>
 
             <h3 class="program-title">
@@ -40,12 +42,13 @@
         </div>
 
         <div class="program-footer">
-            <span class="program-action">
-                Lihat Detail
-                <i class="bi bi-arrow-right"></i>
-            </span>
+            <div class="program-info">
+                <span class="program-action">Masuk Kelas</span>
+                <div class="action-circle">
+                    <i class="bi bi-arrow-right-short"></i>
+                </div>
+            </div>
         </div>
-
     </a>
     <?php endforeach ?>
 </div>

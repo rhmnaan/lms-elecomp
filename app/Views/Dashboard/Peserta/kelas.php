@@ -363,6 +363,50 @@
         align-items: flex-start;
     }
 }
+
+/* ===============================
+   KELAS LOCKED (HALUS / ENABLED)
+================================ */
+
+.kelas-locked {
+    position: relative;
+}
+
+/* garis hint lembut */
+.kelas-locked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    box-shadow: inset 0 0 0 1.5px rgba(99, 102, 241, .25);
+    pointer-events: none;
+}
+
+/* progress tetap tampil tapi tipis */
+.kelas-locked .kc-bar-fill {
+    background: linear-gradient(to right, #c7d2fe, #a5b4fc);
+}
+
+/* tombol terlihat aktif tapi tidak klik */
+.kelas-locked .btn-lanjut {
+    background: #eef2ff !important;
+    color: #6366f1 !important;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* label terkunci */
+.kelas-locked .btn-disabled {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 10px;
+    background: #eef2ff;
+    color: #4f46e5;
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -407,7 +451,7 @@ $btnCls  = ['btn-lanjut-blue','btn-lanjut-green','btn-lanjut-orange','btn-lanjut
     $ci = $i % 4;
     $lbl = $k['persen'] >= 100 ? 'Selesai' : ($k['persen'] > 0 ? 'Lanjut' : 'Mulai');
 ?>
-    <div class="kelas-card">
+    <div class="kelas-card <?= $k['is_locked'] ? 'kelas-locked' : '' ?>">
 
         <!-- BANNER -->
         <div class="kc-banner <?= $banners[$ci] ?>">
@@ -455,10 +499,25 @@ $btnCls  = ['btn-lanjut-blue','btn-lanjut-green','btn-lanjut-orange','btn-lanjut
                 </div>
             </div>
 
-            <a href="<?= base_url('dashboard/peserta/modul?kelas=' . $k['id_kelas']) ?>"
-                class="btn-lanjut <?= $btnCls[$ci] ?>">
-                <?= $lbl ?> <i class="bi bi-arrow-right"></i>
-            </a>
+            <?php if ($k['is_locked']): ?>
+            <span style="
+    position:absolute;
+    top:14px;
+    right:14px;
+    font-size:11px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,.9);
+    color:#4f46e5;
+">
+                <i class="bi bi-lock-fill"></i> Perlu Voucher
+            </span>
+            <?php else: ?>
+            <span class="btn-lanjut btn-disabled">
+                Terkunci <i class="bi bi-lock-fill"></i>
+            </span>
+            <?php endif ?>
         </div>
 
     </div>
