@@ -6,7 +6,6 @@ use App\Controllers\BaseController;
 use App\Models\KelasModel;
 use App\Models\ModulModel;
 use App\Models\MateriModel;
-use App\Models\QuizModel;
 
 class DashboardPengajar extends BaseController
 {
@@ -618,130 +617,6 @@ class DashboardPengajar extends BaseController
         ]);
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    //  QUIZ  (tetap ada — dipakai di halaman lain)
-    // ══════════════════════════════════════════════════════════════════════
-    public function quiz()
-    {
-        if ($r = $this->guardPengajar()) return $r;
-
-        $db     = \Config\Database::connect();
-        $uid    = $this->myId();
-        $search = $this->request->getGet('search');
-
-        $query = $db->table('quiz q')
-            ->select('q.*, m.judul_modul, k.nama_kelas')
-            ->join('modul m', 'm.id_modul = q.id_modul')
-            ->join('kelas k', 'k.id_kelas = m.id_kelas')
-            ->where('k.id_users', $uid)
-            ->where('q.deleted_at IS NULL');
-
-        if ($search) $query->like('q.judul_quiz', $search);
-
-        return view('Dashboard/Pengajar/Quiz/index', [
-            'quiz_list'  => $query->get()->getResultArray(),
-            'modul_list' => $db->table('modul m')
-                ->select('m.id_modul, m.judul_modul, k.nama_kelas')
-                ->join('kelas k', 'k.id_kelas = m.id_kelas')
-                ->where('k.id_users', $uid)
-                ->where('m.deleted_at IS NULL')
-                ->get()->getResultArray(),
-            'search' => $search,
-        ]);
-    }
-
-    public function quizStore()
-    {
-        if ($r = $this->guardPengajar()) return $r;
-
-        $rules = [
-            'id_modul'    => 'required|is_natural_no_zero',
-            'judul_quiz'  => 'required|min_length[3]|max_length[200]',
-            'durasi_quiz' => 'permit_empty|is_natural_no_zero',
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-
-        $idModul = (int) $this->request->getPost('id_modul');
-        if (!$this->isMyModul($idModul)) {
-            return redirect()->back()->with('error', 'Modul tidak valid.');
-        }
-
-        (new QuizModel())->insert([
-            'id_modul'    => $idModul,
-            'judul_quiz'  => $this->request->getPost('judul_quiz'),
-            'durasi_quiz' => $this->request->getPost('durasi_quiz') ?: null,
-        ]);
-
-        return redirect()->to('/dashboard/pengajar/quiz')->with('success', 'Quiz berhasil ditambahkan.');
-    }
-
-    public function quizUpdate(int $id)
-    {
-        if ($r = $this->guardPengajar()) return $r;
-
-        $quizModel = new QuizModel();
-        $quiz      = $quizModel->find($id);
-
-        if (!$quiz || !$this->isMyModul($quiz['id_modul'])) {
-            return redirect()->to('/dashboard/pengajar/quiz')->with('error', 'Quiz tidak ditemukan.');
-        }
-
-        $rules = [
-            'judul_quiz'  => 'required|min_length[3]|max_length[200]',
-            'durasi_quiz' => 'permit_empty|is_natural_no_zero',
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-
-        $quizModel->update($id, [
-            'judul_quiz'  => $this->request->getPost('judul_quiz'),
-            'durasi_quiz' => $this->request->getPost('durasi_quiz') ?: null,
-        ]);
-
-        return redirect()->to('/dashboard/pengajar/quiz')->with('success', 'Quiz berhasil diperbarui.');
-    }
-
-    public function quizDelete(int $id)
-    {
-        if ($r = $this->guardPengajar()) return $r;
-
-        $quizModel = new QuizModel();
-        $quiz      = $quizModel->find($id);
-
-        if (!$quiz || !$this->isMyModul($quiz['id_modul'])) {
-            return redirect()->to('/dashboard/pengajar/quiz')->with('error', 'Quiz tidak ditemukan.');
-        }
-
-        $quizModel->delete($id);
-        return redirect()->to('/dashboard/pengajar/quiz')->with('success', 'Quiz berhasil dihapus.');
-    }
-
-    public function quizHasil(int $idQuiz)
-    {
-        if ($r = $this->guardPengajar()) return $r;
-
-        $db   = \Config\Database::connect();
-        $quiz = (new QuizModel())->find($idQuiz);
-
-        if (!$quiz || !$this->isMyModul($quiz['id_modul'])) {
-            return redirect()->to('/dashboard/pengajar/quiz')->with('error', 'Quiz tidak ditemukan.');
-        }
-
-        $hasil = $db->query("
-            SELECT u.nama_users, qr.nilai_quiz_results, qr.waktu_selesai_quiz_results
-            FROM quiz_results qr
-            JOIN users u ON u.id_users = qr.id_users
-            WHERE qr.id_quiz = {$idQuiz} AND qr.deleted_at IS NULL
-            ORDER BY qr.waktu_selesai_quiz_results DESC
-        ")->getResultArray();
-
-        return view('Dashboard/Pengajar/Quiz/hasil', ['quiz' => $quiz, 'hasil' => $hasil]);
-    }
 
     // ══════════════════════════════════════════════════════════════════════
     //  VIDEO
@@ -868,18 +743,21 @@ class DashboardPengajar extends BaseController
         $db         = \Config\Database::connect();
 
         $peserta = $db->table('kelas_peserta kp')
-            ->select('u.id_users, u.nama_users, u.email_users, k.id_kelas, k.nama_kelas,
-                      kp.tanggal_daftar_kelas_peserta,
-                      ROUND(AVG(qr.nilai_quiz_results)) AS rata_nilai,
-                      COUNT(DISTINCT qr.id_quiz_results) AS jumlah_quiz')
-            ->join('kelas k',         'k.id_kelas = kp.id_kelas')
-            ->join('users u',         'u.id_users = kp.id_users')
-            ->join('quiz_results qr', 'qr.id_users = u.id_users', 'left')
-            ->where('k.id_users',   $pengajarId)
-            ->where('u.role_users', 'peserta')
-            ->groupBy('kp.id_kelas_peserta')
-            ->orderBy('k.id_kelas, u.nama_users')
-            ->get()->getResultObject();
+        ->select('
+            u.id_users,
+            u.nama_users,
+            u.email_users,
+            k.id_kelas,
+            k.nama_kelas,
+            kp.tanggal_daftar_kelas_peserta
+        ')
+        ->join('kelas k', 'k.id_kelas = kp.id_kelas')
+        ->join('users u', 'u.id_users = kp.id_users')
+        ->where('k.id_users', $pengajarId)
+        ->where('u.role_users', 'peserta')
+        ->orderBy('k.id_kelas, u.nama_users')
+        ->get()
+        ->getResultObject();
 
         $kelasList = $db->table('kelas k')
             ->select('k.id_kelas, k.nama_kelas, COUNT(kp.id_kelas_peserta) AS jumlah_peserta')
@@ -892,17 +770,12 @@ class DashboardPengajar extends BaseController
 
         $pesertaArr       = (array) $peserta;
         $totalPeserta     = count($pesertaArr);
-        $totalQuizResults = array_sum(array_column($pesertaArr, 'jumlah_quiz'));
-        $nilaiArr         = array_filter(array_column($pesertaArr, 'rata_nilai'));
-        $rataRataNilai    = count($nilaiArr) > 0 ? round(array_sum($nilaiArr) / count($nilaiArr)) : 0;
 
         return view('Dashboard/Pengajar/peserta', [
             'title'            => 'Daftar Peserta',
             'peserta'          => $peserta,
             'kelasList'        => $kelasList,
             'totalPeserta'     => $totalPeserta,
-            'totalQuizResults' => $totalQuizResults,
-            'rataRataNilai'    => $rataRataNilai,
         ]);
     }
 

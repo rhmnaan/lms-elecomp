@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\ModulModel;
 use App\Models\MateriModel;
-use App\Models\QuizResultsModel;
 use App\Models\KelasPesertaModel;
 use App\Models\MateriQuizResultsModel;
 use App\Models\UserMateriProgressModel;
@@ -16,7 +15,6 @@ class DashboardPeserta extends BaseController
     protected KelasPesertaModel $kelasPesertaModel;
     protected ModulModel $modulModel;
     protected MateriModel $materiModel;
-    protected QuizResultsModel $quizResultModel;
     protected $userMateriProgressModel;
 
     public function __construct()
@@ -24,7 +22,6 @@ class DashboardPeserta extends BaseController
         $this->kelasPesertaModel       = new KelasPesertaModel();
         $this->modulModel              = new ModulModel();
         $this->materiModel             = new MateriModel();
-        $this->quizResultModel         = new QuizResultsModel();
         $this->userMateriProgressModel = new UserMateriProgressModel();
     }
 
@@ -650,102 +647,6 @@ class DashboardPeserta extends BaseController
             'has_posttest' => !empty($posttestResult),
             'nilai_post'   => $posttestResult,
             'redirect'     => $redirect,
-        ]);
-    }
-
-    // =========================================================
-    //  QUIZ LIST
-    // =========================================================
-    public function quiz()
-    {
-        $db = \Config\Database::connect();
-
-        $quiz = $db->table('quiz q')
-            ->select('q.*, k.nama_kelas')
-            ->join('modul m', 'm.id_modul = q.id_modul')
-            ->join('kelas k', 'k.id_kelas = m.id_kelas')
-            ->get()->getResultArray();
-
-        return view('Dashboard/Peserta/quiz_list', [
-            'quiz' => $quiz
-        ]);
-    }
-
-    // =========================================================
-    //  KERJAKAN QUIZ
-    // =========================================================
-    public function kerjakanQuiz($id_quiz)
-    {
-        $db = \Config\Database::connect();
-
-        $quiz = $db->table('quiz')
-            ->where('id_quiz', $id_quiz)
-            ->get()->getRowArray();
-
-        $soal = $db->table('quiz_soal')
-            ->where('id_quiz', $id_quiz)
-            ->get()->getResultArray();
-
-        return view('Dashboard/Peserta/quiz_kerjakan', [
-            'quiz' => $quiz,
-            'soal' => $soal,
-        ]);
-    }
-
-    // =========================================================
-    //  SUBMIT QUIZ
-    // =========================================================
-    public function submitQuiz($id_quiz)
-    {
-        $db           = \Config\Database::connect();
-        $jawaban_user = $this->request->getPost('jawaban');
-
-        $soal  = $db->table('quiz_soal')
-            ->where('id_quiz', $id_quiz)
-            ->get()->getResultArray();
-
-        $benar = 0;
-        $total = count($soal);
-
-        foreach ($soal as $s) {
-            $id = $s['id_soal'];
-            if (isset($jawaban_user[$id]) && $jawaban_user[$id] == $s['jawaban_benar']) {
-                $benar++;
-            }
-        }
-
-        $nilai = $total > 0 ? ($benar / $total) * 100 : 0;
-
-        $db->table('quiz_results')->insert([
-            'id_users'                   => $this->idUsers,
-            'id_quiz'                    => $id_quiz,
-            'jumlah_benar_quiz_results'  => $benar,
-            'jumlah_salah_quiz_results'  => $total - $benar,
-            'nilai_quiz_results'         => round($nilai),
-            'waktu_selesai_quiz_results' => date('Y-m-d H:i:s'),
-            'created_at'                 => date('Y-m-d H:i:s'),
-        ]);
-
-        return redirect()->to('dashboard/peserta/hasil-quiz')
-            ->with('success', 'Quiz selesai! Nilai kamu: ' . round($nilai));
-    }
-
-    // =========================================================
-    //  HASIL QUIZ
-    // =========================================================
-    public function hasilQuiz()
-    {
-        $db = \Config\Database::connect();
-
-        $hasil = $db->table('quiz_results qr')
-            ->select('qr.*, q.judul_quiz')
-            ->join('quiz q', 'q.id_quiz = qr.id_quiz')
-            ->where('qr.id_users', $this->idUsers)
-            ->orderBy('qr.created_at', 'DESC')
-            ->get()->getResultArray();
-
-        return view('Dashboard/Peserta/hasil_quiz', [
-            'hasil' => $hasil
         ]);
     }
 

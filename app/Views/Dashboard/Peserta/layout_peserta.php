@@ -10,7 +10,9 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="<?= base_url('css/peserta-layout.css') ?>">
@@ -59,14 +61,14 @@
                     <a href="<?= base_url('dashboard/peserta/beranda') ?>">
                         <i class="bi bi-house-fill"></i> Beranda
                         <?php if (uri_string() === 'dashboard/peserta/beranda'): ?>
-                            <span class="dot"></span>
+                        <span class="dot"></span>
                         <?php endif; ?>
                     </a>
                 </li>
 
                 <li <?= str_starts_with(uri_string(), 'dashboard/peserta/kelas') ? 'class="active"' : '' ?>>
                     <a href="<?= base_url('dashboard/peserta/kelas') ?>">
-                        <i class="bi bi-book-fill"></i> Kelas Saya
+                        <i class="bi bi-book-fill"></i> Program
                     </a>
                 </li>
             </ul>
@@ -77,7 +79,7 @@
                     <a href="<?= base_url('dashboard/peserta/profil') ?>">
                         <i class="bi bi-person-circle"></i> Profil Saya
                         <?php if (uri_string() === 'dashboard/peserta/profil'): ?>
-                            <span class="dot"></span>
+                        <span class="dot"></span>
                         <?php endif; ?>
                     </a>
                 </li>
@@ -132,134 +134,134 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        function toggleSub(el) {
-            el.closest('.has-sub').classList.toggle('open');
-        }
+    function toggleSub(el) {
+        el.closest('.has-sub').classList.toggle('open');
+    }
     </script>
 
     <script>
-        <?php if (session()->getFlashdata('success')): ?>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: '<?= esc(session()->getFlashdata('success')) ?>',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        <?php endif; ?>
-        <?php if (session()->getFlashdata('error')): ?>
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: '<?= esc(session()->getFlashdata('error')) ?>'
-            });
-        <?php endif; ?>
+    <?php if (session()->getFlashdata('success')): ?>
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: '<?= esc(session()->getFlashdata('success')) ?>',
+        timer: 2000,
+        showConfirmButton: false
+    });
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+    Swal.fire({
+        icon: 'error',
+        title: 'Gagal',
+        text: '<?= esc(session()->getFlashdata('error')) ?>'
+    });
+    <?php endif; ?>
     </script>
 
     <!-- Pastikan cookie device_fp selalu ada di browser -->
     <script>
-        (function () {
-            function hashStr(str) {
-                let h = 0;
-                for (let i = 0; i < str.length; i++) {
-                    h = (h << 5) - h + str.charCodeAt(i);
-                    h = h & h;
-                }
-                return Math.abs(h).toString(36);
+    (function() {
+        function hashStr(str) {
+            let h = 0;
+            for (let i = 0; i < str.length; i++) {
+                h = (h << 5) - h + str.charCodeAt(i);
+                h = h & h;
             }
+            return Math.abs(h).toString(36);
+        }
 
-            function generateFingerprint() {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                ctx.textBaseline = 'top';
-                ctx.font = '14px Arial';
-                ctx.fillText('fp', 2, 2);
-                return hashStr([
-                    navigator.userAgent,
-                    navigator.language,
-                    screen.colorDepth,
-                    screen.width + 'x' + screen.height,
-                    new Date().getTimezoneOffset(),
-                    !!window.sessionStorage,
-                    !!window.localStorage,
-                    canvas.toDataURL(),
-                ].join('|||'));
-            }
+        function generateFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillText('fp', 2, 2);
+            return hashStr([
+                navigator.userAgent,
+                navigator.language,
+                screen.colorDepth,
+                screen.width + 'x' + screen.height,
+                new Date().getTimezoneOffset(),
+                !!window.sessionStorage,
+                !!window.localStorage,
+                canvas.toDataURL(),
+            ].join('|||'));
+        }
 
-            function getCookie(name) {
-                const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-                return m ? decodeURIComponent(m[1]) : null;
-            }
+        function getCookie(name) {
+            const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+            return m ? decodeURIComponent(m[1]) : null;
+        }
 
-            function setCookieFP(value) {
-                const exp = new Date();
-                exp.setFullYear(exp.getFullYear() + 1);
-                document.cookie = `device_fp=${value}; expires=${exp.toUTCString()}; path=/; SameSite=Strict`;
-            }
+        function setCookieFP(value) {
+            const exp = new Date();
+            exp.setFullYear(exp.getFullYear() + 1);
+            document.cookie = `device_fp=${value}; expires=${exp.toUTCString()}; path=/; SameSite=Strict`;
+        }
 
-            if (!getCookie('device_fp')) {
-                setCookieFP(generateFingerprint());
-            }
-        })();
+        if (!getCookie('device_fp')) {
+            setCookieFP(generateFingerprint());
+        }
+    })();
     </script>
 
     <script src="<?= base_url('js/realtime.js') ?>"></script>
     <script>
-        let logoutTriggered = false;
-        let monitor;
+    let logoutTriggered = false;
+    let monitor;
 
-        function triggerAutoLogout() {
-            if (logoutTriggered) return;
-            logoutTriggered = true;
-            if (monitor) monitor.stop();
-            const overlay = document.getElementById('logout-overlay');
-            overlay.classList.add('show');
+    function triggerAutoLogout() {
+        if (logoutTriggered) return;
+        logoutTriggered = true;
+        if (monitor) monitor.stop();
+        const overlay = document.getElementById('logout-overlay');
+        overlay.classList.add('show');
+        requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    document.getElementById('logout-progress').style.width = '100%';
-                });
+                document.getElementById('logout-progress').style.width = '100%';
             });
-            setTimeout(async () => {
-                try {
-                    await fetch('<?= base_url("/logout") ?>', {
-                        method: 'GET',
-                        redirect: 'manual'
-                    });
-                } catch (_) {}
-                window.location.replace('<?= base_url("/login") ?>');
-            }, 2000);
-        }
-
-        monitor = new RealtimeMonitor({
-            baseUrl: "<?= base_url() ?>",
-            user: "<?= esc(session()->get('email')) ?>",
-            onConnected:        () => console.log('[SSE] Terhubung'),
-            onDisconnected:     () => console.log('[SSE] Terputus, mencoba reconnect...'),
-            onError:            (e) => console.warn('[SSE] Error:', e),
-            onNewAttendance:    (data) => console.log('[SSE] Notif baru:', data),
-            onUpdateAttendance: (data) => {
-                console.log('[SSE] Sesi diambil alih:', data);
-                triggerAutoLogout();
-            },
         });
+        setTimeout(async () => {
+            try {
+                await fetch('<?= base_url("/logout") ?>', {
+                    method: 'GET',
+                    redirect: 'manual'
+                });
+            } catch (_) {}
+            window.location.replace('<?= base_url("/login") ?>');
+        }, 2000);
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.body.classList.contains('protected-page')) monitor.start();
-        });
+    monitor = new RealtimeMonitor({
+        baseUrl: "<?= base_url() ?>",
+        user: "<?= esc(session()->get('email')) ?>",
+        onConnected: () => console.log('[SSE] Terhubung'),
+        onDisconnected: () => console.log('[SSE] Terputus, mencoba reconnect...'),
+        onError: (e) => console.warn('[SSE] Error:', e),
+        onNewAttendance: (data) => console.log('[SSE] Notif baru:', data),
+        onUpdateAttendance: (data) => {
+            console.log('[SSE] Sesi diambil alih:', data);
+            triggerAutoLogout();
+        },
+    });
 
-        window.addEventListener('beforeunload', () => monitor.stop());
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.body.classList.contains('protected-page')) monitor.start();
+    });
+
+    window.addEventListener('beforeunload', () => monitor.stop());
     </script>
 
     <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('show');
-            document.querySelector('.sidebar-overlay').classList.toggle('show');
-        }
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('show');
+        document.querySelector('.sidebar-overlay').classList.toggle('show');
+    }
 
-        function closeSidebar() {
-            document.getElementById('sidebar').classList.remove('show');
-            document.querySelector('.sidebar-overlay').classList.remove('show');
-        }
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('show');
+        document.querySelector('.sidebar-overlay').classList.remove('show');
+    }
     </script>
 
     <?= $this->renderSection('scripts'); ?>

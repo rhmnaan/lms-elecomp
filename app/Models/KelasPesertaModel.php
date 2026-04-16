@@ -41,14 +41,12 @@ class KelasPesertaModel extends Model
                 kelas.deskripsi_kelas,
                 users.nama_users as nama_pengajar,
                 COUNT(DISTINCT modul.id_modul) as total_modul,
-                COUNT(DISTINCT materi.id_materi) as total_materi,
-                COUNT(DISTINCT quiz.id_quiz) as total_quiz
+                COUNT(DISTINCT materi.id_materi) as total_materi
             ')
             ->join('kelas', 'kelas.id_kelas = kelas_peserta.id_kelas')
             ->join('users', 'users.id_users = kelas.id_users', 'left')
             ->join('modul', 'modul.id_kelas = kelas.id_kelas AND modul.deleted_at IS NULL', 'left')
             ->join('materi', 'materi.id_modul = modul.id_modul AND materi.deleted_at IS NULL', 'left')
-            ->join('quiz', 'quiz.id_modul = modul.id_modul AND quiz.deleted_at IS NULL', 'left')
             ->where('kelas_peserta.id_users', $id_users)
             ->where('kelas_peserta.deleted_at', null)
             ->groupBy('kelas.id_kelas')

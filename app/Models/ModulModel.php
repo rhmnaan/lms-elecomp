@@ -42,10 +42,8 @@ class ModulModel extends Model
         $builder = $this->select('
                 modul.*,
                 COUNT(DISTINCT materi.id_materi) as total_materi,
-                COUNT(DISTINCT quiz.id_quiz) as total_quiz
             ')
             ->join('materi', 'materi.id_modul = modul.id_modul AND materi.deleted_at IS NULL', 'left')
-            ->join('quiz', 'quiz.id_modul = modul.id_modul AND quiz.deleted_at IS NULL', 'left')
             ->groupBy('modul.id_modul')
             ->orderBy('modul.urutan_modul', 'ASC');
         
