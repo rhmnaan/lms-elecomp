@@ -15,18 +15,23 @@
 
 <?php if (empty($program_list)): ?>
 <div class="program-empty">
-    <i class="bi bi-mortarboard"></i>
+    <div class="empty-icon-wrapper">
+        <i class="bi bi-mortarboard"></i>
+    </div>
     <h3>Belum Ada Program</h3>
     <p>Program yang kamu ikuti akan muncul di sini</p>
 </div>
 <?php else: ?>
 <div class="program-grid">
     <?php foreach ($program_list as $index => $p): ?>
-    <a href="<?= base_url('dashboard/peserta/program/' . $p['id_program']) ?>" class="program-card">
+    <a href="<?= base_url('dashboard/peserta/program/' . $p['id_program']) ?>" class="program-card"
+        style="animation-delay: <?= $index * 0.1 ?>s">
 
         <div class="program-banner banner-<?= $index % 3 ?>">
+            <div class="banner-overlay"></div>
+
             <span class="program-badge">
-                <?= esc($p['total_kelas']) ?> Kelas
+                <i class="bi bi-journal-text"></i> <?= esc($p['total_kelas']) ?> Kelas
             </span>
 
             <h3 class="program-title">

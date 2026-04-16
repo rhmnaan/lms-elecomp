@@ -1,46 +1,87 @@
 /* ===============================
+   VARIABEL WARNA & ANIMASI
+================================ */
+:root {
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --card-bg: #ffffff;
+    --primary: #4f46e5;
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 40px -5px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+/* ===============================
+   KEYFRAMES (ANIMASI)
+================================ */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===============================
    HEADER
 ================================ */
 .program-header {
-    margin-bottom: 28px;
+    margin-bottom: 32px;
 }
 
 .program-header h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 800;
-    margin-bottom: 4px;
+    color: var(--text-main);
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
 }
 
 .program-header p {
-    color: #6b7280;
-    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-size: 1.05rem;
 }
 
 /* ===============================
    EMPTY STATE
 ================================ */
 .program-empty {
-    background: #fff;
-    border-radius: 20px;
-    padding: 60px 20px;
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 80px 20px;
     text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+    border: 2px dashed rgba(99, 102, 241, 0.2);
+    box-shadow: var(--shadow-sm);
+}
+
+.empty-icon-wrapper {
+    width: 90px;
+    height: 90px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
 }
 
 .program-empty i {
-    font-size: 60px;
+    font-size: 40px;
     color: #6366f1;
-    margin-bottom: 16px;
 }
 
 .program-empty h3 {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 700;
-    margin-bottom: 6px;
+    color: var(--text-main);
+    margin-bottom: 8px;
 }
 
 .program-empty p {
-    color: #6b7280;
+    color: var(--text-muted);
 }
 
 /* ===============================
@@ -48,59 +89,72 @@
 ================================ */
 .program-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 28px;
 }
 
 /* ===============================
    CARD
 ================================ */
 .program-card {
-    background: #ffffff;
-    border-radius: 22px;
+    background: var(--card-bg);
+    border-radius: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
     overflow: hidden;
     text-decoration: none;
     color: inherit;
-    box-shadow: 0 18px 45px rgba(0,0,0,0.08);
-    transition: all 0.35s ease;
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
     display: flex;
     flex-direction: column;
+    
+    /* Setup Animasi Masuk */
+    opacity: 0; 
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .program-card:hover {
-    transform: translateY(-10px) scale(1.01);
-    box-shadow: 0 30px 65px rgba(0,0,0,0.15);
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
 }
 
 /* ===============================
-   BANNER
+   BANNER & OVERLAY
 ================================ */
 .program-banner {
-    padding: 26px;
-    min-height: 150px;
+    padding: 30px 26px;
+    min-height: 160px;
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     color: #fff;
+    overflow: hidden;
+    z-index: 1;
 }
 
-.banner-0 {
-    background: linear-gradient(135deg, #6366f1, #3b82f6);
+/* Efek bercahaya pada sudut banner */
+.banner-overlay {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    z-index: -1;
 }
 
-.banner-1 {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-
-.banner-2 {
-    background: linear-gradient(135deg, #f59e0b, #f97316);
-}
+/* Palet Gradien Modern */
+.banner-0 { background: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%); }
+.banner-1 { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+.banner-2 { background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%); }
 
 .program-title {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 800;
-    line-height: 1.3;
+    line-height: 1.4;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* ===============================
@@ -108,36 +162,45 @@
 ================================ */
 .program-badge {
     position: absolute;
-    top: 18px;
-    right: 18px;
-    background: rgba(255,255,255,0.25);
-    backdrop-filter: blur(6px);
-    padding: 6px 14px;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 16px;
     border-radius: 999px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* ===============================
    FOOTER
 ================================ */
 .program-footer {
-    padding: 16px 22px;
-    background: #fafafa;
-    border-top: 1px solid #eee;
+    padding: 20px 26px;
+    background: #ffffff;
 }
 
 .program-action {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #4f46e5;
-    transition: all 0.25s ease;
+    color: var(--primary);
 }
 
-.program-card:hover .program-action {
-    gap: 14px;
+.program-action i {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+
+/* Animasi panah bergeser, lebih baik daripada mengubah gap */
+.program-card:hover .program-action i {
+    transform: translateX(6px);
 }
 
 /* ===============================
@@ -145,15 +208,19 @@
 ================================ */
 @media (max-width: 576px) {
     .program-header h1 {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
+    }
+    
+    .program-grid {
+        grid-template-columns: 1fr;
     }
 
     .program-banner {
-        padding: 20px;
-        min-height: 130px;
+        padding: 24px 20px;
+        min-height: 140px;
     }
 
     .program-title {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
     }
 }
