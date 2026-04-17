@@ -168,75 +168,6 @@ $errors  = session()->getFlashdata('errors');
         .kelas-grid { grid-template-columns: 1fr; }
         .kelas-page-header { flex-direction: column; }
     }
-
-    /* FILTER BOX MODERN */
-    .filter-box {
-        position: relative;
-        display: flex;
-        align-items: center;
-        background: #f9fafb;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 14px;
-        padding: 0 12px;
-        height: 40px;
-        min-width: 200px;
-        max-width: 240px;
-        transition: all .2s ease;
-    }
-
-    .filter-box i {
-        color: #9ca3af;
-        font-size: 13px;
-        margin-right: 6px;
-    }
-
-    .filter-box select {
-        border: none;
-        outline: none;
-        background: transparent;
-        font-size: 13px;
-        color: #374151;
-        width: 100%;
-        cursor: pointer;
-        appearance: none;
-    }
-
-    /* hover & focus effect */
-    .filter-box:hover {
-        border-color: #059669;
-        background: #fff;
-    }
-
-    .filter-box:focus-within {
-        border-color: #059669;
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(5,150,105,0.15);
-    }
-
-    /* dropdown arrow custom */
-    .filter-box::after {
-        content: "▾";
-        position: absolute;
-        right: 12px;
-        font-size: 12px;
-        color: #9ca3af;
-        pointer-events: none;
-    }
-    .toolbar-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-    background: #fff;
-    border-radius: 18px;
-    padding: 16px 20px;
-    box-shadow: 0 4px 18px rgba(0,0,0,.06);
-}
-.search-box input,
-.filter-box {
-    transition: all 0.25s ease;
-}
 </style>
 
 <!-- Page Header -->
@@ -267,19 +198,6 @@ $errors  = session()->getFlashdata('errors');
     <div class="toolbar-count">
         Total: <strong id="totalKelas"><?= count($kelas_list ?? []) ?></strong> kelas
     </div>
-
-    <!-- filter -->
-    <div class="filter-box">
-        <i class="bi bi-funnel-fill"></i>
-        <select id="filterProgramGrid">
-            <option value="">Semua Program</option>
-            <?php foreach ($programList as $p): ?>
-                <option value="<?= $p['id_program'] ?>">
-                    <?= esc($p['nama_program']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
 </div>
 
 <?php
@@ -292,9 +210,7 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
     <?php if (!empty($kelas_list)): ?>
         <?php foreach ($kelas_list as $i => $k): ?>
             <?php $c = $colors[$i % count($colors)]; $ic = $icons[$i % count($icons)]; ?>
-            <div class="kelas-card" 
-                data-nama="<?= strtolower(esc($k['nama_kelas'])) ?>"
-                data-program="<?= $k['id_program'] ?? '' ?>">
+            <div class="kelas-card" data-nama="<?= strtolower(esc($k['nama_kelas'])) ?>">
                 <div class="kelas-card-band band-<?= $c ?>"></div>
                 <div class="kelas-card-body">
                     <div class="kelas-icon-row">
@@ -440,24 +356,6 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
             <div class="modal-body px-4 pt-3 pb-4">
                 <form action="<?= base_url('dashboard/pengajar/kelas/store') ?>" method="POST">
                     <?= csrf_field() ?>
-
-                    <!-- Program Filter -->
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold small">Program</label>
-                        <select id="filterProgramKelas" class="form-select">
-                            <option value="">-- Semua Program (tanpa filter) --</option>
-                            <?php foreach ($programList as $p): ?>
-                                <option value="<?= $p['id_program'] ?>">
-                                    <?= esc($p['nama_program']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <div class="form-text">Opsional: pilih program untuk mengaitkan kelas ke program.</div>
-                    </div>
-
-                    <!-- id_program hidden (dikirim ke server) -->
-                    <input type="hidden" name="id_program" id="hiddenIdProgram" value="">
-
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">Nama Kelas <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="nama_kelas"
@@ -577,19 +475,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const BASE = '<?= base_url('dashboard/pengajar') ?>';
 
     // ── Search kelas ──
-    // document.getElementById('searchKelas').addEventListener('input', function () {
-    //     const q = this.value.toLowerCase();
-    //     const cards = document.querySelectorAll('#kelasGrid .kelas-card');
-    //     let visible = 0;
-    //     cards.forEach(card => {
-    //         const match = card.dataset.nama.includes(q);
-    //         card.style.display = match ? '' : 'none';
-    //         if (match) visible++;
-    //     });
-    //     document.getElementById('totalKelas').textContent = visible;
-    //     document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
-    // });
-
+    document.getElementById('searchKelas').addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        const cards = document.querySelectorAll('#kelasGrid .kelas-card');
+        let visible = 0;
+        cards.forEach(card => {
+            const match = card.dataset.nama.includes(q);
+            card.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        document.getElementById('totalKelas').textContent = visible;
+        document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+    });
 
     // ── Edit kelas ──
     document.querySelectorAll('.btn-edit-kelas').forEach(btn => {
@@ -617,32 +514,6 @@ document.addEventListener('DOMContentLoaded', function () {
             el.style.opacity = '0';
             setTimeout(() => el.remove(), 400);
         }, 4000);
-    });
-    // ── Filter gabungan: search + program ──
-    function applyFilter() {
-        const q        = document.getElementById('searchKelas').value.toLowerCase();
-        const progId   = document.getElementById('filterProgramGrid').value;
-        const cards    = document.querySelectorAll('#kelasGrid .kelas-card');
-        let visible    = 0;
-
-        cards.forEach(card => {
-            const namaMatch    = card.dataset.nama.includes(q);
-            const programMatch = !progId || card.dataset.program === progId;
-            const show         = namaMatch && programMatch;
-            card.style.display = show ? '' : 'none';
-            if (show) visible++;
-        });
-
-        document.getElementById('totalKelas').textContent = visible;
-        document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
-    }
-
-    document.getElementById('searchKelas').addEventListener('input', applyFilter);
-    document.getElementById('filterProgramGrid').addEventListener('change', applyFilter);
-
-    // ── Sync program ke hidden input saat modal tambah ──
-    document.getElementById('filterProgramKelas').addEventListener('change', function () {
-        document.getElementById('hiddenIdProgram').value = this.value;
     });
 
     // ════════════════════════════════════════════════════

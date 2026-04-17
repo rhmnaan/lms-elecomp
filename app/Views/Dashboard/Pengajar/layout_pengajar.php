@@ -60,7 +60,7 @@
                     <a href="<?= base_url('dashboard/pengajar/beranda') ?>">
                         <i class="bi bi-house-fill"></i> Beranda
                         <?php if (uri_string() === 'dashboard/pengajar/beranda'): ?><span
-                            class="dot"></span><?php endif; ?>
+                                class="dot"></span><?php endif; ?>
                     </a>
                 </li>
 
@@ -77,20 +77,18 @@
                     <ul class="sub-nav">
 
                         <!-- PROGRAM -->
-                        <li
-                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/program')) ? 'class="active"' : '' ?>>
+                        <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/program')) ? 'class="active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/program') ?>">
                                 <i class="bi bi-grid-1x2-fill"></i>
                                 Program
                                 <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/program')): ?>
-                                <span class="dot"></span>
+                                    <span class="dot"></span>
                                 <?php endif; ?>
                             </a>
                         </li>
 
                         <!-- KELAS -->
-                        <li
-                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/kelas')) ? 'class="sub-active"' : '' ?>>
+                        <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/kelas')) ? 'class="sub-active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/kelas') ?>">
                                 <i class="bi bi-mortarboard-fill"></i>
                                 Daftar Kelas
@@ -98,8 +96,7 @@
                         </li>
 
                         <!-- MODUL -->
-                        <li
-                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/modul')) ? 'class="sub-active"' : '' ?>>
+                        <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/modul')) ? 'class="sub-active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/modul') ?>">
                                 <i class="bi bi-journal-bookmark-fill"></i>
                                 Modul
@@ -107,8 +104,7 @@
                         </li>
 
                         <!-- MATERI -->
-                        <li
-                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/materi')) ? 'class="sub-active"' : '' ?>>
+                        <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/materi')) ? 'class="sub-active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/materi-list') ?>">
                                 <i class="bi bi-play-circle-fill"></i>
                                 Materi
@@ -122,10 +118,20 @@
                     <a href="<?= base_url('dashboard/pengajar/peserta') ?>">
                         <i class="bi bi-people-fill"></i> Peserta
                         <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/peserta')): ?><span
-                            class="dot"></span><?php endif; ?>
+                                class="dot"></span><?php endif; ?>
                     </a>
                 </li>
+                <!--  MENU VOUCHER -->
+            <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/voucher')) ? 'class="active"' : '' ?>>
+                <a href="<?= base_url('dashboard/pengajar/voucher') ?>">
+                    <i class="bi bi-ticket-perforated-fill"></i> Voucher
+                    <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/voucher')): ?>
+                        <span class="dot"></span>
+                    <?php endif; ?>
+                </a>
+            </li>
             </ul>
+            
 
             <div class="menu-label" style="margin-top:12px;">Akun</div>
             <ul class="sidebar-nav">
@@ -133,7 +139,7 @@
                     <a href="<?= base_url('dashboard/pengajar/profil') ?>">
                         <i class="bi bi-person-circle"></i> Profil Saya
                         <?php if (uri_string() === 'dashboard/pengajar/profil'): ?>
-                        <span class="dot"></span>
+                            <span class="dot"></span>
                         <?php endif; ?>
                     </a>
                 </li>
@@ -185,74 +191,74 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-    <?php if (session()->getFlashdata('success')): ?>
-    Swal.fire({
-        icon: 'success',
-        title: 'Berhasil',
-        text: '<?= esc(session()->getFlashdata('success')) ?>',
-        timer: 2000,
-        showConfirmButton: false
-    });
-    <?php endif; ?>
-    <?php if (session()->getFlashdata('error')): ?>
-    Swal.fire({
-        icon: 'error',
-        title: 'Gagal',
-        text: '<?= esc(session()->getFlashdata('error')) ?>'
-    });
-    <?php endif; ?>
+        <?php if (session()->getFlashdata('success')): ?>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: '<?= esc(session()->getFlashdata('success')) ?>',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        <?php endif; ?>
+        <?php if (session()->getFlashdata('error')): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: '<?= esc(session()->getFlashdata('error')) ?>'
+            });
+        <?php endif; ?>
     </script>
 
     <script src="<?= base_url('js/realtime.js') ?>"></script>
     <script>
-    let logoutTriggered = false;
-    let monitor;
+        let logoutTriggered = false;
+        let monitor;
 
-    function triggerAutoLogout() {
-        if (logoutTriggered) return;
-        logoutTriggered = true;
-        if (monitor) monitor.stop();
-        const overlay = document.getElementById('logout-overlay');
-        overlay.classList.add('show');
-        requestAnimationFrame(() => {
+        function triggerAutoLogout() {
+            if (logoutTriggered) return;
+            logoutTriggered = true;
+            if (monitor) monitor.stop();
+            const overlay = document.getElementById('logout-overlay');
+            overlay.classList.add('show');
             requestAnimationFrame(() => {
-                document.getElementById('logout-progress').style.width = '100%';
-            });
-        });
-        setTimeout(async () => {
-            try {
-                await fetch('<?= base_url("/logout") ?>', {
-                    method: 'GET',
-                    redirect: 'manual'
+                requestAnimationFrame(() => {
+                    document.getElementById('logout-progress').style.width = '100%';
                 });
-            } catch (_) {}
-            window.location.replace('<?= base_url("/login") ?>');
-        }, 2000);
-    }
+            });
+            setTimeout(async () => {
+                try {
+                    await fetch('<?= base_url("/logout") ?>', {
+                        method: 'GET',
+                        redirect: 'manual'
+                    });
+                } catch (_) { }
+                window.location.replace('<?= base_url("/login") ?>');
+            }, 2000);
+        }
 
-    monitor = new RealtimeMonitor({
-        baseUrl: "<?= base_url() ?>",
-        user: "<?= esc(session()->get('email')) ?>",
-        onConnected: () => console.log('[SSE] Terhubung'),
-        onDisconnected: () => console.log('[SSE] Terputus, mencoba reconnect...'),
-        onError: (e) => console.warn('[SSE] Error:', e),
-        onNewAttendance: (data) => console.log('[SSE] Absensi baru:', data),
-        onUpdateAttendance: (data) => {
-            console.log('[SSE] Sesi diambil alih:', data);
-            triggerAutoLogout();
-        },
-    });
+        monitor = new RealtimeMonitor({
+            baseUrl: "<?= base_url() ?>",
+            user: "<?= esc(session()->get('email')) ?>",
+            onConnected: () => console.log('[SSE] Terhubung'),
+            onDisconnected: () => console.log('[SSE] Terputus, mencoba reconnect...'),
+            onError: (e) => console.warn('[SSE] Error:', e),
+            onNewAttendance: (data) => console.log('[SSE] Absensi baru:', data),
+            onUpdateAttendance: (data) => {
+                console.log('[SSE] Sesi diambil alih:', data);
+                triggerAutoLogout();
+            },
+        });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        if (document.body.classList.contains('protected-page')) monitor.start();
-    });
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.body.classList.contains('protected-page')) monitor.start();
+        });
 
-    window.addEventListener('beforeunload', () => monitor.stop());
+        window.addEventListener('beforeunload', () => monitor.stop());
     </script>
     <script>
-    function toggleSub(el) {
-        el.closest('.has-sub').classList.toggle('open');
-    }
+        function toggleSub(el) {
+            el.closest('.has-sub').classList.toggle('open');
+        }
     </script>
 
     <?= $this->renderSection('scripts'); ?>
