@@ -66,9 +66,23 @@
                     </a>
                 </li>
 
+                <!-- TEMUKAN KELAS -->
                 <li <?= str_starts_with(uri_string(), 'dashboard/peserta/program') ? 'class="active"' : '' ?>>
                     <a href="<?= base_url('dashboard/peserta/program') ?>">
-                        <i class="bi bi-book-fill"></i> Program
+                        <i class="bi bi-search"></i> Temukan Kelas
+                        <?php if (str_starts_with(uri_string(), 'dashboard/peserta/program')): ?>
+                        <span class="dot"></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+
+                <!-- KELAS SAYA -->
+                <li <?= str_starts_with(uri_string(), 'dashboard/peserta/kelas') ? 'class="active"' : '' ?>>
+                    <a href="<?= base_url('dashboard/peserta/kelas') ?>">
+                        <i class="bi bi-mortarboard-fill"></i> Kelas Saya
+                        <?php if (str_starts_with(uri_string(), 'dashboard/peserta/kelas')): ?>
+                        <span class="dot"></span>
+                        <?php endif; ?>
                     </a>
                 </li>
             </ul>

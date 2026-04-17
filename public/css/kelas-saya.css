@@ -1,0 +1,99 @@
+/* ===============================
+   KELAS SAYA - PESERTA
+================================ */
+
+.kelas-saya-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+/* Card Kelas */
+.kelas-card {
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background: #fff;
+}
+
+.kelas-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Body */
+.kelas-card .card-body {
+    padding: 20px;
+}
+
+.kelas-card h5 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #1f2937;
+}
+
+/* Progress label */
+.progress-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+/* Progress bar */
+.kelas-progress {
+    height: 8px;
+    border-radius: 50px;
+    background: #e5e7eb;
+    overflow: hidden;
+}
+
+.kelas-progress .progress-bar {
+    border-radius: 50px;
+    background: linear-gradient(
+        90deg,
+        #22c55e,
+        #16a34a
+    );
+    transition: width 0.6s ease;
+}
+
+/* Progress text */
+.progress-text {
+    font-size: 0.75rem;
+    color: #374151;
+    margin-top: 6px;
+    display: block;
+}
+
+/* Footer */
+.kelas-card .card-footer {
+    padding: 14px 18px;
+}
+
+/* Button */
+.btn-lanjut {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 10px;
+    background: linear-gradient(
+        135deg,
+        #22c55e,
+        #16a34a
+    );
+    border: none;
+}
+
+.btn-lanjut:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+/* Empty state */
+.alert-info {
+    border-radius: 14px;
+    background: #f0f9ff;
+    color: #0369a1;
+    border: none;
+    padding: 18px;
+}

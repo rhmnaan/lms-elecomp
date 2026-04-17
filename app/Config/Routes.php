@@ -22,7 +22,6 @@ $routes->get('api/realtime/attendance-stream', 'RealtimeDatabaseMonitoring::atte
 $routes->get('api/check-session', 'RealtimeDatabaseMonitoring::checkSession');
 $routes->post('cekfingerprint', 'Webhook::cekFingerprint');
 
-
 // ─────────────────────────────────────────
 // PROTECTED ROUTES (LOGIN REQUIRED)
 // ─────────────────────────────────────────
@@ -50,7 +49,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('program', 'Peserta\Program::index');
         $routes->get('program/(:num)', 'Peserta\Program::kelas/$1');
 
-        $routes->get('kelas', 'DashboardPeserta::kelas');
+        $routes->get('kelas', 'DashboardPeserta::kelasSaya');
+        $routes->get('kelas/(:num)', 'DashboardPeserta::kelas/$1');
         $routes->get('materi', 'DashboardPeserta::materi');
         $routes->get('quiz', 'DashboardPeserta::quiz');
         $routes->get('hasil-quiz', 'DashboardPeserta::hasilQuiz');
@@ -62,6 +62,30 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('quiz/submit/(:num)', 'DashboardPeserta::submitQuiz/$1');
         $routes->post('quiz/simpan-materi', 'DashboardPeserta::simpanHasilQuizMateri');
         $routes->post('materi/selesai', 'DashboardPeserta::selesaiMateri');
+
+        // =====================
+        // KELAS SAYA
+        // =====================
+        // =========================
+        // TEMUKAN KELAS
+        // =========================
+        $routes->get('kelas/program', 'Dashboard\Peserta\KelasPeserta::program');
+        $routes->get('kelas/program/(:num)', 'Dashboard\Peserta\KelasPeserta::kelasByProgram/$1');
+
+        // =========================
+        // DETAIL & VOUCHER
+        // =========================
+        $routes->get('kelas/detail/(:num)', 'Dashboard\Peserta\KelasPeserta::detail/$1');
+
+        // =========================
+        // VOUCHER CLAIM
+        // =========================
+        $routes->post('voucher/claim', 'VoucherController::claim');
+
+        // =========================
+        // KELAS SAYA
+        // =========================
+        $routes->get('kelas-saya', 'Dashboard\Peserta\KelasPeserta::kelasSaya');
 
         // Pre Test & Post Test
         $routes->get('pretest/(:num)', 'Peserta\Pretest::index/$1');

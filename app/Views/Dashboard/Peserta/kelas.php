@@ -1,11 +1,11 @@
 <?php // app/Views/Dashboard/Peserta/kelas.php ?>
-<?= $this->extend('Dashboard/Peserta/layout_peserta') ?>
+<?php echo $this->extend('Dashboard/Peserta/layout_peserta') ?>
 
-<?= $this->section('meta') ?>
+<?php echo $this->section('meta') ?>
 <title>Kelas Saya — LMS Elecomp</title>
-<?= $this->endSection() ?>
+<?php echo $this->endSection() ?>
 
-<?= $this->section('styles') ?>
+<?php echo $this->section('styles') ?>
 <style>
 .kelas-grid {
     display: grid;
@@ -99,50 +99,8 @@
     line-height: 1.3;
 }
 
-.kc-pengajar {
-    font-size: 11.5px;
-    color: rgba(255, 255, 255, .75);
-    margin-top: 3px;
-    position: relative;
-    z-index: 1;
-}
-
 .kc-body {
     padding: 16px 20px 0;
-}
-
-.kc-progress-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-}
-
-.kc-progress-lbl {
-    font-size: 12px;
-    color: #6b7280;
-    font-weight: 500;
-}
-
-.kc-progress-pct {
-    font-size: 13px;
-    font-weight: 800;
-    color: #2d6cdf;
-}
-
-.kc-bar {
-    height: 5px;
-    background: #f3f4f6;
-    border-radius: 99px;
-    overflow: hidden;
-    margin-bottom: 14px;
-}
-
-.kc-bar-fill {
-    height: 100%;
-    border-radius: 99px;
-    background: linear-gradient(to right, #2d6cdf, #60a5fa);
-    transition: width .7s ease;
 }
 
 .kc-footer {
@@ -171,58 +129,6 @@
 .kc-meta-item i {
     font-size: 12px;
     color: #9ca3af;
-}
-
-.btn-lanjut {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 10px;
-    text-decoration: none;
-    transition: all .15s;
-}
-
-.btn-lanjut-blue {
-    background: #eff6ff;
-    color: #2d6cdf;
-}
-
-.btn-lanjut-blue:hover {
-    background: #2d6cdf;
-    color: #fff;
-}
-
-.btn-lanjut-green {
-    background: #f0fdf4;
-    color: #059669;
-}
-
-.btn-lanjut-green:hover {
-    background: #059669;
-    color: #fff;
-}
-
-.btn-lanjut-orange {
-    background: #fff7ed;
-    color: #d97706;
-}
-
-.btn-lanjut-orange:hover {
-    background: #d97706;
-    color: #fff;
-}
-
-.btn-lanjut-purple {
-    background: #f5f3ff;
-    color: #7c3aed;
-}
-
-.btn-lanjut-purple:hover {
-    background: #7c3aed;
-    color: #fff;
 }
 
 .empty-state {
@@ -365,69 +271,62 @@
 }
 
 /* ===============================
-   KELAS LOCKED (HALUS / ENABLED)
+   CLAIM STATUS
 ================================ */
-
-.kelas-locked {
-    position: relative;
-}
-
-/* garis hint lembut */
-.kelas-locked::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 18px;
-    box-shadow: inset 0 0 0 1.5px rgba(99, 102, 241, .25);
-    pointer-events: none;
-}
-
-/* progress tetap tampil tapi tipis */
-.kelas-locked .kc-bar-fill {
-    background: linear-gradient(to right, #c7d2fe, #a5b4fc);
-}
-
-/* tombol terlihat aktif tapi tidak klik */
-.kelas-locked .btn-lanjut {
-    background: #eef2ff !important;
-    color: #6366f1 !important;
-    cursor: default;
-    pointer-events: none;
-}
-
-/* label terkunci */
-.kelas-locked .btn-disabled {
-    display: inline-flex;
+.claim-status {
+    display: flex;
     align-items: center;
-    gap: 6px;
+}
+
+.status-ready {
     font-size: 12px;
     font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 10px;
-    background: #eef2ff;
-    color: #4f46e5;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #f0f9ff;
+    color: #0369a1;
 }
-</style>
-<?= $this->endSection() ?>
 
-<?= $this->section('content') ?>
+.status-success {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.status-error {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* ===============================
+</style>
+<?php echo $this->endSection() ?>
+
+<?php echo $this->section('content') ?>
 
 <div class="page-header">
 
     <div class="page-header-left">
-        <a href="<?= base_url('dashboard/peserta/program') ?>" class="btn-back">
+        <a href="<?php echo base_url('dashboard/peserta/program') ?>" class="btn-back">
             <i class="bi bi-arrow-left"></i> Kembali ke Program
         </a>
 
         <div>
-            <h1>Kelas Saya</h1>
-            <p>Kelas yang kamu ikuti dan progres belajarmu.</p>
+            <h1>Kelas Tersedia</h1>
+            <p>Kelas yang dapat diklaim dengan voucher yang telah disediakan.</p>
         </div>
     </div>
 
     <div class="date-badge">
         <i class="bi bi-book-fill"></i>
-        <span><?= $total_kelas ?> Kelas</span>
+        <span><?php echo $total_kelas ?> Kelas</span>
     </div>
 
 </div>
@@ -435,53 +334,40 @@
 <?php if (empty($kelas_list)): ?>
 <div class="empty-state">
     <div class="empty-icon"><i class="bi bi-journal-x"></i></div>
-    <div class="empty-title">Belum Terdaftar di Kelas</div>
-    <div class="empty-desc">Masukkan voucher untuk mulai belajar</div>
+    <div class="empty-title">Tidak Ada Kelas Tersedia</div>
+    <div class="empty-desc">Semua kelas dalam program ini sudah diklaim atau belum ada kelas yang tersedia.</div>
 </div>
 <?php else: ?>
 
 <?php
-$banners = ['banner-blue','banner-green','banner-orange','banner-purple'];
-$icons   = ['bi-lightning-charge-fill','bi-cpu-fill','bi-tools','bi-diagram-3-fill'];
-$btnCls  = ['btn-lanjut-blue','btn-lanjut-green','btn-lanjut-orange','btn-lanjut-purple'];
+    $banners = ['banner-blue', 'banner-green', 'banner-orange', 'banner-purple'];
+    $icons   = ['bi-lightning-charge-fill', 'bi-cpu-fill', 'bi-tools', 'bi-diagram-3-fill'];
+    $btnCls  = ['btn-lanjut-blue', 'btn-lanjut-green', 'btn-lanjut-orange', 'btn-lanjut-purple'];
 ?>
 
 <div class="kelas-grid">
     <?php foreach ($kelas_list as $i => $k):
-    $ci = $i % 4;
-    $lbl = $k['persen'] >= 100 ? 'Selesai' : ($k['persen'] > 0 ? 'Lanjut' : 'Mulai');
-?>
-    <div class="kelas-card <?= $k['is_locked'] ? 'kelas-locked' : '' ?>">
+            $ci = $i % 4;
+    ?>
+    <div class="kelas-card">
 
         <!-- BANNER -->
-        <div class="kc-banner <?= $banners[$ci] ?>">
-            <div class="kc-icon"><i class="bi <?= $icons[$ci] ?>"></i></div>
-            <div class="kc-nama"><?= esc($k['nama_kelas']) ?></div>
-            <div class="kc-pengajar"><?= esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
+        <div class="kc-banner <?php echo $banners[$ci] ?>">
+            <div class="kc-icon"><i class="bi <?php echo $icons[$ci] ?>"></i></div>
+            <div class="kc-nama"><?php echo esc($k['nama_kelas']) ?></div>
         </div>
 
         <!-- BODY -->
         <div class="kc-body">
-            <!-- PROGRESS -->
-            <div class="kc-progress-head">
-                <span class="kc-progress-lbl">Progress</span>
-                <span class="kc-progress-pct"><?= $k['persen'] ?>%</span>
-            </div>
-
-            <div class="kc-bar">
-                <div class="kc-bar-fill" style="width:<?= $k['persen'] ?>%"></div>
-            </div>
-
-            <!-- 🔑 VOUCHER -->
+            <!-- VOUCHER CLAIM -->
             <div class="voucher-box">
                 <label>Kode Voucher Kelas</label>
-                <form action="<?= base_url('dashboard/peserta/voucher/redeem') ?>" method="post">
-                    <?= csrf_field() ?>
-                    <input type="hidden" name="id_kelas" value="<?= $k['id_kelas'] ?>">
+                <form class="voucher-form" data-kelas-id="<?php echo $k['id_kelas'] ?>">
+                    <?php echo csrf_field() ?>
                     <div class="voucher-input">
                         <input type="text" name="kode_voucher" placeholder="Masukkan kode voucher" required>
                         <button type="submit">
-                            Gunakan
+                            Claim
                         </button>
                     </div>
                 </form>
@@ -492,38 +378,84 @@ $btnCls  = ['btn-lanjut-blue','btn-lanjut-green','btn-lanjut-orange','btn-lanjut
         <div class="kc-footer">
             <div class="kc-meta">
                 <div class="kc-meta-item">
-                    <i class="bi bi-journal-text"></i> <?= $k['total_modul'] ?> Modul
+                    <i class="bi bi-journal-text"></i> <?php echo $k['total_modul'] ?> Modul
                 </div>
                 <div class="kc-meta-item">
-                    <i class="bi bi-clock"></i> <?= $k['total_materi'] ?> Materi
+                    <i class="bi bi-book"></i> <?php echo $k['total_materi'] ?> Materi
                 </div>
             </div>
 
-            <?php if ($k['is_locked']): ?>
-            <span style="
-    position:absolute;
-    top:14px;
-    right:14px;
-    font-size:11px;
-    font-weight:700;
-    padding:4px 10px;
-    border-radius:999px;
-    background:rgba(255,255,255,.9);
-    color:#4f46e5;
-">
-                <i class="bi bi-lock-fill"></i> Perlu Voucher
-            </span>
-            <?php else: ?>
-            <span class="btn-lanjut btn-disabled">
-                Terkunci <i class="bi bi-lock-fill"></i>
-            </span>
-            <?php endif ?>
+            <div class="claim-status" id="status-<?php echo $k['id_kelas'] ?>">
+                <span class="status-ready">Siap diklaim</span>
+            </div>
         </div>
 
     </div>
-    <?php endforeach ?>
+    <?php endforeach?>
 </div>
 
-<?php endif ?>
+<?php endif?>
 
-<?= $this->endSection() ?>
+<?php echo $this->endSection() ?>
+
+<?php echo $this->section('scripts') ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle voucher claim forms
+    document.querySelectorAll('.voucher-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const kelasId = this.dataset.kelasId;
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const statusDiv = document.getElementById(`status-${kelasId}`);
+
+            // Disable button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Memproses...';
+
+            // Update status
+            statusDiv.innerHTML = '<span class="status-ready">Memproses claim...</span>';
+
+            // Send AJAX request
+            fetch('<?php echo base_url('dashboard/peserta/voucher/claim') ?>', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Success
+                        statusDiv.innerHTML =
+                            '<span class="status-success">✓ Berhasil diklaim!</span>';
+                        this.style.display = 'none';
+
+                        // Optional: redirect after success
+                        setTimeout(() => {
+                            window.location.href =
+                                '<?php echo base_url('dashboard/peserta/kelas-saya') ?>';
+                        }, 1500);
+                    } else {
+                        // Error
+                        statusDiv.innerHTML =
+                            `<span class="status-error">${data.message}</span>`;
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Claim Kelas';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    statusDiv.innerHTML =
+                        '<span class="status-error">Terjadi kesalahan sistem</span>';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Claim Kelas';
+                });
+        });
+    });
+});
+</script>
+<?php echo $this->endSection() ?>

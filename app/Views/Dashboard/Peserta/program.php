@@ -8,7 +8,7 @@
 
 <div class="program-header">
     <div>
-        <h1>Program Saya</h1>
+        <h1>Program</h1>
         <p>Lanjutkan progres belajarmu dan raih sertifikasimu.</p>
     </div>
 </div>

@@ -1,12 +1,11 @@
 <?php
-
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\ModulModel;
-use App\Models\MateriModel;
 use App\Models\KelasPesertaModel;
+use App\Models\MateriModel;
 use App\Models\MateriQuizResultsModel;
+use App\Models\ModulModel;
 use App\Models\UserMateriProgressModel;
 
 class DashboardPeserta extends BaseController
@@ -62,7 +61,7 @@ class DashboardPeserta extends BaseController
         }
         unset($k);
 
-        if (!empty($id_kelas_list)) {
+        if (! empty($id_kelas_list)) {
             foreach ($kelas_list as &$k) {
                 $moduls_in_kelas = $db->table('modul')
                     ->where('id_kelas', $k['id_kelas'])
@@ -94,7 +93,7 @@ class DashboardPeserta extends BaseController
         }
 
         $total_materi = 0;
-        if (!empty($id_kelas_list)) {
+        if (! empty($id_kelas_list)) {
             $total_materi = $db->table('materi ma')
                 ->join('modul m', 'm.id_modul = ma.id_modul')
                 ->whereIn('m.id_kelas', $id_kelas_list)
@@ -104,40 +103,45 @@ class DashboardPeserta extends BaseController
         }
 
         $total_quiz_tersedia = 0;
-        if (!empty($id_kelas_list)) {
+        if (! empty($id_kelas_list)) {
             $total_quiz_tersedia = $db->table('materi ma')
                 ->join('modul m', 'm.id_modul = ma.id_modul')
                 ->whereIn('m.id_kelas', $id_kelas_list)
                 ->where('ma.deleted_at IS NULL')
                 ->where('m.deleted_at IS NULL')
                 ->groupStart()
-                    ->where('ma.post_test IS NOT NULL')
-                    ->orWhere('ma.pre_test IS NOT NULL')
+                ->where('ma.post_test IS NOT NULL')
+                ->orWhere('ma.pre_test IS NOT NULL')
                 ->groupEnd()
                 ->countAllResults();
         }
 
         $rows = [];
-        if (!empty($id_kelas_list)) {
+        if (! empty($id_kelas_list)) {
             $rows = $db->table('materi_quiz_results mqr')
                 ->select('mqr.nilai, mqr.jenis_test')
                 ->join('materi ma', 'ma.id_materi = mqr.id_materi')
-                ->join('modul mo',  'mo.id_modul  = ma.id_modul')
+                ->join('modul mo', 'mo.id_modul  = ma.id_modul')
                 ->whereIn('mo.id_kelas', $id_kelas_list)
                 ->where('mqr.id_users', $this->idUsers)
                 ->get()->getResultArray();
         }
 
         $total_quiz_dikerjakan = count($rows);
-        $dist_lulus = $dist_cukup = $dist_kurang = 0;
-        $sum_nilai  = 0;
+        $dist_lulus            = $dist_cukup            = $dist_kurang            = 0;
+        $sum_nilai             = 0;
 
         foreach ($rows as $r) {
-            $n = (int) $r['nilai'];
+            $n          = (int) $r['nilai'];
             $sum_nilai += $n;
-            if ($n >= 70)     $dist_lulus++;
-            elseif ($n >= 50) $dist_cukup++;
-            else              $dist_kurang++;
+            if ($n >= 70) {
+                $dist_lulus++;
+            } elseif ($n >= 50) {
+                $dist_cukup++;
+            } else {
+                $dist_kurang++;
+            }
+
         }
 
         $rata_nilai = $total_quiz_dikerjakan > 0
@@ -145,15 +149,15 @@ class DashboardPeserta extends BaseController
             : 0;
 
         $riwayat_quiz = [];
-        if (!empty($id_kelas_list)) {
+        if (! empty($id_kelas_list)) {
             $riwayat_quiz = $db->table('materi_quiz_results mqr')
                 ->select('mqr.nilai             AS nilai_quiz_results,
                           mqr.created_at        AS waktu_selesai_quiz_results,
                           CONCAT(ma.judul_materi, " (", mqr.jenis_test, "-test)") AS judul_quiz,
                           k.nama_kelas')
                 ->join('materi ma', 'ma.id_materi = mqr.id_materi')
-                ->join('modul mo',  'mo.id_modul  = ma.id_modul')
-                ->join('kelas k',   'k.id_kelas   = mo.id_kelas')
+                ->join('modul mo', 'mo.id_modul  = ma.id_modul')
+                ->join('kelas k', 'k.id_kelas   = mo.id_kelas')
                 ->where('mqr.id_users', $this->idUsers)
                 ->whereIn('mo.id_kelas', $id_kelas_list)
                 ->orderBy('mqr.created_at', 'DESC')
@@ -162,13 +166,13 @@ class DashboardPeserta extends BaseController
         }
 
         $materi_terbaru = [];
-        if (!empty($id_kelas_list)) {
+        if (! empty($id_kelas_list)) {
             $materi_terbaru = $db->table('materi ma')
                 ->select('ma.id_materi, ma.judul_materi,
                           ma.file_materi, ma.video_url_materi,
                           mo.id_modul, mo.judul_modul, k.nama_kelas')
                 ->join('modul mo', 'mo.id_modul = ma.id_modul')
-                ->join('kelas k',  'k.id_kelas  = mo.id_kelas')
+                ->join('kelas k', 'k.id_kelas  = mo.id_kelas')
                 ->whereIn('mo.id_kelas', $id_kelas_list)
                 ->where('ma.deleted_at IS NULL')
                 ->where('mo.deleted_at IS NULL')
@@ -180,7 +184,7 @@ class DashboardPeserta extends BaseController
         $peringkat           = null;
         $total_peserta_kelas = null;
 
-        if (!empty($id_kelas_list)) {
+        if (! empty($id_kelas_list)) {
             $id_kelas_pertama = $id_kelas_list[0];
 
             $peserta_ids = $db->table('kelas_peserta')
@@ -191,11 +195,11 @@ class DashboardPeserta extends BaseController
             $peserta_ids         = array_column($peserta_ids, 'id_users');
             $total_peserta_kelas = count($peserta_ids);
 
-            if (!empty($peserta_ids)) {
+            if (! empty($peserta_ids)) {
                 $rank_rows = $db->table('materi_quiz_results mqr')
                     ->select('mqr.id_users, AVG(mqr.nilai) AS avg_val')
                     ->join('materi ma', 'ma.id_materi = mqr.id_materi')
-                    ->join('modul mo',  'mo.id_modul  = ma.id_modul')
+                    ->join('modul mo', 'mo.id_modul  = ma.id_modul')
                     ->whereIn('mqr.id_users', $peserta_ids)
                     ->where('mo.id_kelas', $id_kelas_pertama)
                     ->groupBy('mqr.id_users')
@@ -228,74 +232,100 @@ class DashboardPeserta extends BaseController
         ]);
     }
 
-
     // =========================================================
-    //  KELAS PER PROGRAM
+    //  KELAS SAYA (SEMUA KELAS YANG SUDAH DI-CLAIM)
     // =========================================================
-    public function kelas($id_program)
+    public function kelasSaya()
     {
         $db = \Config\Database::connect();
 
+        // Ambil semua kelas yang sudah di-claim (ada di kelas_peserta)
         $kelas_list = $db->table('kelas k')
             ->select('
                 k.id_kelas,
                 k.nama_kelas,
                 k.deskripsi_kelas,
+                p.nama_program,
                 u.nama_users AS nama_pengajar,
                 COUNT(DISTINCT m.id_modul) AS total_modul,
-                COUNT(DISTINCT ma.id_materi) AS total_materi,
-                kp.id_users AS has_access
+                COUNT(DISTINCT ma.id_materi) AS total_materi
             ')
+            ->join('program p', 'p.id_program = k.id_program', 'left')
             ->join('users u', 'u.id_users = k.id_users', 'left')
             ->join('modul m', 'm.id_kelas = k.id_kelas AND m.deleted_at IS NULL', 'left')
             ->join('materi ma', 'ma.id_modul = m.id_modul AND ma.deleted_at IS NULL', 'left')
-
-            // 🔑 INI KUNCI UTAMANYA
             ->join(
                 'kelas_peserta kp',
-                'kp.id_kelas = k.id_kelas 
+                'kp.id_kelas = k.id_kelas
                 AND kp.id_users = ' . (int) $this->idUsers . '
                 AND kp.deleted_at IS NULL',
-                'left'
+                'inner'
             )
-
-            ->where('k.id_program', $id_program)
             ->where('k.deleted_at IS NULL')
             ->groupBy('k.id_kelas')
             ->get()
             ->getResultArray();
 
-        // ===============================
-        // HITUNG PROGRESS (HANYA JIKA AKSES)
-        // ===============================
+        // Hitung progress untuk setiap kelas
         foreach ($kelas_list as &$k) {
+            $total_materi = $db->table('materi ma')
+                ->join('modul m', 'm.id_modul = ma.id_modul')
+                ->where('m.id_kelas', $k['id_kelas'])
+                ->where('ma.deleted_at IS NULL')
+                ->where('m.deleted_at IS NULL')
+                ->countAllResults();
 
-            // default terkunci
-            $k['is_locked'] = empty($k['has_access']);
-            $k['persen']    = 0;
+            $completed_materi = $db->table('user_materi_progress ump')
+                ->join('materi ma', 'ma.id_materi = ump.id_materi')
+                ->join('modul m', 'm.id_modul = ma.id_modul')
+                ->where('m.id_kelas', $k['id_kelas'])
+                ->where('ump.id_users', $this->idUsers)
+                ->where('ump.is_completed', 1)
+                ->countAllResults();
 
-            if (!$k['is_locked']) {
-                $total_materi = $db->table('materi ma')
-                    ->join('modul m', 'm.id_modul = ma.id_modul')
-                    ->where('m.id_kelas', $k['id_kelas'])
-                    ->where('ma.deleted_at IS NULL')
-                    ->where('m.deleted_at IS NULL')
-                    ->countAllResults();
-
-                $completed_materi = $db->table('user_materi_progress ump')
-                    ->join('materi ma', 'ma.id_materi = ump.id_materi')
-                    ->join('modul m', 'm.id_modul = ma.id_modul')
-                    ->where('m.id_kelas', $k['id_kelas'])
-                    ->where('ump.id_users', $this->idUsers)
-                    ->where('ump.is_completed', 1)
-                    ->countAllResults();
-
-                $k['persen'] = $total_materi > 0
-                    ? round(($completed_materi / $total_materi) * 100)
-                    : 0;
-            }
+            $k['persen'] = $total_materi > 0
+                ? round(($completed_materi / $total_materi) * 100)
+                : 0;
         }
         unset($k);
+
+        return view('Dashboard/Peserta/kelas-saya', [
+            'kelas_list'  => $kelas_list,
+            'total_kelas' => count($kelas_list),
+        ]);
+    }
+
+    // =========================================================
+    //  KELAS PER PROGRAM (UNTUK CLAIM VOUCHER)
+    // =========================================================
+    public function kelas($id_program)
+    {
+        $db = \Config\Database::connect();
+
+        // Ambil kelas dalam program yang BELUM diklaim oleh user ini
+        $kelas_list = $db->table('kelas k')
+            ->select('
+                k.id_kelas,
+                k.nama_kelas,
+                k.deskripsi_kelas,
+                COUNT(DISTINCT m.id_modul) AS total_modul,
+                COUNT(DISTINCT ma.id_materi) AS total_materi
+            ')
+            ->join('modul m', 'm.id_kelas = k.id_kelas AND m.deleted_at IS NULL', 'left')
+            ->join('materi ma', 'ma.id_modul = m.id_modul AND ma.deleted_at IS NULL', 'left')
+            ->join(
+                'kelas_peserta kp',
+                'kp.id_kelas = k.id_kelas
+                AND kp.id_users = ' . (int) $this->idUsers . '
+                AND kp.deleted_at IS NULL',
+                'left'
+            )
+            ->where('k.id_program', $id_program)
+            ->where('k.deleted_at IS NULL')
+            ->where('kp.id_users IS NULL') // Hanya kelas yang BELUM diklaim
+            ->groupBy('k.id_kelas')
+            ->get()
+            ->getResultArray();
 
         return view('Dashboard/Peserta/kelas', [
             'kelas_list'  => $kelas_list,
@@ -351,7 +381,7 @@ class DashboardPeserta extends BaseController
     // =========================================================
     public function materi_modul($id_modul = null)
     {
-        if (!$id_modul) {
+        if (! $id_modul) {
             return redirect()->to(base_url('dashboard/peserta/modul'));
         }
 
@@ -362,12 +392,12 @@ class DashboardPeserta extends BaseController
             ->where('modul.id_modul', $id_modul)
             ->first();
 
-        if (!$modul) {
+        if (! $modul) {
             return redirect()->to(base_url('dashboard/peserta/modul'))
                 ->with('error', 'Modul tidak ditemukan');
         }
 
-        if (!$this->kelasPesertaModel->isEnrolled($modul['id_kelas'], $this->idUsers)) {
+        if (! $this->kelasPesertaModel->isEnrolled($modul['id_kelas'], $this->idUsers)) {
             return redirect()->to(base_url('dashboard/peserta/modul'))
                 ->with('error', 'Anda tidak terdaftar di kelas ini');
         }
@@ -403,7 +433,7 @@ class DashboardPeserta extends BaseController
             }
         }
 
-        if (!$materiAktif && !empty($materi_list)) {
+        if (! $materiAktif && ! empty($materi_list)) {
             $materiAktif = $materi_list[0];
         }
 
@@ -438,11 +468,11 @@ class DashboardPeserta extends BaseController
             'materi_list'    => $materi_list,
             'materi_aktif'   => $materiAktif,
             'total_materi'   => count($materi_list),
-            'has_pretest'    => !empty($pretestResult),
+            'has_pretest'    => ! empty($pretestResult),
             'nilai_pre'      => $pretestResult,
-            'has_posttest'   => !empty($posttestResult),
+            'has_posttest'   => ! empty($posttestResult),
             'nilai_post'     => $posttestResult,
-            'materi_selesai' => !empty($materiSelesai),
+            'materi_selesai' => ! empty($materiSelesai),
         ]);
     }
 
@@ -455,7 +485,7 @@ class DashboardPeserta extends BaseController
         log_message('debug', '[selesaiMateri] Is AJAX: ' . ($this->request->isAJAX() ? 'true' : 'false'));
         log_message('debug', '[selesaiMateri] Session ID User: ' . (isset($this->idUsers) ? $this->idUsers : 'NOT SET'));
 
-        if (!$this->request->isAJAX()) {
+        if (! $this->request->isAJAX()) {
             return $this->response->setJSON(['success' => false, 'error' => 'Not AJAX request']);
         }
 
@@ -500,19 +530,19 @@ class DashboardPeserta extends BaseController
     // =========================================================
     public function materi($id_materi = null)
     {
-        if (!$id_materi) {
+        if (! $id_materi) {
             return redirect()->to(base_url('dashboard/peserta/materi-list'))
                 ->with('error', 'Materi tidak ditemukan');
         }
 
         $materi = $this->materiModel->getDetail($id_materi);
 
-        if (!$materi) {
+        if (! $materi) {
             return redirect()->to(base_url('dashboard/peserta/materi-list'))
                 ->with('error', 'Materi tidak ditemukan');
         }
 
-        if (!$this->kelasPesertaModel->isEnrolled($materi['id_kelas'], $this->idUsers)) {
+        if (! $this->kelasPesertaModel->isEnrolled($materi['id_kelas'], $this->idUsers)) {
             return redirect()->to(base_url('dashboard/peserta/materi-list'))
                 ->with('error', 'Anda tidak memiliki akses ke materi ini');
         }
@@ -550,11 +580,11 @@ class DashboardPeserta extends BaseController
             'materi'         => $materi,
             'prev_materi'    => $prev_materi,
             'next_materi'    => $next_materi,
-            'has_pretest'    => !empty($pretestResult),
+            'has_pretest'    => ! empty($pretestResult),
             'nilai_pre'      => $pretestResult,
-            'has_posttest'   => !empty($posttestResult),
+            'has_posttest'   => ! empty($posttestResult),
             'nilai_post'     => $posttestResult,
-            'materi_selesai' => !empty($materiSelesai),
+            'materi_selesai' => ! empty($materiSelesai),
         ]);
     }
 
@@ -563,25 +593,25 @@ class DashboardPeserta extends BaseController
     // =========================================================
     public function pretest($id_materi = null)
     {
-        if (!$id_materi) {
+        if (! $id_materi) {
             return redirect()->to(base_url('dashboard/peserta/materi-list'))
                 ->with('error', 'Materi tidak ditemukan');
         }
 
         $materi = $this->materiModel->getDetail($id_materi);
 
-        if (!$materi) {
+        if (! $materi) {
             return redirect()->to(base_url('dashboard/peserta/materi-list'))
                 ->with('error', 'Materi tidak ditemukan');
         }
 
-        if (!$this->kelasPesertaModel->isEnrolled($materi['id_kelas'], $this->idUsers)) {
+        if (! $this->kelasPesertaModel->isEnrolled($materi['id_kelas'], $this->idUsers)) {
             return redirect()->to(base_url('dashboard/peserta/materi-list'))
                 ->with('error', 'Anda tidak memiliki akses ke materi ini');
         }
 
         $soal = [];
-        if (!empty($materi['pre_test'])) {
+        if (! empty($materi['pre_test'])) {
             $soal = is_string($materi['pre_test'])
                 ? json_decode($materi['pre_test'], true)
                 : $materi['pre_test'];
@@ -600,13 +630,12 @@ class DashboardPeserta extends BaseController
             ->get()->getRowArray();
 
         // ✅ FIX: kirim $redirect ke view agar tidak undefined
-        $redirect = $this->request->getGet('redirect')
-            ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
+        $redirect = $this->request->getGet('redirect') ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
 
         return view('Dashboard/Peserta/pretest_view', [
             'materi'      => $materi,
             'soal'        => $soal,
-            'has_pretest' => !empty($pretestResult),
+            'has_pretest' => ! empty($pretestResult),
             'nilai_pre'   => $pretestResult,
             'redirect'    => $redirect,
         ]);
@@ -617,19 +646,19 @@ class DashboardPeserta extends BaseController
     // =========================================================
     public function posttest($id_materi = null)
     {
-        if (!$id_materi) {
+        if (! $id_materi) {
             return redirect()->to(base_url('dashboard/peserta/materi-list'))
                 ->with('error', 'Materi tidak ditemukan');
         }
 
         $materi = $this->materiModel->getDetail($id_materi);
 
-        if (!$materi) {
+        if (! $materi) {
             return redirect()->to(base_url('dashboard/peserta/materi-list'))
                 ->with('error', 'Materi tidak ditemukan');
         }
 
-        if (!$this->kelasPesertaModel->isEnrolled($materi['id_kelas'], $this->idUsers)) {
+        if (! $this->kelasPesertaModel->isEnrolled($materi['id_kelas'], $this->idUsers)) {
             return redirect()->to(base_url('dashboard/peserta/materi-list'))
                 ->with('error', 'Anda tidak memiliki akses ke materi ini');
         }
@@ -637,12 +666,12 @@ class DashboardPeserta extends BaseController
         $materiSelesai = $this->userMateriProgressModel
             ->isCompleted($this->idUsers, $id_materi);
 
-        if (!$materiSelesai) {
+        if (! $materiSelesai) {
             return redirect()->back()->with('error', 'Selesaikan materi terlebih dahulu sebelum mengerjakan post-test');
         }
 
         $soal = [];
-        if (!empty($materi['post_test'])) {
+        if (! empty($materi['post_test'])) {
             $soal = is_string($materi['post_test'])
                 ? json_decode($materi['post_test'], true)
                 : $materi['post_test'];
@@ -661,13 +690,12 @@ class DashboardPeserta extends BaseController
             ->get()->getRowArray();
 
         // ✅ FIX: kirim $redirect ke view agar tidak undefined
-        $redirect = $this->request->getGet('redirect')
-            ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
+        $redirect = $this->request->getGet('redirect') ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
 
         return view('Dashboard/Peserta/posttest_view', [
             'materi'       => $materi,
             'soal'         => $soal,
-            'has_posttest' => !empty($posttestResult),
+            'has_posttest' => ! empty($posttestResult),
             'nilai_post'   => $posttestResult,
             'redirect'     => $redirect,
         ]);
@@ -678,7 +706,7 @@ class DashboardPeserta extends BaseController
     // =========================================================
     public function simpanHasilQuizMateri()
     {
-        if (!$this->request->isAJAX()) {
+        if (! $this->request->isAJAX()) {
             return $this->response->setStatusCode(403);
         }
 
@@ -690,7 +718,7 @@ class DashboardPeserta extends BaseController
         $jawaban     = $this->request->getPost('jawaban_peserta');
         $redirect    = $this->request->getPost('redirect');
 
-        if (!$idMateri || !in_array($jenisTest, ['pre', 'post'])) {
+        if (! $idMateri || ! in_array($jenisTest, ['pre', 'post'])) {
             return $this->response->setJSON(['success' => false, 'message' => 'Data tidak valid.']);
         }
 
