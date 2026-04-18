@@ -27,7 +27,7 @@
 <!-- WELCOME BANNER -->
 <div class="welcome-banner">
     <div class="welcome-text">
-        <h2>Halo, <?= esc(session()->get('nama') ?? 'Siswa') ?>! 👋</h2>
+        <h2>Halo, <?= esc(session()->get('nama_users') ?? 'Siswa') ?>! 👋</h2>
         <p>Semangat belajar hari ini. Kamu sudah mengerjakan <strong
                 style="color:#fff;"><?= esc($total_quiz_dikerjakan ?? 0) ?> quiz</strong> dari total yang tersedia.</p>
         <?php if (!empty($peringkat)): ?>

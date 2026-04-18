@@ -125,10 +125,10 @@
                     </div>
                     <div class="user-info">
                         <div class="avatar">
-                            <?= strtoupper(substr(session()->get('nama') ?? 'S', 0, 1)) ?>
+                            <?= strtoupper(substr(session()->get('nama_users') ?? 'S', 0, 1)) ?>
                         </div>
                         <div class="user-meta">
-                            <div class="user-name"><?= esc(session()->get('nama') ?? 'Siswa') ?></div>
+                            <div class="user-name"><?= esc(session()->get('nama_users') ?? 'Siswa') ?></div>
                             <div class="user-role">Peserta Didik</div>
                         </div>
                     </div>
