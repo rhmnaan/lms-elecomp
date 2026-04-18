@@ -46,7 +46,6 @@
                         <th>Kode</th>
                         <th>Nama Voucher</th>
                         <th>Kelas</th>
-                        <th>Harga</th>
                         <th>Berlaku</th>
                         <th>Kuota</th>
                         <th>Klaim</th>
@@ -57,16 +56,16 @@
                 <tbody>
                 <?php if (empty($vouchers)): ?>
                     <tr>
-                        <td colspan="10" class="text-center py-4 text-muted">
+                        <td colspan="9" class="text-center py-4 text-muted">
                             Belum ada voucher. Klik <strong>+ Tambah Voucher</strong> untuk memulai.
                         </td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($vouchers as $i => $v): ?>
                     <?php
-                        $now       = date('Y-m-d H:i:s');
-                        $expired   = $v['tanggal_berakhir'] < $now;
-                        $aktif     = $v['is_active'] && !$expired;
+                        $now     = date('Y-m-d H:i:s');
+                        $expired = $v['tanggal_berakhir'] < $now;
+                        $aktif   = $v['is_active'] && !$expired;
                     ?>
                     <tr>
                         <td class="text-muted small"><?= $i + 1 ?></td>
@@ -82,13 +81,6 @@
                             <?php endif; ?>
                         </td>
                         <td><?= esc($v['nama_kelas']) ?></td>
-                        <td>
-                            <?php if ((float)$v['harga'] == 0): ?>
-                                <span class="badge bg-success">Gratis</span>
-                            <?php else: ?>
-                                Rp <?= number_format($v['harga'], 0, ',', '.') ?>
-                            <?php endif; ?>
-                        </td>
                         <td class="small">
                             <?= date('d M Y', strtotime($v['tanggal_mulai'])) ?> –
                             <?= date('d M Y', strtotime($v['tanggal_berakhir'])) ?>
@@ -111,7 +103,6 @@
                                     data-id="<?= $v['id_voucher'] ?>"
                                     data-nama="<?= esc($v['nama_voucher']) ?>"
                                     data-deskripsi="<?= esc($v['deskripsi']) ?>"
-                                    data-harga="<?= $v['harga'] ?>"
                                     data-mulai="<?= $v['tanggal_mulai'] ?>"
                                     data-berakhir="<?= $v['tanggal_berakhir'] ?>"
                                     data-kuota="<?= $v['kuota'] ?>"
@@ -147,28 +138,29 @@
                 <div class="modal-body">
                     <div class="row g-3">
                         <!-- Program -->
-<div class="col-md-6">
-    <label class="form-label fw-semibold">Program <span class="text-danger">*</span></label>
-    <select id="selectProgram" class="form-select">
-        <option value="">-- Pilih Program --</option>
-        <?php foreach ($programList as $p): ?>
-            <option value="<?= $p['id_program'] ?>">
-                <?= esc($p['nama_program']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-</div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Program <span class="text-danger">*</span></label>
+                            <select id="selectProgram" class="form-select">
+                                <option value="">-- Pilih Program --</option>
+                                <?php foreach ($programList as $p): ?>
+                                    <option value="<?= $p['id_program'] ?>">
+                                        <?= esc($p['nama_program']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-<!-- Kelas (difilter berdasarkan program) -->
-<div class="col-md-6">
-    <label class="form-label fw-semibold">Kelas <span class="text-danger">*</span></label>
-    <select name="id_kelas" id="selectKelas" class="form-select" required disabled>
-        <option value="">-- Pilih Program dulu --</option>
-    </select>
-    <div id="loadingKelas" class="form-text text-muted d-none">
-        <span class="spinner-border spinner-border-sm me-1"></span> Memuat kelas...
-    </div>
-</div>
+                        <!-- Kelas (difilter berdasarkan program) -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Kelas <span class="text-danger">*</span></label>
+                            <select name="id_kelas" id="selectKelas" class="form-select" required disabled>
+                                <option value="">-- Pilih Program dulu --</option>
+                            </select>
+                            <div id="loadingKelas" class="form-text text-muted d-none">
+                                <span class="spinner-border spinner-border-sm me-1"></span> Memuat kelas...
+                            </div>
+                        </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Kode Voucher <span class="text-danger">*</span></label>
                             <div class="input-group">
@@ -180,34 +172,33 @@
                                 </button>
                             </div>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Nama Voucher <span class="text-danger">*</span></label>
                             <input type="text" name="nama_voucher" class="form-control"
                                    placeholder="Cth: Voucher Gratis Semester 1"
                                    value="<?= old('nama_voucher') ?>" required>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Harga (Rp) <span class="text-danger">*</span></label>
-                            <input type="number" name="harga" class="form-control"
-                                   placeholder="0 = Gratis" min="0" step="0.01"
-                                   value="<?= old('harga', 0) ?>" required>
-                        </div>
-                        <div class="col-md-3">
+
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Kuota</label>
                             <input type="number" name="kuota" class="form-control"
                                    placeholder="Kosong = tak terbatas" min="1"
                                    value="<?= old('kuota') ?>">
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Tanggal Mulai <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_mulai" class="form-control"
                                    value="<?= old('tanggal_mulai', date('Y-m-d')) ?>" required>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Tanggal Berakhir <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_berakhir" class="form-control"
                                    value="<?= old('tanggal_berakhir') ?>" required>
                         </div>
+
                         <div class="col-12">
                             <label class="form-label fw-semibold">Deskripsi</label>
                             <textarea name="deskripsi" class="form-control" rows="2"
@@ -242,22 +233,22 @@
                             <label class="form-label fw-semibold">Nama Voucher <span class="text-danger">*</span></label>
                             <input type="text" name="nama_voucher" id="editNama" class="form-control" required>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Harga (Rp) <span class="text-danger">*</span></label>
-                            <input type="number" name="harga" id="editHarga" class="form-control" min="0" step="0.01" required>
-                        </div>
-                        <div class="col-md-3">
+
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Kuota</label>
                             <input type="number" name="kuota" id="editKuota" class="form-control" placeholder="Tak terbatas" min="1">
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Tanggal Mulai <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_mulai" id="editMulai" class="form-control" required>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Tanggal Berakhir <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_berakhir" id="editBerakhir" class="form-control" required>
                         </div>
+
                         <div class="col-12">
                             <label class="form-label fw-semibold">Deskripsi</label>
                             <textarea name="deskripsi" id="editDeskripsi" class="form-control" rows="2"></textarea>
@@ -298,11 +289,11 @@
 </div>
 
 <script>
-    // ── Filter Kelas by Program ────────────────────────────────────────────
+// ── Filter Kelas by Program ────────────────────────────────────────────
 document.getElementById('selectProgram')?.addEventListener('change', function () {
-    const idProgram  = this.value;
-    const selKelas   = document.getElementById('selectKelas');
-    const loading    = document.getElementById('loadingKelas');
+    const idProgram = this.value;
+    const selKelas  = document.getElementById('selectKelas');
+    const loading   = document.getElementById('loadingKelas');
 
     selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
     selKelas.disabled  = true;
@@ -332,6 +323,7 @@ document.getElementById('selectProgram')?.addEventListener('change', function ()
             selKelas.innerHTML = '<option value="">Gagal memuat kelas</option>';
         });
 });
+
 // ── Generate kode voucher acak ─────────────────────────────────────────
 document.getElementById('btnGenKode')?.addEventListener('click', function () {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -344,10 +336,9 @@ document.getElementById('btnGenKode')?.addEventListener('click', function () {
 document.querySelectorAll('.btn-edit').forEach(btn => {
     btn.addEventListener('click', function () {
         const id = this.dataset.id;
-        document.getElementById('formEdit').action = `<?= base_url('dashboard/pengajar/voucher/update') ?>/${id}`;
+        document.getElementById('formEdit').action     = `<?= base_url('dashboard/pengajar/voucher/update') ?>/${id}`;
         document.getElementById('editNama').value      = this.dataset.nama;
         document.getElementById('editDeskripsi').value = this.dataset.deskripsi || '';
-        document.getElementById('editHarga').value     = this.dataset.harga;
         document.getElementById('editMulai').value     = this.dataset.mulai ? this.dataset.mulai.substring(0, 10) : '';
         document.getElementById('editBerakhir').value  = this.dataset.berakhir ? this.dataset.berakhir.substring(0, 10) : '';
         document.getElementById('editKuota').value     = this.dataset.kuota || '';
@@ -367,8 +358,8 @@ document.querySelectorAll('.btn-delete').forEach(btn => {
 // ── Toggle Aktif / Nonaktif ───────────────────────────────────────────
 document.querySelectorAll('.toggle-active').forEach(toggle => {
     toggle.addEventListener('change', function () {
-        const id  = this.dataset.id;
-        const el  = this;
+        const id = this.dataset.id;
+        const el = this;
         fetch(`<?= base_url('dashboard/pengajar/voucher/toggle') ?>/${id}`, {
             method: 'POST',
             headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
@@ -377,7 +368,7 @@ document.querySelectorAll('.toggle-active').forEach(toggle => {
         .then(r => r.json())
         .then(data => {
             if (!data.success) {
-                el.checked = !el.checked; // rollback
+                el.checked = !el.checked;
                 alert(data.message);
             }
         })
