@@ -37,15 +37,20 @@ class VoucherController extends BaseController
         $id_kelas = $this->request->getPost('id_kelas');
 
         // Validasi input
-        if (empty($kode_voucher) || empty($id_kelas) || empty($id_users)) {
+        if (empty($id_kelas) || empty($id_users)) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Data tidak lengkap'
             ]);
         }
 
-        // Validasi voucher
-        $voucher = $this->voucherModel->validateVoucher($kode_voucher, $id_kelas);
+        // Jika kode voucher tidak diberikan, cari voucher yang valid untuk kelas ini
+        if (empty($kode_voucher)) {
+            $voucher = $this->voucherModel->getValidVoucher(null, $id_kelas);
+        } else {
+            // Validasi voucher dengan kode
+            $voucher = $this->voucherModel->validateVoucher($kode_voucher, $id_kelas);
+        }
 
         if (!$voucher) {
             return $this->response->setJSON([

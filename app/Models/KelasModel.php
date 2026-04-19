@@ -15,33 +15,44 @@ class KelasModel extends Model
     protected $protectFields  = true;
 
     protected $allowedFields = [
-        'id_program',        // ✅ TAMBAHAN
+        'id_program',
+        'tipe_kelas',      // gratis | berbayar
+        'harga',           // nullable
+        'lynk_url',        // nullable
         'nama_kelas',
         'deskripsi_kelas',
         'id_users'
     ];
-    
+
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
     protected $deletedField = 'deleted_at';
-    
+
     protected $validationRules = [
-        'id_program' => 'required|numeric', // ✅ TAMBAHAN
-        'nama_kelas' => 'required|min_length[3]|max_length[100]',
-        'id_users'   => 'required|numeric'
+        'id_program'  => 'required|numeric',
+        'tipe_kelas'  => 'required|in_list[gratis,berbayar]',
+        'nama_kelas'  => 'required|min_length[3]|max_length[100]',
+        'id_users'    => 'required|numeric'
     ];
-    
-    /**
-     * Get kelas with pengajar + program
-     */
+
+    protected $validationMessages = [
+        'tipe_kelas' => [
+            'in_list' => 'Tipe kelas harus gratis atau berbayar'
+        ]
+    ];
+
+    /* =========================
+     * ADMIN / PENGAJAR
+     * ========================= */
+
     public function getWithPengajar()
     {
         return $this->select('
                 kelas.*,
                 program.nama_program,
-                users.nama_users as nama_pengajar,
+                users.nama_users AS nama_pengajar,
                 users.email_users
             ')
             ->join('program', 'program.id_program = kelas.id_program')
@@ -49,63 +60,101 @@ class KelasModel extends Model
             ->where('kelas.deleted_at', null)
             ->findAll();
     }
-    
-    /**
-     * Get kelas by pengajar
-     */
+
     public function getByPengajar($id_pengajar)
     {
         return $this->select('kelas.*, program.nama_program')
-                    ->join('program', 'program.id_program = kelas.id_program')
-                    ->where('kelas.id_users', $id_pengajar)
-                    ->where('kelas.deleted_at', null)
-                    ->findAll();
+            ->join('program', 'program.id_program = kelas.id_program')
+            ->where('kelas.id_users', $id_pengajar)
+            ->where('kelas.deleted_at', null)
+            ->findAll();
     }
-    
-    /**
-     * Get kelas by program
-     */
+
     public function getByProgram($id_program)
     {
         return $this->select('kelas.*, program.nama_program')
-                    ->join('program', 'program.id_program = kelas.id_program')
-                    ->where('kelas.id_program', $id_program)
-                    ->where('kelas.deleted_at', null)
-                    ->findAll();
+            ->join('program', 'program.id_program = kelas.id_program')
+            ->where('kelas.id_program', $id_program)
+            ->where('kelas.deleted_at', null)
+            ->findAll();
     }
-    
-    /**
-     * Get kelas with modul count
-     */
+
     public function getWithModulCount()
     {
         return $this->select('
                 kelas.*,
                 program.nama_program,
-                users.nama_users as nama_pengajar,
-                COUNT(DISTINCT modul.id_modul) as total_modul
+                users.nama_users AS nama_pengajar,
+                COUNT(DISTINCT modul.id_modul) AS total_modul
             ')
             ->join('program', 'program.id_program = kelas.id_program')
             ->join('users', 'users.id_users = kelas.id_users', 'left')
-            ->join('modul', 'modul.id_kelas = kelas.id_kelas AND modul.deleted_at IS NULL', 'left')
+            ->join(
+                'modul',
+                'modul.id_kelas = kelas.id_kelas AND modul.deleted_at IS NULL',
+                'left'
+            )
             ->where('kelas.deleted_at', null)
             ->groupBy('kelas.id_kelas')
             ->findAll();
     }
 
-    /**
-     * Detail kelas lengkap (program + pengajar)
-     */
     public function getDetail($id_kelas)
     {
         return $this->select('
                 kelas.*,
                 program.nama_program,
                 program.deskripsi_program,
-                users.nama_users as nama_pengajar
+                users.nama_users AS nama_pengajar
             ')
             ->join('program', 'program.id_program = kelas.id_program')
             ->join('users', 'users.id_users = kelas.id_users', 'left')
+            ->where('kelas.id_kelas', $id_kelas)
+            ->where('kelas.deleted_at', null)
+            ->first();
+    }
+
+    /* =========================
+     * PESERTA
+     * ========================= */
+
+    // Kelas GRATIS → butuh voucher
+    public function getGratisByProgram($id_program)
+    {
+        return $this->where([
+                'id_program' => $id_program,
+                'tipe_kelas' => 'gratis'
+            ])
+            ->where('deleted_at', null)
+            ->findAll();
+    }
+
+    // Kelas BERBAYAR → via Lynk
+    public function getBerbayarByProgram($id_program)
+    {
+        return $this->where([
+                'id_program' => $id_program,
+                'tipe_kelas' => 'berbayar'
+            ])
+            ->where('deleted_at', null)
+            ->findAll();
+    }
+
+    // Untuk halaman detail peserta
+    public function getForPeserta($id_kelas)
+    {
+        return $this->select('
+                kelas.id_kelas,
+                kelas.nama_kelas,
+                kelas.deskripsi_kelas,
+                kelas.tipe_kelas,
+                kelas.harga,
+                kelas.lynk_url,
+                program.nama_program,
+                users.nama_users AS nama_pengajar
+            ')
+            ->join('program', 'program.id_program = kelas.id_program')
+            ->join('users', 'users.id_users = kelas.id_users')
             ->where('kelas.id_kelas', $id_kelas)
             ->where('kelas.deleted_at', null)
             ->first();
