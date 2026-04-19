@@ -29,8 +29,8 @@ $errors  = session()->getFlashdata('errors');
 
     .toolbar-row {
         display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-        margin-bottom: 24px; background: #fff; border-radius: 16px;
-        padding: 16px 20px; box-shadow: 0 1px 8px rgba(0,0,0,.05);
+        margin-bottom: 24px; background: #fff; border-radius: 18px;
+        padding: 16px 20px; box-shadow: 0 4px 18px rgba(0,0,0,.06);
     }
     .search-box { position: relative; flex: 1; min-width: 200px; max-width: 320px; }
     .search-box i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 13px; pointer-events: none; }
@@ -75,7 +75,16 @@ $errors  = session()->getFlashdata('errors');
 
     .kelas-id-badge { font-size: 11px; font-weight: 700; letter-spacing: .5px; color: #9ca3af; text-transform: uppercase; background: #f3f4f6; padding: 4px 10px; border-radius: 20px; }
     .kelas-name  { font-size: 17px; font-weight: 700; color: #111; margin-bottom: 8px; line-height: 1.3; }
-    .kelas-desc  { font-size: 12.5px; color: #6b7280; line-height: 1.55; flex: 1; margin-bottom: 18px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .kelas-desc  { font-size: 12.5px; color: #6b7280; line-height: 1.55; flex: 1; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* Badge tipe kelas */
+    .badge-tipe {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 11px; font-weight: 700; padding: 3px 10px;
+        border-radius: 20px; margin-bottom: 14px;
+    }
+    .badge-gratis   { background: #d1fae5; color: #065f46; }
+    .badge-berbayar { background: #fef3c7; color: #92400e; }
 
     .kelas-stats { display: flex; gap: 16px; padding: 14px 0; border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6; margin-bottom: 16px; }
     .kelas-stat  { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 3px; }
@@ -122,6 +131,30 @@ $errors  = session()->getFlashdata('errors');
 
     #noResults { display: none; grid-column: 1 / -1; text-align: center; padding: 48px; color: #9ca3af; font-size: 13.5px; }
 
+    /* Tipe radio button style */
+    .tipe-radio-group { display: flex; gap: 10px; }
+    .tipe-radio-label {
+        flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+        padding: 10px 16px; border-radius: 12px; border: 2px solid #e5e7eb;
+        cursor: pointer; font-size: 13px; font-weight: 600; color: #6b7280;
+        transition: all .18s; user-select: none;
+    }
+    .tipe-radio-label:has(input:checked) { border-color: #059669; background: #f0fdf4; color: #065f46; }
+    .tipe-radio-label.berbayar:has(input:checked) { border-color: #d97706; background: #fffbeb; color: #92400e; }
+    .tipe-radio-label input { display: none; }
+
+    /* Field berbayar slide animation */
+    .field-berbayar {
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height .3s ease, opacity .3s ease;
+        opacity: 0;
+    }
+    .field-berbayar.show {
+        max-height: 200px;
+        opacity: 1;
+    }
+
     /* ── Peserta modal styles ── */
     .peserta-list { max-height: 280px; overflow-y: auto; }
     .peserta-item {
@@ -161,82 +194,27 @@ $errors  = session()->getFlashdata('errors');
     .add-peserta-form { border-top: 1px solid #f0f0f0; padding-top: 16px; margin-top: 4px; }
     .add-peserta-form label { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 6px; display: block; }
 
-    .user-option-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; }
-    .user-option-item small { color: #9ca3af; }
+    /* FILTER BOX MODERN */
+    .filter-box {
+        position: relative; display: flex; align-items: center;
+        background: #f9fafb; border: 1.5px solid #e5e7eb;
+        border-radius: 14px; padding: 0 12px; height: 40px;
+        min-width: 200px; max-width: 240px; transition: all .2s ease;
+    }
+    .filter-box i { color: #9ca3af; font-size: 13px; margin-right: 6px; }
+    .filter-box select {
+        border: none; outline: none; background: transparent;
+        font-size: 13px; color: #374151; width: 100%;
+        cursor: pointer; appearance: none;
+    }
+    .filter-box:hover { border-color: #059669; background: #fff; }
+    .filter-box:focus-within { border-color: #059669; background: #fff; box-shadow: 0 0 0 3px rgba(5,150,105,0.15); }
+    .filter-box::after { content: "▾"; position: absolute; right: 12px; font-size: 12px; color: #9ca3af; pointer-events: none; }
 
     @media (max-width: 768px) {
         .kelas-grid { grid-template-columns: 1fr; }
         .kelas-page-header { flex-direction: column; }
     }
-
-    /* FILTER BOX MODERN */
-    .filter-box {
-        position: relative;
-        display: flex;
-        align-items: center;
-        background: #f9fafb;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 14px;
-        padding: 0 12px;
-        height: 40px;
-        min-width: 200px;
-        max-width: 240px;
-        transition: all .2s ease;
-    }
-
-    .filter-box i {
-        color: #9ca3af;
-        font-size: 13px;
-        margin-right: 6px;
-    }
-
-    .filter-box select {
-        border: none;
-        outline: none;
-        background: transparent;
-        font-size: 13px;
-        color: #374151;
-        width: 100%;
-        cursor: pointer;
-        appearance: none;
-    }
-
-    /* hover & focus effect */
-    .filter-box:hover {
-        border-color: #059669;
-        background: #fff;
-    }
-
-    .filter-box:focus-within {
-        border-color: #059669;
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(5,150,105,0.15);
-    }
-
-    /* dropdown arrow custom */
-    .filter-box::after {
-        content: "▾";
-        position: absolute;
-        right: 12px;
-        font-size: 12px;
-        color: #9ca3af;
-        pointer-events: none;
-    }
-    .toolbar-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-    background: #fff;
-    border-radius: 18px;
-    padding: 16px 20px;
-    box-shadow: 0 4px 18px rgba(0,0,0,.06);
-}
-.search-box input,
-.filter-box {
-    transition: all 0.25s ease;
-}
 </style>
 
 <!-- Page Header -->
@@ -267,8 +245,6 @@ $errors  = session()->getFlashdata('errors');
     <div class="toolbar-count">
         Total: <strong id="totalKelas"><?= count($kelas_list ?? []) ?></strong> kelas
     </div>
-
-    <!-- filter -->
     <div class="filter-box">
         <i class="bi bi-funnel-fill"></i>
         <select id="filterProgramGrid">
@@ -292,7 +268,7 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
     <?php if (!empty($kelas_list)): ?>
         <?php foreach ($kelas_list as $i => $k): ?>
             <?php $c = $colors[$i % count($colors)]; $ic = $icons[$i % count($icons)]; ?>
-            <div class="kelas-card" 
+            <div class="kelas-card"
                 data-nama="<?= strtolower(esc($k['nama_kelas'])) ?>"
                 data-program="<?= $k['id_program'] ?? '' ?>">
                 <div class="kelas-card-band band-<?= $c ?>"></div>
@@ -303,6 +279,19 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                     </div>
                     <div class="kelas-name"><?= esc($k['nama_kelas']) ?></div>
                     <div class="kelas-desc"><?= esc($k['deskripsi_kelas'] ?: 'Belum ada deskripsi untuk kelas ini.') ?></div>
+
+                    <!-- Badge tipe kelas -->
+                    <?php if (($k['tipe_kelas'] ?? 'gratis') === 'berbayar'): ?>
+                        <span class="badge-tipe badge-berbayar">
+                            <i class="bi bi-tag-fill"></i>
+                            Berbayar — Rp <?= number_format($k['harga'] ?? 0, 0, ',', '.') ?>
+                        </span>
+                    <?php else: ?>
+                        <span class="badge-tipe badge-gratis">
+                            <i class="bi bi-gift-fill"></i> Gratis
+                        </span>
+                    <?php endif; ?>
+
                     <div class="kelas-stats">
                         <div class="kelas-stat">
                             <span class="kelas-stat-value"><?= $k['total_modul'] ?? 0 ?></span>
@@ -320,20 +309,21 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                         </div>
                     </div>
                     <div class="kelas-actions">
-                        <!-- Kelola Peserta -->
                         <button class="btn-kelas-peserta btn-kelola-peserta"
                                 data-id="<?= $k['id_kelas'] ?>"
                                 data-nama="<?= esc($k['nama_kelas']) ?>">
                             <i class="bi bi-people-fill"></i> Peserta
                         </button>
-                        <!-- Edit -->
                         <button class="btn-kelas-edit btn-edit-kelas" title="Edit kelas"
                                 data-id="<?= $k['id_kelas'] ?>"
+                                data-program="<?= $k['id_program'] ?? '' ?>"
+                                data-tipe="<?= esc($k['tipe_kelas'] ?? 'gratis') ?>"
+                                data-harga="<?= esc($k['harga'] ?? '') ?>"
+                                data-lynk="<?= esc($k['lynk_url'] ?? '') ?>"
                                 data-nama="<?= esc($k['nama_kelas']) ?>"
                                 data-deskripsi="<?= esc($k['deskripsi_kelas'] ?? '') ?>">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <!-- Hapus -->
                         <button class="btn-kelas-delete btn-delete-kelas" title="Hapus kelas"
                                 data-id="<?= $k['id_kelas'] ?>"
                                 data-nama="<?= esc($k['nama_kelas']) ?>">
@@ -377,22 +367,16 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body px-4 pt-3 pb-2">
-
-                <!-- Search peserta terdaftar -->
                 <div class="search-peserta-box">
                     <i class="bi bi-search"></i>
                     <input type="text" id="searchPesertaModal" placeholder="Cari peserta terdaftar...">
                 </div>
-
-                <!-- List peserta terdaftar -->
                 <div class="peserta-list" id="pesertaListContainer">
                     <div class="text-center py-3">
                         <div class="spinner-border spinner-border-sm text-success"></div>
                         <span class="ms-2 small text-muted">Memuat peserta...</span>
                     </div>
                 </div>
-
-                <!-- Form tambah peserta -->
                 <div class="add-peserta-form">
                     <label><i class="bi bi-person-plus-fill text-success me-1"></i> Tambah Peserta ke Kelas</label>
                     <form id="formTambahPeserta" method="POST">
@@ -403,9 +387,7 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                                 <option value="" disabled selected>-- Pilih peserta --</option>
                                 <?php if (!empty($semua_peserta)): ?>
                                     <?php foreach ($semua_peserta as $p): ?>
-                                        <option value="<?= $p['id_users'] ?>"
-                                                data-email="<?= esc($p['email_users']) ?>"
-                                                data-nama="<?= esc($p['nama_users']) ?>">
+                                        <option value="<?= $p['id_users'] ?>">
                                             <?= esc($p['nama_users']) ?> — <?= esc($p['email_users']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -427,7 +409,9 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
 </div>
 
 
-<!-- ═══ MODAL TAMBAH KELAS ═══ -->
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL TAMBAH KELAS
+════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modalTambahKelas" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
@@ -441,33 +425,87 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                 <form action="<?= base_url('dashboard/pengajar/kelas/store') ?>" method="POST">
                     <?= csrf_field() ?>
 
-                    <!-- Program Filter -->
+                    <!-- Program -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Program</label>
-                        <select id="filterProgramKelas" class="form-select">
-                            <option value="">-- Semua Program (tanpa filter) --</option>
+                        <label class="form-label fw-semibold small">
+                            Program <span class="text-danger">*</span>
+                        </label>
+                        <select name="id_program" class="form-select" required>
+                            <option value="">-- Pilih Program --</option>
                             <?php foreach ($programList as $p): ?>
                                 <option value="<?= $p['id_program'] ?>">
                                     <?= esc($p['nama_program']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <div class="form-text">Opsional: pilih program untuk mengaitkan kelas ke program.</div>
                     </div>
 
-                    <!-- id_program hidden (dikirim ke server) -->
-                    <input type="hidden" name="id_program" id="hiddenIdProgram" value="">
-
+                    <!-- Tipe Kelas -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Nama Kelas <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="nama_kelas"
-                               placeholder="cth: Teknik Elektronika Dasar" required>
+                        <label class="form-label fw-semibold small">
+                            Tipe Kelas <span class="text-danger">*</span>
+                        </label>
+                        <div class="tipe-radio-group">
+                            <label class="tipe-radio-label">
+                                <input type="radio" name="tipe_kelas" value="gratis"
+                                       id="addTipeGratis" checked
+                                       onchange="toggleBerbayar('Add')">
+                                <i class="bi bi-gift-fill text-success"></i> Gratis
+                            </label>
+                            <label class="tipe-radio-label berbayar">
+                                <input type="radio" name="tipe_kelas" value="berbayar"
+                                       id="addTipeBerbayar"
+                                       onchange="toggleBerbayar('Add')">
+                                <i class="bi bi-tag-fill text-warning"></i> Berbayar
+                            </label>
+                        </div>
                     </div>
+
+                    <!-- Field Berbayar (toggle) -->
+                    <div class="field-berbayar" id="fieldBerbayarAdd">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                Harga <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text fw-semibold">Rp</span>
+                                <input type="number" name="harga" id="addHarga"
+                                       class="form-control"
+                                       placeholder="cth: 150000" min="0" step="500">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                Link Pembayaran (Lynk.id) <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                                <input type="url" name="lynk_url" id="addLynk"
+                                       class="form-control"
+                                       placeholder="https://lynk.id/username/...">
+                            </div>
+                            <div class="form-text">Link halaman pembayaran Lynk.id milikmu.</div>
+                        </div>
+                    </div>
+
+                    <!-- Nama Kelas -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">
+                            Nama Kelas <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" name="nama_kelas"
+                               placeholder="cth: Teknik Elektronika Dasar" required
+                               minlength="3" maxlength="150">
+                    </div>
+
+                    <!-- Deskripsi -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold small">Deskripsi Kelas</label>
                         <textarea class="form-control" name="deskripsi_kelas" rows="3"
-                                  placeholder="Deskripsi singkat tentang kelas ini..."></textarea>
+                                  placeholder="Deskripsi singkat tentang kelas ini..."
+                                  maxlength="500"></textarea>
                     </div>
+
                     <div class="d-flex justify-content-end gap-2 border-top pt-3">
                         <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-success px-4 fw-semibold">
@@ -481,7 +519,9 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
 </div>
 
 
-<!-- ═══ MODAL EDIT KELAS ═══ -->
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL EDIT KELAS
+════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modalEditKelas" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
@@ -494,14 +534,85 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
             <div class="modal-body px-4 pt-3 pb-4">
                 <form id="formEditKelas" method="POST">
                     <?= csrf_field() ?>
+
+                    <!-- Program -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Nama Kelas <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="nama_kelas" id="edit_nama_kelas" required>
+                        <label class="form-label fw-semibold small">
+                            Program <span class="text-danger">*</span>
+                        </label>
+                        <select name="id_program" id="editIdProgram" class="form-select" required>
+                            <option value="">-- Pilih Program --</option>
+                            <?php foreach ($programList as $p): ?>
+                                <option value="<?= $p['id_program'] ?>">
+                                    <?= esc($p['nama_program']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
+
+                    <!-- Tipe Kelas -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">
+                            Tipe Kelas <span class="text-danger">*</span>
+                        </label>
+                        <div class="tipe-radio-group">
+                            <label class="tipe-radio-label">
+                                <input type="radio" name="tipe_kelas" value="gratis"
+                                       id="editTipeGratis"
+                                       onchange="toggleBerbayar('Edit')">
+                                <i class="bi bi-gift-fill text-success"></i> Gratis
+                            </label>
+                            <label class="tipe-radio-label berbayar">
+                                <input type="radio" name="tipe_kelas" value="berbayar"
+                                       id="editTipeBerbayar"
+                                       onchange="toggleBerbayar('Edit')">
+                                <i class="bi bi-tag-fill text-warning"></i> Berbayar
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Field Berbayar (toggle) -->
+                    <div class="field-berbayar" id="fieldBerbayarEdit">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                Harga <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text fw-semibold">Rp</span>
+                                <input type="number" name="harga" id="editHarga"
+                                       class="form-control"
+                                       placeholder="cth: 150000" min="0" step="500">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                Link Pembayaran (Lynk.id) <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                                <input type="url" name="lynk_url" id="editLynk"
+                                       class="form-control"
+                                       placeholder="https://lynk.id/username/...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nama Kelas -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">
+                            Nama Kelas <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" name="nama_kelas"
+                               id="edit_nama_kelas" required minlength="3" maxlength="150">
+                    </div>
+
+                    <!-- Deskripsi -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold small">Deskripsi Kelas</label>
-                        <textarea class="form-control" name="deskripsi_kelas" id="edit_deskripsi_kelas" rows="3"></textarea>
+                        <textarea class="form-control" name="deskripsi_kelas"
+                                  id="edit_deskripsi_kelas" rows="3" maxlength="500"></textarea>
                     </div>
+
                     <div class="d-flex justify-content-end gap-2 border-top pt-3">
                         <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-warning px-4 fw-semibold">
@@ -573,30 +684,80 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
 
 
 <script>
+// ══════════════════════════════════════════════════════════
+//  TOGGLE FIELD BERBAYAR
+// ══════════════════════════════════════════════════════════
+function toggleBerbayar(suffix) {
+    const isBerbayar = document.getElementById(suffix === 'Add' ? 'addTipeBerbayar' : 'editTipeBerbayar').checked;
+    const fieldDiv   = document.getElementById('fieldBerbayar' + suffix);
+
+    if (isBerbayar) {
+        fieldDiv.classList.add('show');
+    } else {
+        fieldDiv.classList.remove('show');
+        // Kosongkan nilai saat beralih ke gratis
+        fieldDiv.querySelector('input[name="harga"]').value   = '';
+        fieldDiv.querySelector('input[name="lynk_url"]').value = '';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const BASE = '<?= base_url('dashboard/pengajar') ?>';
 
-    // ── Search kelas ──
-    // document.getElementById('searchKelas').addEventListener('input', function () {
-    //     const q = this.value.toLowerCase();
-    //     const cards = document.querySelectorAll('#kelasGrid .kelas-card');
-    //     let visible = 0;
-    //     cards.forEach(card => {
-    //         const match = card.dataset.nama.includes(q);
-    //         card.style.display = match ? '' : 'none';
-    //         if (match) visible++;
-    //     });
-    //     document.getElementById('totalKelas').textContent = visible;
-    //     document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
-    // });
+    // ── Filter gabungan: search + program ──
+    function applyFilter() {
+        const q      = document.getElementById('searchKelas').value.toLowerCase();
+        const progId = document.getElementById('filterProgramGrid').value;
+        const cards  = document.querySelectorAll('#kelasGrid .kelas-card');
+        let visible  = 0;
 
+        cards.forEach(card => {
+            const show = card.dataset.nama.includes(q) && (!progId || card.dataset.program === progId);
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        document.getElementById('totalKelas').textContent = visible;
+        document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    document.getElementById('searchKelas').addEventListener('input', applyFilter);
+    document.getElementById('filterProgramGrid').addEventListener('change', applyFilter);
 
     // ── Edit kelas ──
     document.querySelectorAll('.btn-edit-kelas').forEach(btn => {
         btn.addEventListener('click', function () {
-            document.getElementById('formEditKelas').action       = `${BASE}/kelas/update/${this.dataset.id}`;
+            const id      = this.dataset.id;
+            const tipe    = this.dataset.tipe    || 'gratis';
+            const harga   = this.dataset.harga   || '';
+            const lynk    = this.dataset.lynk    || '';
+            const program = this.dataset.program || '';
+
+            // Set action form
+            document.getElementById('formEditKelas').action = `${BASE}/kelas/update/${id}`;
+
+            // Isi program
+            document.getElementById('editIdProgram').value = program;
+
+            // Set tipe kelas
+            if (tipe === 'berbayar') {
+                document.getElementById('editTipeBerbayar').checked = true;
+                document.getElementById('editTipeGratis').checked   = false;
+                document.getElementById('fieldBerbayarEdit').classList.add('show');
+                document.getElementById('editHarga').value = harga;
+                document.getElementById('editLynk').value  = lynk;
+            } else {
+                document.getElementById('editTipeGratis').checked   = true;
+                document.getElementById('editTipeBerbayar').checked = false;
+                document.getElementById('fieldBerbayarEdit').classList.remove('show');
+                document.getElementById('editHarga').value = '';
+                document.getElementById('editLynk').value  = '';
+            }
+
+            // Isi nama & deskripsi
             document.getElementById('edit_nama_kelas').value      = this.dataset.nama;
             document.getElementById('edit_deskripsi_kelas').value = this.dataset.deskripsi;
+
             new bootstrap.Modal(document.getElementById('modalEditKelas')).show();
         });
     });
@@ -614,35 +775,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.mp-alert').forEach(el => {
         setTimeout(() => {
             el.style.transition = 'opacity .4s';
-            el.style.opacity = '0';
+            el.style.opacity    = '0';
             setTimeout(() => el.remove(), 400);
         }, 4000);
-    });
-    // ── Filter gabungan: search + program ──
-    function applyFilter() {
-        const q        = document.getElementById('searchKelas').value.toLowerCase();
-        const progId   = document.getElementById('filterProgramGrid').value;
-        const cards    = document.querySelectorAll('#kelasGrid .kelas-card');
-        let visible    = 0;
-
-        cards.forEach(card => {
-            const namaMatch    = card.dataset.nama.includes(q);
-            const programMatch = !progId || card.dataset.program === progId;
-            const show         = namaMatch && programMatch;
-            card.style.display = show ? '' : 'none';
-            if (show) visible++;
-        });
-
-        document.getElementById('totalKelas').textContent = visible;
-        document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
-    }
-
-    document.getElementById('searchKelas').addEventListener('input', applyFilter);
-    document.getElementById('filterProgramGrid').addEventListener('change', applyFilter);
-
-    // ── Sync program ke hidden input saat modal tambah ──
-    document.getElementById('filterProgramKelas').addEventListener('change', function () {
-        document.getElementById('hiddenIdProgram').value = this.value;
     });
 
     // ════════════════════════════════════════════════════
@@ -654,7 +789,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('pesertaListContainer');
         document.getElementById('modalPesertaJumlah').textContent = `${pesertaArr.length} peserta terdaftar`;
 
-        // Update counter di card
         if (currentKelasId) {
             const el = document.querySelector(`.peserta-count-${currentKelasId}`);
             if (el) el.textContent = pesertaArr.length;
@@ -704,7 +838,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Buka modal kelola peserta
     document.querySelectorAll('.btn-kelola-peserta').forEach(btn => {
         btn.addEventListener('click', function () {
             currentKelasId = this.dataset.id;
@@ -716,7 +849,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Search di dalam list peserta modal
     document.getElementById('searchPesertaModal').addEventListener('input', function () {
         const q = this.value.toLowerCase();
         document.querySelectorAll('#pesertaListContainer .peserta-item').forEach(item => {
@@ -724,14 +856,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Form tambah peserta
     document.getElementById('formTambahPeserta').addEventListener('submit', function (e) {
         e.preventDefault();
-        const fd = new FormData(this);
-
         fetch(`${BASE}/kelas/peserta/store`, {
             method: 'POST',
-            body: fd,
+            body: new FormData(this),
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(r => r.json())
@@ -747,22 +876,17 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(() => showToast('Terjadi kesalahan.', 'danger'));
     });
 
-    // Konfirmasi kick peserta
     window.konfirmasiKick = function(idKP, namaPeserta) {
         document.getElementById('formKickPeserta').action = `${BASE}/kelas/peserta/kick/${idKP}`;
         document.getElementById('kickNamaPeserta').textContent = namaPeserta;
         new bootstrap.Modal(document.getElementById('modalKickPeserta')).show();
     };
 
-    // Form kick peserta (AJAX)
     document.getElementById('formKickPeserta').addEventListener('submit', function (e) {
         e.preventDefault();
-        const url = this.action;
-        const fd  = new FormData(this);
-
-        fetch(url, {
+        fetch(this.action, {
             method: 'POST',
-            body: fd,
+            body: new FormData(this),
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(r => r.json())
@@ -787,14 +911,15 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.appendChild(toast);
         setTimeout(() => {
             toast.style.transition = 'opacity .4s';
-            toast.style.opacity = '0';
+            toast.style.opacity    = '0';
             setTimeout(() => toast.remove(), 400);
         }, 3000);
     }
 
-    // ── HTML escape helper ──
     function escHtml(str) {
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 });
 </script>

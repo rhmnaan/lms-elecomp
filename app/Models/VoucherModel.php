@@ -29,61 +29,37 @@ class VoucherModel extends Model
     protected $updatedField = 'updated_at';
     protected $deletedField = 'deleted_at';
 
-    /* =========================
-     * VALIDASI VOUCHER
-     * ========================= */
-
-    public function getValidVoucher($kode_voucher, $id_kelas)
+    /**
+     * Validasi voucher berdasarkan kode dan kelas
+     */
+    public function validateVoucher($kode_voucher, $id_kelas)
     {
         return $this->where('kode_voucher', $kode_voucher)
             ->where('id_kelas', $id_kelas)
             ->where('is_active', 1)
-            ->where('kuota >', 0)
-            ->where('deleted_at', null)
-            ->where('tanggal_mulai <=', date('Y-m-d H:i:s'))
-            ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
+            ->where('deleted_at IS NULL')
             ->first();
     }
 
-    /* =========================
-     * CEK SUDAH PERNAH KLAIM
-     * ========================= */
-
-    public function isClaimedByUser($id_voucher, $id_users)
+    /**
+     * Claim voucher - update status menjadi tidak aktif
+     */
+    public function claimVoucher($id_voucher)
     {
-        return model('VoucherClaimModel')
-            ->where('id_voucher', $id_voucher)
-            ->where('id_users', $id_users)
-            ->where('deleted_at', null)
-            ->first() !== null;
+        return $this->update($id_voucher, [
+            'is_active'  => 0,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 
-    /* =========================
-     * PROSES KLAIM
-     * ========================= */
-
-    public function claim($voucher, $id_users)
+    /**
+     * Cek apakah voucher sudah pernah diklaim user
+     */
+    public function isVoucherClaimedByUser($id_voucher, $id_users)
     {
-        $db = \Config\Database::connect();
-        $db->transStart();
-
-        // 1. Simpan ke voucher_claim
-        model('VoucherClaimModel')->insert([
-            'id_voucher'   => $voucher['id_voucher'],
-            'id_users'     => $id_users,
-            'tanggal_klaim'=> date('Y-m-d H:i:s'),
-            'status'       => 'claimed',
-        ]);
-
-        // 2. Kurangi kuota
-        $this->update($voucher['id_voucher'], [
-            'kuota'      => $voucher['kuota'] - 1,
-            'updated_at' => date('Y-m-d H:i:s'),
-            'is_active'  => ($voucher['kuota'] - 1) > 0 ? 1 : 0
-        ]);
-
-        $db->transComplete();
-
-        return $db->transStatus();
+        $voucherClaimModel = new \App\Models\VoucherClaimModel();
+        return $voucherClaimModel->where('id_voucher', $id_voucher)
+            ->where('id_users', $id_users)
+            ->first() !== null;
     }
 }

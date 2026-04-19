@@ -66,6 +66,8 @@ class Program extends BaseController
                 k.id_kelas,
                 k.nama_kelas,
                 k.deskripsi_kelas,
+                k.tipe_kelas,
+                k.harga,
                 u.nama_users AS nama_pengajar,
                 COUNT(DISTINCT m.id_modul) AS total_modul,
                 COUNT(DISTINCT ma.id_materi) AS total_materi,
@@ -119,6 +121,18 @@ class Program extends BaseController
                     ? round(($completed_materi / $total_materi) * 100)
                     : 0;
             }
+
+            // Ambil informasi voucher untuk setiap kelas
+            $voucher = $db->table('voucher')
+                ->select('tanggal_berakhir, kuota')
+                ->where('id_kelas', $k['id_kelas'])
+                ->where('is_active', 1)
+                ->where('deleted_at IS NULL')
+                ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
+                ->get()
+                ->getFirstRow('array');
+            
+            $k['voucher'] = $voucher;
         }
         unset($k);
 

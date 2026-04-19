@@ -308,6 +308,8 @@ class DashboardPeserta extends BaseController
                 k.id_kelas,
                 k.nama_kelas,
                 k.deskripsi_kelas,
+                k.tipe_kelas,
+                k.harga,
                 COUNT(DISTINCT m.id_modul) AS total_modul,
                 COUNT(DISTINCT ma.id_materi) AS total_materi
             ')
@@ -326,6 +328,21 @@ class DashboardPeserta extends BaseController
             ->groupBy('k.id_kelas')
             ->get()
             ->getResultArray();
+
+        // Ambil informasi voucher untuk setiap kelas
+        foreach ($kelas_list as &$k) {
+            $voucher = $db->table('voucher')
+                ->select('tanggal_berakhir, kuota')
+                ->where('id_kelas', $k['id_kelas'])
+                ->where('is_active', 1)
+                ->where('deleted_at IS NULL')
+                ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
+                ->get()
+                ->getFirstRow('array');
+            
+            $k['voucher'] = $voucher;
+        }
+        unset($k);
 
         return view('Dashboard/Peserta/kelas', [
             'kelas_list'  => $kelas_list,
