@@ -50,7 +50,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('program/(:num)', 'Peserta\Program::kelas/$1');
 
         $routes->get('kelas', 'DashboardPeserta::kelasSaya');
-        $routes->get('kelas/(:num)', 'DashboardPeserta::kelas/$1');
+        $routes->get('kelas/(:num)', 'DashboardPeserta::modul/$1');
         $routes->get('materi', 'DashboardPeserta::materi');
         $routes->get('quiz', 'DashboardPeserta::quiz');
         $routes->get('hasil-quiz', 'DashboardPeserta::hasilQuiz');

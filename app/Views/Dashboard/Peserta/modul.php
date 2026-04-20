@@ -6,105 +6,43 @@
 
 <?= $this->section('styles') ?>
 <style>
-.kelas-section {
-    margin-bottom: 40px;
-}
-
-.kelas-section-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.kelas-section-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-}
-
-.kelas-section-icon.blue {
-    background: #dbeafe;
-    color: #2563eb;
-}
-
-.kelas-section-icon.green {
-    background: #d1fae5;
-    color: #059669;
-}
-
-.kelas-section-icon.orange {
-    background: #ffedd5;
-    color: #ea580c;
-}
-
-.kelas-section-nama {
-    font-size: 15px;
-    font-weight: 800;
-    color: #111;
-}
-
-.kelas-section-count {
-    font-size: 12px;
-    font-weight: 600;
-    color: #9ca3af;
-    background: #f3f4f6;
-    border-radius: 20px;
-    padding: 2px 10px;
-}
-
 .modul-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
 }
 
-/* ==================== CARD FIX TENGGELAM ==================== */
 .mc {
     background: #fff;
     border-radius: 16px;
     border: 1px solid #e5e7eb;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    /* Penting */
     min-height: 260px;
-    /* Tinggi minimum agar tidak terlalu pendek */
     transition: transform .2s, box-shadow .2s;
 }
 
 .mc:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.10);
+    box-shadow: 0 12px 30px rgba(0,0,0,.10);
 }
 
 .mc-hdr {
     padding: 20px 20px 18px;
 }
 
-.mc-hdr-blue {
-    background: linear-gradient(135deg, #1e40af, #3b82f6);
-}
-
-.mc-hdr-green {
-    background: linear-gradient(135deg, #065f46, #10b981);
-}
-
-.mc-hdr-orange {
-    background: linear-gradient(135deg, #92400e, #f59e0b);
-}
+.mc-hdr-blue   { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+.mc-hdr-green  { background: linear-gradient(135deg, #065f46, #10b981); }
+.mc-hdr-orange { background: linear-gradient(135deg, #92400e, #f59e0b); }
+.mc-hdr-purple { background: linear-gradient(135deg, #4c1d95, #8b5cf6); }
 
 .mc-num {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: .08em;
-    color: rgba(255, 255, 255, .75);
+    color: rgba(255,255,255,.75);
     margin-bottom: 6px;
 }
 
@@ -118,7 +56,6 @@
 .mc-body {
     padding: 20px 20px 16px;
     flex: 1 1 auto;
-    /* Body mengisi ruang tengah */
 }
 
 .mc-progress-row {
@@ -143,9 +80,9 @@
 .mc-bar-fill {
     height: 100%;
     background: linear-gradient(to right, #2d6cdf, #60a5fa);
+    border-radius: 99px;
 }
 
-/* FOOTER - Badge & Tombol ukuran disamakan */
 .mc-footer {
     padding: 16px 20px;
     border-top: 1px solid #f3f4f6;
@@ -154,7 +91,6 @@
     justify-content: space-between;
     gap: 12px;
     min-height: 66px;
-    /* Tinggi footer tetap */
     flex-shrink: 0;
 }
 
@@ -164,27 +100,14 @@
     padding: 8px 14px;
     border-radius: 9999px;
     white-space: nowrap;
-    text-align: center;
     min-width: 118px;
+    text-align: center;
     flex-shrink: 0;
-    box-sizing: border-box;
-    line-height: 1;
 }
 
-.mc-badge.selesai {
-    background: #d1fae5;
-    color: #059669;
-}
-
-.mc-badge.progress {
-    background: #eff6ff;
-    color: #2d6cdf;
-}
-
-.mc-badge.belum {
-    background: #f3f4f6;
-    color: #9ca3af;
-}
+.mc-badge.selesai  { background: #d1fae5; color: #059669; }
+.mc-badge.progress { background: #eff6ff; color: #2d6cdf; }
+.mc-badge.belum    { background: #f3f4f6; color: #9ca3af; }
 
 .btn-lihat-materi {
     font-size: 11px;
@@ -199,7 +122,6 @@
     align-items: center;
     gap: 5px;
     text-decoration: none;
-    line-height: 1;
 }
 
 .btn-lihat-materi:hover {
@@ -207,25 +129,92 @@
     color: #1e40af;
 }
 
+.kelas-section {
+    margin-bottom: 40px;
+}
+
+.kelas-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kelas-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+}
+
 .empty-state {
     text-align: center;
     padding: 60px 20px;
     background: #fff;
     border-radius: 20px;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, .05);
+    box-shadow: 0 1px 8px rgba(0,0,0,.05);
+}
+
+/* ── TOMBOL KEMBALI ── */
+.back-wrapper {
+    margin-bottom: 28px;
 }
 
 .btn-back {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: #f3f4f6;
-    padding: 8px 16px;
-    border-radius: 10px;
+    gap: 0;
     text-decoration: none;
-    color: #374151;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(29,78,216,.2);
+    transition: transform .2s, box-shadow .2s;
+}
+
+.btn-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(29,78,216,.3);
+}
+
+.btn-back-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    background: #1d4ed8;
+    color: #fff;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: background .2s;
+}
+
+.btn-back:hover .btn-back-icon {
+    background: #1e3a8a;
+}
+
+.btn-back-text {
+    padding: 0 18px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    background: #eff6ff;
+    color: #1d4ed8;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 700;
+    letter-spacing: .01em;
+    border: 1.5px solid #bfdbfe;
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+    transition: background .2s, color .2s;
+}
+
+.btn-back:hover .btn-back-text {
+    background: #dbeafe;
+    color: #1e3a8a;
 }
 </style>
 <?= $this->endSection() ?>
@@ -233,70 +222,81 @@
 <?= $this->section('content') ?>
 
 <?php
-$iconColors = ['blue', 'green', 'orange', 'purple'];
-$mcHdrs     = ['mc-hdr-blue', 'mc-hdr-green', 'mc-hdr-orange', 'mc-hdr-blue'];
-$icons      = ['bi-lightning-charge-fill', 'bi-cpu-fill', 'bi-tools', 'bi-diagram-3-fill'];
+$mcHdrs     = ['mc-hdr-blue', 'mc-hdr-green', 'mc-hdr-orange', 'mc-hdr-purple'];
+$focusKelas = $focus_kelas ?? null;
 
-$focusKelas   = $focus_kelas ?? null;
-$isSingleClass = !empty($focusKelas) && count($kelas_list ?? []) == 1;
-$activeClass  = $isSingleClass ? ($kelas_list[0] ?? null) : null;
+if ($focusKelas) {
+    $tampilList = array_values(array_filter($kelas_list, fn($k) => $k['id_kelas'] == $focusKelas));
+} else {
+    $tampilList = array_values($kelas_list);
+}
+
+$totalModulTampil = 0;
+foreach ($tampilList as $k) {
+    $totalModulTampil += count($k['modul_list'] ?? []);
+}
+
+$namaKelasAktif = '';
+if ($focusKelas && !empty($tampilList)) {
+    $namaKelasAktif = $tampilList[0]['nama_kelas'];
+}
 ?>
 
+<!-- PAGE HEADER -->
 <div class="page-header">
     <div>
-        <?php if ($isSingleClass && $activeClass): ?>
-        <h1><i class="bi bi-book-half"></i> <?= esc($activeClass['nama_kelas']) ?></h1>
-        <p>Modul pembelajaran dari kelas <?= esc($activeClass['nama_kelas']) ?></p>
-        <?php else: ?>
-        <h1><i class="bi bi-grid-3x3-gap-fill"></i> Semua Modul</h1>
-        <p>Modul dari seluruh kelas yang kamu ikuti</p>
-        <?php endif; ?>
+        <h1><i class="bi bi-grid-3x3-gap-fill"></i> Modul</h1>
+        <p>
+            <?php if ($focusKelas && $namaKelasAktif): ?>
+                Modul dalam kelas <strong><?= esc($namaKelasAktif) ?></strong>
+            <?php else: ?>
+                Modul pembelajaran dari kelas yang Anda ikuti
+            <?php endif; ?>
+        </p>
     </div>
-
     <div class="date-badge">
         <i class="bi bi-journal-bookmark-fill"></i>
-        <span>
-            <?php 
-            $totalModul = 0;
-            foreach ($kelas_list as $k) $totalModul += count($k['modul_list'] ?? []);
-            echo $totalModul;
-            ?> Modul
-        </span>
+        <span><?= $totalModulTampil ?> Modul</span>
     </div>
 </div>
 
-<?php if ($isSingleClass && $activeClass): ?>
-<div style="margin-bottom: 24px;">
+<!-- TOMBOL KEMBALI -->
+<div class="back-wrapper">
     <a href="<?= base_url('dashboard/peserta/kelas') ?>" class="btn-back">
-        <i class="bi bi-arrow-left"></i> Kembali ke Daftar Kelas
+        <span class="btn-back-icon"><i class="bi bi-arrow-left"></i></span>
+        <span class="btn-back-text">Kembali ke Daftar Kelas</span>
     </a>
 </div>
-<?php endif; ?>
 
-<?php if (empty($kelas_list) || (count($kelas_list) == 1 && empty($kelas_list[0]['modul_list']))): ?>
-<div class="empty-state">Belum ada modul tersedia saat ini.</div>
+<?php if (empty($tampilList) || $totalModulTampil == 0): ?>
+
+<div class="empty-state">
+    <i class="bi bi-journal-x" style="font-size:48px;color:#d1d5db;display:block;margin-bottom:14px;"></i>
+    <p style="font-size:16px;font-weight:700;color:#374151;margin:0 0 4px;">Belum ada modul</p>
+    <small style="color:#9ca3af;">Modul belum tersedia saat ini.</small>
+</div>
+
 <?php else: ?>
-<?php foreach ($kelas_list as $ki => $k):
-        if (empty($k['modul_list'])) continue;
-        $ci = $ki % 4;
-    ?>
-<div class="kelas-section" id="kelas-<?= $k['id_kelas'] ?>">
-    <div class="kelas-section-header">
-        <div class="kelas-section-icon <?= $iconColors[$ci] ?>">
-            <i class="bi <?= $icons[$ci] ?>"></i>
-        </div>
-        <span class="kelas-section-nama"><?= esc($k['nama_kelas']) ?></span>
-        <span class="kelas-section-count"><?= count($k['modul_list']) ?> modul</span>
+
+<?php foreach ($tampilList as $k):
+    if (empty($k['modul_list'])) continue;
+?>
+<div class="kelas-section">
+    <?php if (!$focusKelas): ?>
+    <div class="kelas-section-title">
+        <i class="bi bi-collection-fill" style="color:#2d6cdf;"></i>
+        <?= esc($k['nama_kelas']) ?>
     </div>
+    <?php endif; ?>
 
     <div class="modul-grid">
         <?php foreach ($k['modul_list'] as $mi => $m):
-                    $colorIndex = $mi % 4;
-                    $badgeCls = $m['persen'] >= 100 ? 'selesai' : ($m['persen'] > 0 ? 'progress' : 'belum');
-                    $badgeTxt = $m['persen'] >= 100 ? '✓ Selesai' : ($m['persen'] > 0 ? 'Berlangsung' : 'Belum Dimulai');
-                ?>
+            $ci       = $mi % 4;
+            $badgeCls = $m['persen'] >= 100 ? 'selesai' : ($m['persen'] > 0 ? 'progress' : 'belum');
+            $badgeTxt = $m['persen'] >= 100 ? '✓ Selesai' : ($m['persen'] > 0 ? 'Berlangsung' : 'Belum Dimulai');
+        ?>
         <div class="mc">
-            <div class="mc-hdr <?= $mcHdrs[$colorIndex] ?>">
+            <div class="mc-hdr <?= $mcHdrs[$ci] ?>">
                 <div class="mc-num">MODUL <?= $m['urutan_modul'] ?? ($mi + 1) ?></div>
                 <div class="mc-title"><?= esc($m['judul_modul']) ?></div>
             </div>
@@ -306,7 +306,7 @@ $activeClass  = $isSingleClass ? ($kelas_list[0] ?? null) : null;
                     <span><?= $m['persen'] ?>%</span>
                 </div>
                 <div class="mc-bar">
-                    <div class="mc-bar-fill" style="width: <?= $m['persen'] ?>%"></div>
+                    <div class="mc-bar-fill" style="width:<?= $m['persen'] ?>%"></div>
                 </div>
             </div>
             <div class="mc-footer">
@@ -316,25 +316,11 @@ $activeClass  = $isSingleClass ? ($kelas_list[0] ?? null) : null;
                 </a>
             </div>
         </div>
-        <?php endforeach; ?>
+        <?php endforeach ?>
     </div>
 </div>
-<?php endforeach; ?>
-<?php endif; ?>
+<?php endforeach ?>
 
-<?= $this->endSection() ?>
+<?php endif ?>
 
-<?= $this->section('scripts') ?>
-<script>
-const focusId = '<?= $focusKelas ?>';
-if (focusId) {
-    setTimeout(() => {
-        const el = document.getElementById('kelas-' + focusId);
-        if (el) el.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }, 300);
-}
-</script>
 <?= $this->endSection() ?>

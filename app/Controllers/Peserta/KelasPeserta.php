@@ -126,12 +126,11 @@ class KelasPeserta extends BaseController
     {
         $id_users = session('id_users');
 
-        $data['kelas_saya'] = $this->voucherClaimModel
+        $data['kelas_list'] = $this->voucherClaimModel
             ->select('
                 kelas.id_kelas,
                 kelas.nama_kelas,
-                kelas.deskripsi_kelas,
-                IFNULL(peserta_kelas.progress, 0) as progress
+                kelas.deskripsi_kelas
             ')
             ->join('voucher', 'voucher.id_voucher = voucher_claim.id_voucher')
             ->join('kelas', 'kelas.id_kelas = voucher.id_kelas')
@@ -147,6 +146,33 @@ class KelasPeserta extends BaseController
             ->groupBy('kelas.id_kelas')
             ->findAll();
 
-        return view('Dashboard/Peserta/kelas-saya', $data);
+        // Hitung progress untuk setiap kelas
+        $db = \Config\Database::connect();
+        foreach ($data['kelas_list'] as &$k) {
+            $total_materi = $db->table('materi ma')
+                ->join('modul m', 'm.id_modul = ma.id_modul')
+                ->where('m.id_kelas', $k['id_kelas'])
+                ->where('ma.deleted_at IS NULL')
+                ->where('m.deleted_at IS NULL')
+                ->countAllResults();
+
+            $completed_materi = $db->table('user_materi_progress ump')
+                ->join('materi ma', 'ma.id_materi = ump.id_materi')
+                ->join('modul m', 'm.id_modul = ma.id_modul')
+                ->where('m.id_kelas', $k['id_kelas'])
+                ->where('ump.id_users', $id_users)
+                ->where('ump.is_completed', 1)
+                ->countAllResults();
+
+            $k['persen'] = $total_materi > 0
+                ? round(($completed_materi / $total_materi) * 100)
+                : 0;
+        }
+        unset($k);
+
+        return view('Dashboard/Peserta/kelas-saya', [
+            'kelas_list'  => $data['kelas_list'],
+            'total_kelas' => count($data['kelas_list']),
+        ]);
     }
 }

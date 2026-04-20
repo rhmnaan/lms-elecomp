@@ -128,7 +128,7 @@ class DashboardPeserta extends BaseController
         }
 
         $total_quiz_dikerjakan = count($rows);
-        $dist_lulus            = $dist_cukup            = $dist_kurang            = 0;
+        $dist_lulus            = $dist_cukup = $dist_kurang = 0;
         $sum_nilai             = 0;
 
         foreach ($rows as $r) {
@@ -141,7 +141,6 @@ class DashboardPeserta extends BaseController
             } else {
                 $dist_kurang++;
             }
-
         }
 
         $rata_nilai = $total_quiz_dikerjakan > 0
@@ -239,12 +238,12 @@ class DashboardPeserta extends BaseController
     {
         $db = \Config\Database::connect();
 
-        // Ambil semua kelas yang sudah di-claim (ada di kelas_peserta)
         $kelas_list = $db->table('kelas k')
             ->select('
                 k.id_kelas,
                 k.nama_kelas,
                 k.deskripsi_kelas,
+                p.id_program,
                 p.nama_program,
                 u.nama_users AS nama_pengajar,
                 COUNT(DISTINCT m.id_modul) AS total_modul,
@@ -266,16 +265,17 @@ class DashboardPeserta extends BaseController
             ->get()
             ->getResultArray();
 
-        // Hitung progress untuk setiap kelas
+        // Hitung progress & kelompokkan per program
+        $grouped = [];
         foreach ($kelas_list as &$k) {
-            $total_materi = $db->table('materi ma')
+            $total = $db->table('materi ma')
                 ->join('modul m', 'm.id_modul = ma.id_modul')
                 ->where('m.id_kelas', $k['id_kelas'])
                 ->where('ma.deleted_at IS NULL')
                 ->where('m.deleted_at IS NULL')
                 ->countAllResults();
 
-            $completed_materi = $db->table('user_materi_progress ump')
+            $selesai = $db->table('user_materi_progress ump')
                 ->join('materi ma', 'ma.id_materi = ump.id_materi')
                 ->join('modul m', 'm.id_modul = ma.id_modul')
                 ->where('m.id_kelas', $k['id_kelas'])
@@ -283,14 +283,21 @@ class DashboardPeserta extends BaseController
                 ->where('ump.is_completed', 1)
                 ->countAllResults();
 
-            $k['persen'] = $total_materi > 0
-                ? round(($completed_materi / $total_materi) * 100)
-                : 0;
+            $k['persen'] = $total > 0 ? round(($selesai / $total) * 100) : 0;
+
+            $programKey = $k['id_program'] ?? 0;
+            if (! isset($grouped[$programKey])) {
+                $grouped[$programKey] = [
+                    'nama_program' => $k['nama_program'] ?? 'Tanpa Program',
+                    'kelas'        => [],
+                ];
+            }
+            $grouped[$programKey]['kelas'][] = $k;
         }
         unset($k);
 
         return view('Dashboard/Peserta/kelas-saya', [
-            'kelas_list'  => $kelas_list,
+            'grouped'     => $grouped,
             'total_kelas' => count($kelas_list),
         ]);
     }
@@ -591,7 +598,6 @@ class DashboardPeserta extends BaseController
             ->orderBy('created_at', 'DESC')
             ->get()->getRowArray();
 
-        // ✅ FIX: kirim $redirect ke view agar tidak undefined
         $redirect = $this->request->getGet('redirect') ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
 
         return view('Dashboard/Peserta/pretest_view', [
@@ -651,7 +657,6 @@ class DashboardPeserta extends BaseController
             ->orderBy('created_at', 'DESC')
             ->get()->getRowArray();
 
-        // ✅ FIX: kirim $redirect ke view agar tidak undefined
         $redirect = $this->request->getGet('redirect') ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
 
         return view('Dashboard/Peserta/posttest_view', [
