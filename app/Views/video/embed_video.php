@@ -232,19 +232,35 @@ function b64ToBuffer(b64) {
 async function getKey() {
     setProgress(5, 'Memuat video...', 'Mengamankan koneksi', 0);
 
-    const res  = await fetch(API_BASE + '/key');
-    if (!res.ok) throw new Error('Gagal mendapatkan lisensi (HTTP ' + res.status + ')');
+    try {
+        const res  = await fetch(API_BASE + '/key');
+        if (!res.ok) {
+            throw new Error('HTTP ' + res.status + ': ' + res.statusText);
+        }
 
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message || 'Lisensi tidak valid');
+        const data = await res.json();
+        if (!data.success) {
+            throw new Error(data.message || 'Gagal mendapatkan kunci enkripsi');
+        }
 
-    return crypto.subtle.importKey(
-        'raw',
-        b64ToBuffer(data.key),
-        { name: 'AES-CBC' },
-        false,
-        ['decrypt']
-    );
+        if (!data.key) {
+            throw new Error('Server tidak mengirim kunci enkripsi');
+        }
+
+        console.log('[VideoPlayer] Encryption key received');
+
+        const keyBuffer = b64ToBuffer(data.key);
+        return crypto.subtle.importKey(
+            'raw',
+            keyBuffer,
+            { name: 'AES-CBC' },
+            false,
+            ['decrypt']
+        );
+    } catch (err) {
+        console.error('[VideoPlayer] getKey Error:', err);
+        throw new Error('Gagal mendapatkan lisensi: ' + err.message);
+    }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -253,13 +269,31 @@ async function getKey() {
 async function getMeta() {
     setProgress(18, 'Memuat video...', 'Membaca informasi file', 1);
 
-    const res  = await fetch(API_BASE + '/info/' + VIDEO_ID);
-    if (!res.ok) throw new Error('Video tidak ditemukan (HTTP ' + res.status + ')');
+    try {
+        const res  = await fetch(API_BASE + '/info/' + VIDEO_ID);
+        if (!res.ok) {
+            throw new Error('HTTP ' + res.status + ': ' + res.statusText);
+        }
 
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message || 'Video tidak ditemukan');
+        const data = await res.json();
+        if (!data.success) {
+            throw new Error(data.message || 'Video tidak ditemukan');
+        }
 
-    return data.data;
+        if (!data.data || !data.data.size) {
+            throw new Error('Metadata video tidak valid');
+        }
+
+        console.log('[VideoPlayer] Video metadata received:', {
+            size: data.data.size,
+            filename: data.data.filename
+        });
+
+        return data.data;
+    } catch (err) {
+        console.error('[VideoPlayer] getMeta Error:', err);
+        throw new Error('Gagal membaca informasi video: ' + err.message);
+    }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -268,34 +302,50 @@ async function getMeta() {
 async function downloadFile(totalSize) {
     setProgress(30, 'Mengunduh...', 'Mengunduh file terenkripsi', 2);
 
-    const res = await fetch(API_BASE + '/stream/' + VIDEO_ID);
-    if (!res.ok) throw new Error('Gagal mengunduh video (HTTP ' + res.status + ')');
+    try {
+        const res = await fetch(API_BASE + '/stream/' + VIDEO_ID);
+        if (!res.ok) {
+            throw new Error('HTTP ' + res.status + ': ' + res.statusText);
+        }
 
-    const reader = res.body.getReader();
-    const chunks = [];
-    let received = 0;
+        if (!res.body) {
+            throw new Error('Response body tidak tersedia');
+        }
 
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        received += value.byteLength;
+        const reader = res.body.getReader();
+        const chunks = [];
+        let received = 0;
 
-        const pct = totalSize
-            ? Math.min(30 + (received / totalSize) * 40, 70)
-            : 50;
-        setProgress(pct, 'Mengunduh...', (received / 1048576).toFixed(1) + ' MB diunduh');
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            chunks.push(value);
+            received += value.byteLength;
+
+            const pct = totalSize
+                ? Math.min(30 + (received / totalSize) * 40, 70)
+                : 50;
+            setProgress(pct, 'Mengunduh...', (received / 1048576).toFixed(1) + ' MB diunduh');
+        }
+
+        console.log('[VideoPlayer] Download complete: ' + received + ' bytes');
+
+        // Gabungkan semua chunk
+        const total  = chunks.reduce((s, c) => s + c.byteLength, 0);
+        const merged = new Uint8Array(total);
+        let offset   = 0;
+        for (const c of chunks) {
+            merged.set(c, offset);
+            offset += c.byteLength;
+        }
+
+        return merged.buffer;
+
+    } catch (err) {
+        console.error('[VideoPlayer] downloadFile Error:', err);
+        throw new Error('Gagal mengunduh video: ' + err.message);
     }
-
-    // Gabungkan semua chunk
-    const total  = chunks.reduce((s, c) => s + c.byteLength, 0);
-    const merged = new Uint8Array(total);
-    let offset   = 0;
-    for (const c of chunks) {
-        merged.set(c, offset);
-        offset += c.byteLength;
-    }
-    return merged.buffer;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -304,15 +354,52 @@ async function downloadFile(totalSize) {
 async function decryptBuffer(cryptoKey, buffer) {
     setProgress(75, 'Mendekripsi...', 'AES-256-CBC dekripsi', 3);
 
-    const raw  = new Uint8Array(buffer);
-    const iv   = raw.slice(0, 16);   // 16 byte pertama = IV
-    const data = raw.slice(16);      // sisanya = ciphertext
+    try {
+        const raw  = new Uint8Array(buffer);
+        
+        // Validasi ukuran buffer
+        if (raw.byteLength < 16) {
+            throw new Error('Buffer terlalu kecil. Harus ada IV (16 byte) + ciphertext minimal 16 byte');
+        }
 
-    return crypto.subtle.decrypt(
-        { name: 'AES-CBC', iv },
-        cryptoKey,
-        data
-    );
+        const iv   = raw.slice(0, 16);   // 16 byte pertama = IV
+        const data = raw.slice(16);      // sisanya = ciphertext
+
+        // Validasi IV
+        if (iv.byteLength !== 16) {
+            throw new Error('IV harus 16 byte, diterima ' + iv.byteLength + ' byte');
+        }
+
+        // Validasi ciphertext (harus kelipatan 16)
+        if (data.byteLength % 16 !== 0) {
+            throw new Error('Ciphertext harus kelipatan 16 byte, diterima ' + data.byteLength + ' byte');
+        }
+
+        console.log('[VideoPlayer] Decryption Info:', {
+            bufferSize: raw.byteLength,
+            ivSize: iv.byteLength,
+            ciphertextSize: data.byteLength,
+            timestamp: new Date().toISOString()
+        });
+
+        const decrypted = await crypto.subtle.decrypt(
+            { name: 'AES-CBC', iv: iv.buffer },
+            cryptoKey,
+            data.buffer
+        );
+
+        console.log('[VideoPlayer] Decryption Success: ' + decrypted.byteLength + ' bytes');
+        return decrypted;
+
+    } catch (err) {
+        console.error('[VideoPlayer] Decryption Error:', {
+            message: err.message,
+            name: err.name,
+            stack: err.stack,
+            bufferSize: new Uint8Array(buffer).byteLength
+        });
+        throw err;
+    }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -324,11 +411,23 @@ async function init() {
         return;
     }
 
+    console.log('[VideoPlayer] Init started for VIDEO_ID:', VIDEO_ID);
+
     try {
+        console.log('[VideoPlayer] Step 1: Getting encryption key...');
         const key     = await getKey();
+        
+        console.log('[VideoPlayer] Step 2: Getting video metadata...');
         const meta    = await getMeta();
+        console.log('[VideoPlayer] Video size:', meta.size, 'bytes');
+        
+        console.log('[VideoPlayer] Step 3: Downloading encrypted file...');
         const buffer  = await downloadFile(meta.size);
+        console.log('[VideoPlayer] Downloaded:', buffer.byteLength, 'bytes');
+        
+        console.log('[VideoPlayer] Step 4: Decrypting buffer...');
         const clear   = await decryptBuffer(key, buffer);
+        console.log('[VideoPlayer] Decrypted:', clear.byteLength, 'bytes');
 
         setProgress(95, 'Menyiapkan...', 'Hampir selesai...');
 
@@ -337,19 +436,32 @@ async function init() {
         vp.src = url;
 
         vp.addEventListener('loadeddata', () => {
+            console.log('[VideoPlayer] Video loaded successfully');
             setProgress(100, 'Siap!', '');
             setTimeout(() => {
                 loadOverlay.classList.add('fade-out');
-                vp.play().catch(() => {});
+                vp.play().catch(e => {
+                    console.warn('[VideoPlayer] Autoplay blocked:', e.message);
+                });
             }, 350);
         }, { once: true });
 
-        vp.addEventListener('error', () => {
+        vp.addEventListener('error', (e) => {
+            console.error('[VideoPlayer] Video playback error:', {
+                code: vp.error?.code,
+                message: vp.error?.message,
+                mediaError: vp.error
+            });
             showError('Format video tidak didukung atau file rusak. Coba kontak admin.');
         }, { once: true });
 
     } catch (err) {
-        console.error('[VideoPlayer]', err);
+        console.error('[VideoPlayer] Init Error:', {
+            message: err.message,
+            name: err.name,
+            stack: err.stack,
+            videoId: VIDEO_ID
+        });
         showError(err.message || 'Terjadi kesalahan tidak diketahui. Coba muat ulang halaman.');
     }
 }

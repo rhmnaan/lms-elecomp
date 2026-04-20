@@ -161,6 +161,11 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('voucher/toggle/(:num)', 'DashboardPengajar::voucherToggleActive/$1');
         $routes->post('voucher/klaim', 'DashboardPengajar::voucherKlaim');
 
+        // ═══════════════════════════════════════════════════════════════════
+        // TRANSAKSI
+        // ═══════════════════════════════════════════════════════════════════
+        $routes->get('transaksi', 'DashboardPengajar::transaksi');
+
         $routes->get('kelas-by-program/(:num)', 'DashboardPengajar::kelasByProgram/$1');
 
         // Profil

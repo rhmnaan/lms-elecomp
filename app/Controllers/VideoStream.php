@@ -449,7 +449,8 @@ class VideoStream extends BaseController
                     throw new \Exception('openssl_encrypt gagal: ' . openssl_error_string());
                 }
                 fwrite($dest, $enc);
-                $iv = substr($enc, -16); // IV chaining
+                // ✅ PENTING: Jangan gunakan IV chaining! Gunakan IV yang sama untuk semua chunk
+                // Dengan ini, browser bisa decrypt dengan mudah menggunakan IV pertama
             }
 
             fclose($src);

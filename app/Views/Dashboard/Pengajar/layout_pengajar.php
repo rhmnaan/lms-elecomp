@@ -130,6 +130,15 @@
                     <?php endif; ?>
                 </a>
             </li>
+                <!-- MENU TRANSAKSI -->
+            <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/transaksi')) ? 'class="active"' : '' ?>>
+                <a href="<?= base_url('dashboard/pengajar/transaksi') ?>">
+                    <i class="bi bi-receipt-cutoff"></i> Transaksi
+                    <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/transaksi')): ?>
+                        <span class="dot"></span>
+                    <?php endif; ?>
+                </a>
+            </li>
             </ul>
             
 

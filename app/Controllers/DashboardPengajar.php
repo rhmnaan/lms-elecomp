@@ -1246,4 +1246,42 @@ class DashboardPengajar extends BaseController
     {
         return $this->buildQuizJsonFor('post_test');
     }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  TRANSAKSI — Menampilkan semua transaksi dari database
+    // ══════════════════════════════════════════════════════════════════════
+    public function transaksi()
+    {
+        if ($r = $this->guardPengajar())
+            return $r;
+
+        $db  = \Config\Database::connect();
+        $uid = $this->myId();
+
+        // Ambil semua transaksi
+        $transaksi = $db->query("
+            SELECT 
+                t.id_transaksi,
+                t.kode_transaksi,
+                t.nama_produk,
+                t.harga,
+                t.qty,
+                t.total,
+                t.status,
+                t.metode_pembayaran,
+                t.tanggal_transaksi,
+                t.tanggal_bayar,
+                u.nama_users AS nama_peserta,
+                k.nama_kelas
+            FROM transaksi t
+            JOIN users u ON u.id_users = t.id_users
+            LEFT JOIN kelas k ON k.id_kelas = t.id_kelas
+            ORDER BY t.tanggal_transaksi DESC
+        ")->getResultArray();
+
+        return view('Dashboard/Pengajar/transaksi', [
+            'title'      => 'Manajemen Transaksi',
+            'transaksi'  => $transaksi,
+        ]);
+    }
 }

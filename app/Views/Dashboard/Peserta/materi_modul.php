@@ -165,7 +165,7 @@ if ($isYouTube) {
                 <!-- 1. VIDEO -->
                 <?php if ($hasVideo): ?>
                     <div class="content-section">
-                
+
                         <?php if (!$has_pretest): ?>
                             <!-- 🔒 VIDEO TERKUNCI -->
                             <div class="video-container locked">
@@ -174,32 +174,37 @@ if ($isYouTube) {
                                     <p>Selesaikan Pre Test untuk membuka video</p>
                                 </div>
                             </div>
-                
+
                         <?php elseif ($isLocalVideo): ?>
-                            <!-- ▶️ VIDEO LOKAL -->
-                            <div class="video-container mb-4" style="border-radius:12px;overflow:hidden;">
-                                <video
-                                    id="localVideo"
-                                    controls
-                                    preload="metadata"
-                                    style="width:100%;max-width:100%;background:#000;"
-                                    controlsList="nodownload noplaybackrate"
-                                    disablePictureInPicture
-                                >
-                                    <source src="<?= base_url('video/stream/' . esc($currentMateri['video_url_materi'])) ?>" type="video/mp4">
-                                    Browser Anda tidak mendukung pemutar video.
-                                </video>
+                            <!-- ▶️ VIDEO LOKAL TERENKRIPSI -->
+                            <div class="video-container" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;margin-bottom:16px;">
+                                <iframe
+                                    src="<?= base_url('video/player?id=' . esc($currentMateri['video_url_materi'])) ?>"
+                                    style="width:100%;height:100%;border:none;display:block;"
+                                    allowfullscreen
+                                    allow="autoplay; encrypted-media"
+                                    referrerpolicy="no-referrer"
+                                    sandbox="allow-scripts allow-same-origin"
+                                    id="localVideoFrame"></iframe>
                             </div>
-                
+                            <!-- Tombol tandai video selesai (untuk video lokal) -->
+                            <?php if (!$materi_selesai): ?>
+                                <div class="mb-3 text-center">
+                                    <button onclick="tandaiVideoSelesai()" id="btnVideoSelesai"
+                                        class="btn btn-sm btn-outline-success px-4 py-2">
+                                        <i class="bi bi-check2-circle me-1"></i> Saya sudah menonton video ini
+                                    </button>
+                                </div>
+                            <?php endif; ?>
+
                         <?php elseif ($isYouTube && $embedId): ?>
-                            <!-- ▶️ VIDEO YOUTUBE -->
-                            <div class="video-container"
-                                style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;margin-bottom:16px;">
+                            <!-- ▶️ VIDEO YOUTUBE (backward compat) -->
+                            <div class="video-container" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;margin-bottom:16px;">
                                 <div id="player"></div>
                             </div>
-                
+
                         <?php else: ?>
-                            <!-- ▶️ VIDEO HTML5 BIASA -->
+                            <!-- Video URL lain -->
                             <div class="video-container mb-4" style="border-radius:12px;overflow:hidden;">
                                 <video id="html5Video" controls preload="metadata" style="width:100%;max-width:100%;">
                                     <source src="<?= esc($currentMateri['video_url_materi']) ?>" type="video/mp4">
@@ -207,7 +212,7 @@ if ($isYouTube) {
                                 </video>
                             </div>
                         <?php endif; ?>
-                
+
                     </div>
                 <?php endif; ?>
 
@@ -338,6 +343,8 @@ if ($isYouTube) {
                                     <p id="lockStatusMessage">
                                         <?php if ($hasVideo && $hasFile): ?>
                                             Video dan file materi harus diselesaikan terlebih dahulu
+                                        <?php elseif ($isLocalVideo): ?>
+                                            Klik tombol "Saya sudah menonton video ini" setelah selesai menonton
                                         <?php elseif ($hasVideo): ?>
                                             Tonton video materi sampai selesai
                                         <?php elseif ($hasFile): ?>
@@ -456,15 +463,23 @@ if ($isYouTube) {
     window.pdfSelesai = false;
     window.progressTerkirim = false;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const video = document.getElementById('localVideo');
-        if (!video) return;
-    
-        video.addEventListener('ended', () => {
-            window.videoSelesai = true;
-            kirimProgressMateri();
-        });
-    });
+    /* ══════════════════════════════════════
+       VIDEO LOKAL — Tandai selesai manual
+    ══════════════════════════════════════ */
+    function tandaiVideoSelesai() {
+        if (window.videoSelesai) return;
+        window.videoSelesai = true;
+
+        const btn = document.getElementById('btnVideoSelesai');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Video sudah ditonton';
+            btn.classList.remove('btn-outline-success');
+            btn.classList.add('btn-success');
+        }
+
+        kirimProgressMateri();
+    }
 
     /* ══════════════════════════════════════
        YOUTUBE PLAYER API (backward compat)
