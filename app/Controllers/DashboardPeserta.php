@@ -296,61 +296,6 @@ class DashboardPeserta extends BaseController
     }
 
     // =========================================================
-    //  KELAS PER PROGRAM (UNTUK CLAIM VOUCHER)
-    // =========================================================
-    public function kelas($id_program)
-    {
-        $db = \Config\Database::connect();
-
-        // Ambil kelas dalam program yang BELUM diklaim oleh user ini
-        $kelas_list = $db->table('kelas k')
-            ->select('
-                k.id_kelas,
-                k.nama_kelas,
-                k.deskripsi_kelas,
-                k.tipe_kelas,
-                k.harga,
-                COUNT(DISTINCT m.id_modul) AS total_modul,
-                COUNT(DISTINCT ma.id_materi) AS total_materi
-            ')
-            ->join('modul m', 'm.id_kelas = k.id_kelas AND m.deleted_at IS NULL', 'left')
-            ->join('materi ma', 'ma.id_modul = m.id_modul AND ma.deleted_at IS NULL', 'left')
-            ->join(
-                'kelas_peserta kp',
-                'kp.id_kelas = k.id_kelas
-                AND kp.id_users = ' . (int) $this->idUsers . '
-                AND kp.deleted_at IS NULL',
-                'left'
-            )
-            ->where('k.id_program', $id_program)
-            ->where('k.deleted_at IS NULL')
-            ->where('kp.id_users IS NULL') // Hanya kelas yang BELUM diklaim
-            ->groupBy('k.id_kelas')
-            ->get()
-            ->getResultArray();
-
-        // Ambil informasi voucher untuk setiap kelas
-        foreach ($kelas_list as &$k) {
-            $voucher = $db->table('voucher')
-                ->select('tanggal_berakhir, kuota')
-                ->where('id_kelas', $k['id_kelas'])
-                ->where('is_active', 1)
-                ->where('deleted_at IS NULL')
-                ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
-                ->get()
-                ->getFirstRow('array');
-            
-            $k['voucher'] = $voucher;
-        }
-        unset($k);
-
-        return view('Dashboard/Peserta/kelas', [
-            'kelas_list'  => $kelas_list,
-            'total_kelas' => count($kelas_list),
-        ]);
-    }
-
-    // =========================================================
     //  MODUL
     // =========================================================
     public function modul()

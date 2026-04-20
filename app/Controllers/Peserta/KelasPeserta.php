@@ -1,5 +1,5 @@
 <?php
-namespace App\Controllers\Dashboard\Peserta;
+namespace App\Controllers\Peserta;
 
 use App\Controllers\BaseController;
 use App\Models\KelasModel;
@@ -54,11 +54,42 @@ class KelasPeserta extends BaseController
      */
     public function kelasByProgram($id_program)
     {
-        $data['kelas'] = $this->kelasModel
-            ->where('id_program', $id_program)
+        $id_users = session('id_users');
+
+        // Ambil ID kelas yang sudah diklaim oleh user
+        $claimedKelasIds = $this->voucherClaimModel
+            ->select('voucher.id_kelas')
+            ->join('voucher', 'voucher.id_voucher = voucher_claim.id_voucher')
+            ->where('voucher_claim.id_users', $id_users)
+            ->where('voucher_claim.status', 'aktif')
             ->findAll();
 
-        return view('Dashboard/Peserta/kelas/kelas_program', $data);
+        $claimedIds = array_column($claimedKelasIds, 'id_kelas');
+
+        // Ambil kelas yang belum diklaim oleh user
+        $query = $this->kelasModel
+            ->select('kelas.*, voucher.id_voucher, voucher.tanggal_berakhir, voucher.kuota')
+            ->join('voucher', 'voucher.id_kelas = kelas.id_kelas', 'left')
+            ->where('kelas.id_program', $id_program)
+            ->where('kelas.tipe_kelas', 'gratis') // hanya kelas gratis yang bisa diklaim dengan voucher
+            ->where('voucher.status', 'aktif')
+            ->where('voucher.deleted_at IS NULL')
+            ->where('voucher.tanggal_berakhir >= CURDATE()')
+            ->where('voucher.kuota > 0');
+
+        // Hanya exclude jika ada kelas yang sudah diklaim
+        if (! empty($claimedIds)) {
+            $query->whereNotIn('kelas.id_kelas', $claimedIds);
+        }
+
+        $data['kelas_list'] = $query
+            ->groupBy('kelas.id_kelas')
+            ->findAll();
+
+        // Hitung total kelas yang tersedia
+        $data['total_kelas'] = count($data['kelas_list']);
+
+        return view('Dashboard/Peserta/kelas', $data);
     }
 
     /**
@@ -116,6 +147,6 @@ class KelasPeserta extends BaseController
             ->groupBy('kelas.id_kelas')
             ->findAll();
 
-        return view('Dashboard/Peserta/kelas/kelas_saya', $data);
+        return view('Dashboard/Peserta/kelas-saya', $data);
     }
 }

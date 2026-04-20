@@ -91,7 +91,8 @@ class VoucherController extends BaseController
                 'id_voucher' => $voucher['id_voucher'],
                 'id_users' => $id_users,
                 'tanggal_klaim' => date('Y-m-d H:i:s'),
-                'status' => 'claimed'
+                'status' => 'claimed',
+                'created_at'    => date('Y-m-d H:i:s'),
             ]);
 
             // 2. Daftarkan user ke kelas

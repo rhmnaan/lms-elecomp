@@ -349,6 +349,7 @@
     <?php foreach ($kelas_list as $i => $k):
             $ci = $i % 4;
     ?>
+    <?php if (isset($k['tipe_kelas']) && $k['tipe_kelas'] === 'berbayar' || (isset($k['voucher']) && $k['voucher'] && ($k['voucher']['kuota'] ?? 0) > 0)): ?>
     <div class="kelas-card">
 
         <!-- BANNER -->
@@ -361,15 +362,17 @@
         <div class="kc-body">
             <!-- TIPE KELAS -->
             <?php if (isset($k['tipe_kelas']) && $k['tipe_kelas'] === 'berbayar'): ?>
-                <!-- KELAS BERBAYAR -->
-                <div class="voucher-box">
-                    <div style="margin-bottom: 12px;">
-                        <div style="font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">Kelas Berbayar</div>
-                        <div style="font-size: 18px; font-weight: 800; color: #111827; margin-top: 4px;">
-                           Rp <?php echo number_format($k['harga'] ?? 0, 0, ',', '.') ?> 
-                        </div>
+            <!-- KELAS BERBAYAR -->
+            <div class="voucher-box">
+                <div style="margin-bottom: 12px;">
+                    <div
+                        style="font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Kelas Berbayar</div>
+                    <div style="font-size: 18px; font-weight: 800; color: #111827; margin-top: 4px;">
+                        Rp <?php echo number_format($k['harga'] ?? 0, 0, ',', '.') ?>
                     </div>
-                    <a href="<?php echo base_url('checkout?kelas=' . $k['id_kelas']) ?>" style="
+                </div>
+                <a href="<?php echo base_url('checkout?kelas=' . $k['id_kelas']) ?>" style="
                         display: flex;
                         align-items: center;
                         justify-content: center;
@@ -382,57 +385,62 @@
                         font-weight: 700;
                         text-decoration: none;
                         transition: all .2s;
-                    " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 8px 20px rgba(59, 130, 246, .35)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                        <i class="bi bi-cart-plus" style="margin-right: 6px;"></i> Beli Kelas
-                    </a>
-                </div>
+                    "
+                    onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 8px 20px rgba(59, 130, 246, .35)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <i class="bi bi-cart-plus" style="margin-right: 6px;"></i> Beli Kelas
+                </a>
+            </div>
             <?php else: ?>
-                <!-- KELAS GRATIS -->
-                <div class="voucher-box">
-                    <?php if (isset($k['voucher']) && $k['voucher']): ?>
-                        <div style="margin-bottom: 12px;">
-                            <div style="font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">Kelas Gratis</div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 4px;">
-                                <div>
-                                    <div style="font-size: 12px; font-weight: 600; color: #6b7280;">Berakhir:</div>
-                                    <div style="font-size: 14px; font-weight: 700; color: #111827;">
-                                        <?php echo date('d M Y', strtotime($k['voucher']['tanggal_berakhir'])) ?>
-                                    </div>
-                                </div>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 12px; font-weight: 600; color: #6b7280;">Sisa:</div>
-                                    <div style="font-size: 14px; font-weight: 700; color: #10b981;">
-                                        <?php echo $k['voucher']['kuota'] ?> Voucher
-                                    </div>
-                                </div>
+            <!-- KELAS GRATIS -->
+            <div class="voucher-box">
+                <?php if (isset($k['voucher']) && $k['voucher']): ?>
+                <div style="margin-bottom: 12px;">
+                    <div
+                        style="font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Kelas Gratis</div>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 4px;">
+                        <div>
+                            <div style="font-size: 12px; font-weight: 600; color: #6b7280;">Berakhir:</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #111827;">
+                                <?php echo date('d M Y', strtotime($k['voucher']['tanggal_berakhir'])) ?>
                             </div>
                         </div>
-                        <button type="button" class="claim-btn" data-kelas-id="<?php echo $k['id_kelas'] ?>" style="
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            width: 100%;
-                            padding: 10px 14px;
-                            border-radius: 10px;
-                            background: linear-gradient(135deg, #10b981, #065f46);
-                            color: #fff;
-                            font-size: 12px;
-                            font-weight: 700;
-                            border: none;
-                            cursor: pointer;
-                            transition: all .2s;
-                        " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, .35)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                            <i class="bi bi-check-circle" style="margin-right: 6px;"></i> Claim Sekarang
-                        </button>
-                    <?php else: ?>
-                        <div style="padding: 12px; text-align: center; background: #fef2f2; border-radius: 8px;">
-                            <div style="font-size: 12px; color: #dc2626; font-weight: 600;">
-                                <i class="bi bi-info-circle" style="margin-right: 4px;"></i>
-                                Voucher tidak tersedia saat ini
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; font-weight: 600; color: #6b7280;">Sisa:</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #10b981;">
+                                <?php echo $k['voucher']['kuota'] ?> Voucher
                             </div>
                         </div>
-                    <?php endif; ?>
+                    </div>
                 </div>
+                <button class="open-voucher-modal" data-kelas-id="<?php echo $k['id_kelas'] ?>"
+                    data-nama-kelas="<?php echo esc($k['nama_kelas']) ?>" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100%;
+                    padding: 10px 14px;
+                    border-radius: 10px;
+                    background: linear-gradient(135deg, #10b981, #065f46);
+                    color: #fff;
+                    font-size: 12px;
+                    font-weight: 700;
+                    border: none;
+                    cursor: pointer;">
+                    <i class="bi bi-ticket-perforated" style="margin-right:6px"></i>
+                    Claim dengan Voucher
+                </button>
+                <?php else: ?>
+                <div style="padding: 12px; text-align: center; background: #fef2f2; border-radius: 8px;">
+                    <div style="font-size: 12px; color: #dc2626; font-weight: 600;">
+                        <i class="bi bi-info-circle" style="margin-right: 4px;"></i>
+                        Voucher tidak tersedia saat ini
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
             <?php endif; ?>
         </div>
 
@@ -449,19 +457,70 @@
 
             <div class="claim-status" id="status-<?php echo $k['id_kelas'] ?>">
                 <?php if (isset($k['tipe_kelas']) && $k['tipe_kelas'] === 'berbayar'): ?>
-                    <span class="status-ready">Tersedia</span>
+                <span class="status-ready">Tersedia</span>
                 <?php else: ?>
-                    <?php if (isset($k['voucher']) && $k['voucher'] && ($k['voucher']['kuota'] ?? 0) > 0): ?>
-                        <span class="status-ready">Tersedia</span>
-                    <?php else: ?>
-                        <span class="status-error">Habis</span>
-                    <?php endif; ?>
+                <?php if (isset($k['voucher']) && $k['voucher'] && ($k['voucher']['kuota'] ?? 0) > 0): ?>
+                <span class="status-ready">Tersedia</span>
+                <?php else: ?>
+                <span class="status-error">Habis</span>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>
 
     </div>
+    <?php endif; ?>
     <?php endforeach?>
+    <!-- Modal Voucher -->
+    <div class="modal fade" id="voucherModal" tabindex="-1" role="dialog" aria-labelledby="voucherModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+
+                <!-- Header -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="voucherModalLabel">
+                        🎟️ Gunakan Voucher Kelas
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" id="closeModal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body px-4">
+                    <p class="text-muted small mb-3">
+                        Masukkan kode voucher jika kamu memilikinya.
+                        Jika tidak ada, sistem akan otomatis menggunakan kuota yang tersedia.
+                    </p>
+
+                    <form id="voucherForm">
+                        <input type="hidden" name="id_kelas" id="modalIdKelas">
+
+                        <div class="form-group">
+                            <label for="kode_voucher">Kode Voucher</label>
+                            <input type="text" class="form-control" id="kode_voucher" name="kode_voucher"
+                                placeholder="Contoh: GRATIS2026">
+                            <small class="form-text text-muted">
+                                Kosongkan jika tidak punya voucher
+                            </small>
+                        </div>
+
+                        <!-- Alert -->
+                        <div id="voucherAlert" class="alert d-none mt-3"></div>
+
+                        <!-- Button -->
+                        <button type="submit" class="btn btn-primary btn-block mt-4">
+                            <span id="btnText">Gunakan Voucher</span>
+                            <span id="btnLoading" class="spinner-border spinner-border-sm d-none"></span>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <?php endif?>
@@ -471,71 +530,7 @@
 <?php echo $this->section('scripts') ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle new claim buttons (tanpa voucher code)
-    document.querySelectorAll('.claim-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const kelasId = this.dataset.kelasId;
-            const statusDiv = document.getElementById(`status-${kelasId}`);
-            const originalText = this.innerHTML;
 
-            // Disable button and show processing state
-            this.disabled = true;
-            this.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
-
-            // Update status
-            statusDiv.innerHTML = '<span class="status-ready">Memproses claim...</span>';
-
-            // Create FormData with CSRF token
-            const formData = new FormData();
-            formData.append('id_kelas', kelasId);
-            // Add CSRF token if available
-            const csrfToken = document.querySelector('input[name="csrf_token"]');
-            if (csrfToken) {
-                formData.append('csrf_token', csrfToken.value);
-            }
-
-            // Send AJAX request
-            fetch('<?php echo base_url('dashboard/peserta/voucher/claim') ?>', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Success
-                        statusDiv.innerHTML =
-                            '<span class="status-success"><i class="bi bi-check-circle"></i> Berhasil diklaim!</span>';
-                        const voucherBox = this.closest('.voucher-box');
-                        if (voucherBox) {
-                            voucherBox.style.opacity = '0.6';
-                        }
-                        this.style.display = 'none';
-
-                        // Redirect after success
-                        setTimeout(() => {
-                            window.location.href =
-                                '<?php echo base_url('dashboard/peserta/kelas-saya') ?>';
-                        }, 1500);
-                    } else {
-                        // Error
-                        statusDiv.innerHTML =
-                            `<span class="status-error"><i class="bi bi-exclamation-circle"></i> ${data.message}</span>`;
-                        this.disabled = false;
-                        this.innerHTML = originalText;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    statusDiv.innerHTML =
-                        '<span class="status-error"><i class="bi bi-exclamation-circle"></i> Terjadi kesalahan sistem</span>';
-                    this.disabled = false;
-                    this.innerHTML = originalText;
-                });
-        });
-    });
 
     // Handle legacy voucher claim forms (jika masih ada)
     document.querySelectorAll('.voucher-form').forEach(form => {
@@ -594,4 +589,96 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const modal = document.getElementById('voucherModal');
+    const modalIdKelas = document.getElementById('modalIdKelas');
+    const closeModalBtn = document.getElementById('closeModal');
+
+    // buka modal
+    document.querySelectorAll('.open-voucher-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+            modalIdKelas.value = btn.dataset.kelasId;
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        });
+    });
+
+    // tutup modal
+    closeModalBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+    });
+
+    // tutup modal saat klik di luar
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+    });
+
+    // submit voucher
+    document.getElementById('voucherForm').addEventListener('submit', e => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const btnText = document.getElementById('btnText');
+        const btnLoading = document.getElementById('btnLoading');
+        const alertBox = document.getElementById('voucherAlert');
+
+        // Show loading
+        btnText.classList.add('d-none');
+        btnLoading.classList.remove('d-none');
+
+        // Hide previous alerts
+        alertBox.classList.add('d-none');
+
+        fetch('<?php echo base_url('dashboard/peserta/voucher/claim') ?>', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(r => r.json())
+            .then(res => {
+                // Hide loading
+                btnText.classList.remove('d-none');
+                btnLoading.classList.add('d-none');
+
+                if (res.success) {
+                    // Success - redirect to kelas-saya
+                    alertBox.classList.remove('d-none', 'alert-danger');
+                    alertBox.classList.add('alert-success');
+                    alertBox.textContent = res.message || 'Voucher berhasil diklaim!';
+
+                    // Redirect after short delay
+                    setTimeout(() => {
+                        window.location.href =
+                            '<?php echo base_url('dashboard/peserta/kelas-saya') ?>';
+                    }, 1000);
+                } else {
+                    // Error
+                    alertBox.classList.remove('d-none', 'alert-success');
+                    alertBox.classList.add('alert-danger');
+                    alertBox.textContent = res.message || 'Terjadi kesalahan';
+                }
+            })
+            .catch(() => {
+                // Hide loading
+                btnText.classList.remove('d-none');
+                btnLoading.classList.add('d-none');
+
+                alertBox.classList.remove('d-none', 'alert-success');
+                alertBox.classList.add('alert-danger');
+                alertBox.textContent = 'Terjadi kesalahan sistem, silakan coba lagi';
+            });
+    });
+
+});
+</script>
+
 <?php echo $this->endSection() ?>

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controllers\Peserta;
 
 use App\Controllers\BaseController;
@@ -37,8 +36,8 @@ class Program extends BaseController
             ->join('kelas k', 'k.id_program = p.id_program AND k.deleted_at IS NULL', 'left')
             ->join(
                 'kelas_peserta kp',
-                'kp.id_kelas = k.id_kelas 
-                AND kp.id_users = ' . (int)$this->idUsers . ' 
+                'kp.id_kelas = k.id_kelas
+                AND kp.id_users = ' . (int) $this->idUsers . '
                 AND kp.deleted_at IS NULL',
                 'left'
             )
@@ -61,78 +60,77 @@ class Program extends BaseController
     {
         $db = \Config\Database::connect();
 
-        $kelas_list = $db->table('kelas k')
+        // ===============================
+        // Ambil ID kelas yang SUDAH DIAKSES
+        // ===============================
+
+        // 1. dari kelas_peserta
+        $kelasPesertaIds = $db->table('kelas_peserta')
+            ->select('id_kelas')
+            ->where('id_users', $this->idUsers)
+            ->where('deleted_at IS NULL')
+            ->get()
+            ->getResultArray();
+
+        // 2. dari voucher_claim
+        $voucherClaimIds = $db->table('voucher_claim vc')
+            ->select('v.id_kelas')
+            ->join('voucher v', 'v.id_voucher = vc.id_voucher')
+            ->where('vc.id_users', $this->idUsers)
+            ->get()
+            ->getResultArray();
+
+        // gabungkan & unique
+        $excludeIds = array_unique(array_merge(
+            array_column($kelasPesertaIds, 'id_kelas'),
+            array_column($voucherClaimIds, 'id_kelas')
+        ));
+
+        // ===============================
+        // Ambil kelas yang BELUM DIAKSES
+        // ===============================
+        $query = $db->table('kelas k')
             ->select('
                 k.id_kelas,
                 k.nama_kelas,
                 k.deskripsi_kelas,
                 k.tipe_kelas,
                 k.harga,
-                u.nama_users AS nama_pengajar,
                 COUNT(DISTINCT m.id_modul) AS total_modul,
-                COUNT(DISTINCT ma.id_materi) AS total_materi,
-                kp.id_users AS has_access
+                COUNT(DISTINCT ma.id_materi) AS total_materi
             ')
-            ->join('users u', 'u.id_users = k.id_users', 'left')
             ->join('modul m', 'm.id_kelas = k.id_kelas AND m.deleted_at IS NULL', 'left')
             ->join('materi ma', 'ma.id_modul = m.id_modul AND ma.deleted_at IS NULL', 'left')
-
-            // 🔑 INI KUNCI UTAMANYA
-            ->join(
-                'kelas_peserta kp',
-                'kp.id_kelas = k.id_kelas 
-                AND kp.id_users = ' . (int) $this->idUsers . '
-                AND kp.deleted_at IS NULL',
-                'left'
-            )
-
             ->where('k.id_program', $id_program)
-            ->where('k.deleted_at IS NULL')
+            ->where('k.deleted_at IS NULL');
+
+        // ❌ EXCLUDE kelas yang sudah pernah diikuti
+        if (! empty($excludeIds)) {
+            $query->whereNotIn('k.id_kelas', $excludeIds);
+        }
+
+        $kelas_list = $query
             ->groupBy('k.id_kelas')
             ->get()
             ->getResultArray();
 
         // ===============================
-        // HITUNG PROGRESS (HANYA JIKA AKSES)
+        // Ambil info voucher (kelas gratis)
         // ===============================
         foreach ($kelas_list as &$k) {
-
-            // default terkunci
-            $k['is_locked'] = empty($k['has_access']);
-            $k['persen']    = 0;
-
-            if (!$k['is_locked']) {
-                $total_materi = $db->table('materi ma')
-                    ->join('modul m', 'm.id_modul = ma.id_modul')
-                    ->where('m.id_kelas', $k['id_kelas'])
-                    ->where('ma.deleted_at IS NULL')
-                    ->where('m.deleted_at IS NULL')
-                    ->countAllResults();
-
-                $completed_materi = $db->table('user_materi_progress ump')
-                    ->join('materi ma', 'ma.id_materi = ump.id_materi')
-                    ->join('modul m', 'm.id_modul = ma.id_modul')
-                    ->where('m.id_kelas', $k['id_kelas'])
-                    ->where('ump.id_users', $this->idUsers)
-                    ->where('ump.is_completed', 1)
-                    ->countAllResults();
-
-                $k['persen'] = $total_materi > 0
-                    ? round(($completed_materi / $total_materi) * 100)
-                    : 0;
+            if ($k['tipe_kelas'] === 'gratis') {
+                $k['voucher'] = $db->table('voucher')
+                    ->select('tanggal_berakhir, kuota')
+                    ->where('id_kelas', $k['id_kelas'])
+                    ->where('is_active', 1)
+                    ->where('deleted_at IS NULL')
+                    ->where('tanggal_mulai <=', date('Y-m-d H:i:s'))
+                    ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
+                    ->get()
+                    ->getFirstRow('array');
+            } else {
+                $k['voucher'] = null;
             }
-
-            // Ambil informasi voucher untuk setiap kelas
-            $voucher = $db->table('voucher')
-                ->select('tanggal_berakhir, kuota')
-                ->where('id_kelas', $k['id_kelas'])
-                ->where('is_active', 1)
-                ->where('deleted_at IS NULL')
-                ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
-                ->get()
-                ->getFirstRow('array');
-            
-            $k['voucher'] = $voucher;
         }
         unset($k);
 

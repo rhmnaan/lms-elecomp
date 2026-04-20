@@ -69,13 +69,13 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         // =========================
         // TEMUKAN KELAS
         // =========================
-        $routes->get('kelas/program', 'Dashboard\Peserta\KelasPeserta::program');
-        $routes->get('kelas/program/(:num)', 'Dashboard\Peserta\KelasPeserta::kelasByProgram/$1');
+        $routes->get('kelas/program', 'Peserta\KelasPeserta::program');
+        $routes->get('kelas/program/(:num)', 'Peserta\KelasPeserta::kelasByProgram/$1');
 
         // =========================
         // DETAIL & VOUCHER
         // =========================
-        $routes->get('kelas/detail/(:num)', 'Dashboard\Peserta\KelasPeserta::detail/$1');
+        $routes->get('kelas/detail/(:num)', 'Peserta\KelasPeserta::detail/$1');
 
         // =========================
         // VOUCHER CLAIM
@@ -85,7 +85,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         // =========================
         // KELAS SAYA
         // =========================
-        $routes->get('kelas-saya', 'Dashboard\Peserta\KelasPeserta::kelasSaya');
+        $routes->get('kelas-saya', 'Peserta\KelasPeserta::kelasSaya');
 
         // Pre Test & Post Test
         $routes->get('pretest/(:num)', 'Peserta\Pretest::index/$1');
