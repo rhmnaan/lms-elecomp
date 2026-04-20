@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><?= isset($title) ? esc($title) : 'LMS Elecomp'; ?></title>
+    <title><?php echo isset($title) ? esc($title) : 'LMS Elecomp'; ?></title>
 
-    <?= $this->renderSection('meta'); ?>
+    <?php echo $this->renderSection('meta'); ?>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -15,9 +15,9 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link rel="stylesheet" href="<?= base_url('css/peserta-layout.css') ?>">
+    <link rel="stylesheet" href="<?php echo base_url('css/peserta-layout.css') ?>">
 
-    <?= $this->renderSection('styles'); ?>
+    <?php echo $this->renderSection('styles'); ?>
 </head>
 
 <body class="protected-page">
@@ -57,8 +57,8 @@
             <div class="menu-label">Menu Utama</div>
 
             <ul class="sidebar-nav">
-                <li <?= uri_string() === 'dashboard/peserta/beranda' ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/peserta/beranda') ?>">
+                <li <?php echo uri_string() === 'dashboard/peserta/beranda' ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/peserta/beranda') ?>">
                         <i class="bi bi-house-fill"></i> Beranda
                         <?php if (uri_string() === 'dashboard/peserta/beranda'): ?>
                         <span class="dot"></span>
@@ -67,8 +67,8 @@
                 </li>
 
                 <!-- TEMUKAN KELAS -->
-                <li <?= str_starts_with(uri_string(), 'dashboard/peserta/program') ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/peserta/program') ?>">
+                <li <?php echo str_starts_with(uri_string(), 'dashboard/peserta/program') ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/peserta/program') ?>">
                         <i class="bi bi-search"></i> Temukan Kelas
                         <?php if (str_starts_with(uri_string(), 'dashboard/peserta/program')): ?>
                         <span class="dot"></span>
@@ -77,8 +77,8 @@
                 </li>
 
                 <!-- KELAS SAYA -->
-                <li <?= str_starts_with(uri_string(), 'dashboard/peserta/kelas') ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/peserta/kelas') ?>">
+                <li <?php echo str_starts_with(uri_string(), 'dashboard/peserta/kelas') ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/peserta/kelas') ?>">
                         <i class="bi bi-mortarboard-fill"></i> Kelas Saya
                         <?php if (str_starts_with(uri_string(), 'dashboard/peserta/kelas')): ?>
                         <span class="dot"></span>
@@ -89,8 +89,8 @@
 
             <div class="menu-label" style="margin-top:12px;">Akun</div>
             <ul class="sidebar-nav">
-                <li <?= uri_string() === 'dashboard/peserta/profil' ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/peserta/profil') ?>">
+                <li <?php echo uri_string() === 'dashboard/peserta/profil' ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/peserta/profil') ?>">
                         <i class="bi bi-person-circle"></i> Profil Saya
                         <?php if (uri_string() === 'dashboard/peserta/profil'): ?>
                         <span class="dot"></span>
@@ -100,7 +100,7 @@
             </ul>
 
             <div class="sidebar-logout">
-                <a href="<?= base_url('/logout') ?>">
+                <a href="<?php echo base_url('/logout') ?>">
                     <i class="bi bi-box-arrow-right"></i> Keluar Akun
                 </a>
             </div>
@@ -125,10 +125,10 @@
                     </div>
                     <div class="user-info">
                         <div class="avatar">
-                            <?= strtoupper(substr(session()->get('nama_users') ?? 'S', 0, 1)) ?>
+                            <?php echo strtoupper(substr(session()->get('nama') ?? 'S', 0, 1)) ?>
                         </div>
                         <div class="user-meta">
-                            <div class="user-name"><?= esc(session()->get('nama_users') ?? 'Siswa') ?></div>
+                            <div class="user-name"><?php echo esc(session()->get('nama') ?? 'Siswa') ?></div>
                             <div class="user-role">Peserta Didik</div>
                         </div>
                     </div>
@@ -137,7 +137,7 @@
 
             <!-- CONTENT -->
             <div class="admin-content">
-                <?= $this->renderSection('content'); ?>
+                <?php echo $this->renderSection('content'); ?>
             </div>
 
         </div>
@@ -158,7 +158,7 @@
     Swal.fire({
         icon: 'success',
         title: 'Berhasil',
-        text: '<?= esc(session()->getFlashdata('success')) ?>',
+        text: '<?php echo esc(session()->getFlashdata('success')) ?>',
         timer: 2000,
         showConfirmButton: false
     });
@@ -167,7 +167,7 @@
     Swal.fire({
         icon: 'error',
         title: 'Gagal',
-        text: '<?= esc(session()->getFlashdata('error')) ?>'
+        text: '<?php echo esc(session()->getFlashdata('error')) ?>'
     });
     <?php endif; ?>
     </script>
@@ -219,7 +219,7 @@
     })();
     </script>
 
-    <script src="<?= base_url('js/realtime.js') ?>"></script>
+    <script src="<?php echo base_url('js/realtime.js') ?>"></script>
     <script>
     let logoutTriggered = false;
     let monitor;
@@ -237,18 +237,18 @@
         });
         setTimeout(async () => {
             try {
-                await fetch('<?= base_url("/logout") ?>', {
+                await fetch('<?php echo base_url("/logout") ?>', {
                     method: 'GET',
                     redirect: 'manual'
                 });
             } catch (_) {}
-            window.location.replace('<?= base_url("/login") ?>');
+            window.location.replace('<?php echo base_url("/login") ?>');
         }, 2000);
     }
 
     monitor = new RealtimeMonitor({
-        baseUrl: "<?= base_url() ?>",
-        user: "<?= esc(session()->get('email')) ?>",
+        baseUrl: "<?php echo base_url() ?>",
+        user: "<?php echo esc(session()->get('email_users')) ?>",
         onConnected: () => console.log('[SSE] Terhubung'),
         onDisconnected: () => console.log('[SSE] Terputus, mencoba reconnect...'),
         onError: (e) => console.warn('[SSE] Error:', e),
@@ -278,7 +278,7 @@
     }
     </script>
 
-    <?= $this->renderSection('scripts'); ?>
+    <?php echo $this->renderSection('scripts'); ?>
 </body>
 
 </html>

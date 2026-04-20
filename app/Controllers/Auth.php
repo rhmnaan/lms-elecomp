@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controllers;
 
 use App\Models\Users;
@@ -21,10 +20,10 @@ class Auth extends BaseController
         $input    = $this->request->getPost('email');
         $password = $this->request->getPost('password');
 
-        if (!$input || !$password) {
+        if (! $input || ! $password) {
             return $this->response->setJSON([
                 'status'  => 'failed',
-                'message' => 'Username/Email dan password wajib diisi.'
+                'message' => 'Username/Email dan password wajib diisi.',
             ]);
         }
 
@@ -37,19 +36,19 @@ class Auth extends BaseController
             ->groupEnd()
             ->first();
 
-        if (!$user || !password_verify($password, $user['password_users'])) {
+        if (! $user || ! password_verify($password, $user['password_users'])) {
             return $this->response->setJSON([
                 'status'  => 'failed',
-                'message' => 'Username/Email atau password salah.'
+                'message' => 'Username/Email atau password salah.',
             ]);
         }
 
         session()->set([
-            'logged_in' => true,
-            'id_users'  => $user['id_users'],
-            'nama'      => $user['nama_users'],
-            'email'     => $user['email_users'],
-            'role'      => $user['role_users'],
+            'logged_in'   => true,
+            'id_users'    => $user['id_users'],
+            'nama'        => $user['nama_users'],
+            'email_users' => $user['email_users'],
+            'role'        => $user['role_users'],
         ]);
 
         $currentFP = $_COOKIE['device_fp'] ?? null;

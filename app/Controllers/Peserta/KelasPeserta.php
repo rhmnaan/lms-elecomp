@@ -125,28 +125,53 @@ class KelasPeserta extends BaseController
     public function kelasSaya()
     {
         $id_users = session('id_users');
+        $db = \Config\Database::connect();
 
-        $data['kelas_saya'] = $this->voucherClaimModel
+        $kelas = $db->table('kelas_peserta kp')
             ->select('
-                kelas.id_kelas,
-                kelas.nama_kelas,
-                kelas.deskripsi_kelas,
-                IFNULL(peserta_kelas.progress, 0) as progress
+                k.id_kelas,
+                k.nama_kelas,
+                k.deskripsi_kelas
             ')
-            ->join('voucher', 'voucher.id_voucher = voucher_claim.id_voucher')
-            ->join('kelas', 'kelas.id_kelas = voucher.id_kelas')
-            ->join(
-                'kelas_peserta',
-                'kelas_peserta.id_kelas = kelas.id_kelas
-                AND kelas_peserta.id_users = voucher_claim.id_users',
-                'left'
-            )
-            ->where('voucher_claim.id_users', $id_users)
-            ->where('voucher_claim.status', 'aktif')
-            ->where('voucher_claim.deleted_at', null)
-            ->groupBy('kelas.id_kelas')
-            ->findAll();
+            ->join('kelas k', 'k.id_kelas = kp.id_kelas')
+            ->where('kp.id_users', $id_users)
+            ->where('kp.deleted_at IS NULL')
+            ->get()
+            ->getResultArray();
 
-        return view('Dashboard/Peserta/kelas-saya', $data);
+        // HITUNG PROGRESS DINAMIS
+        foreach ($kelas as &$k) {
+
+            $total_materi = $db->table('materi ma')
+                ->join('modul m', 'm.id_modul = ma.id_modul')
+                ->where('m.id_kelas', $k['id_kelas'])
+                ->where('ma.deleted_at IS NULL')
+                ->where('m.deleted_at IS NULL')
+                ->countAllResults();
+
+            $selesai = $db->table('user_materi_progress ump')
+                ->join('materi ma', 'ma.id_materi = ump.id_materi')
+                ->join('modul m', 'm.id_modul = ma.id_modul')
+                ->where('m.id_kelas', $k['id_kelas'])
+                ->where('ump.id_users', $id_users)
+                ->where('ump.is_completed', 1)
+                ->countAllResults();
+
+            $k['persen'] = $total_materi > 0
+                ? round(($selesai / $total_materi) * 100)
+                : 0;
+
+            $k['total_modul'] = $db->table('modul')
+                ->where('id_kelas', $k['id_kelas'])
+                ->where('deleted_at IS NULL')
+                ->countAllResults();
+
+            $k['total_materi'] = $total_materi;
+        }
+
+        return view('Dashboard/Peserta/kelas-saya', [
+            'kelas_list'  => $kelas,
+            'total_kelas' => count($kelas),
+        ]);
     }
 }

@@ -1,16 +1,16 @@
-<?php // app/Views/Dashboard/Peserta/beranda.php 
+<?php // app/Views/Dashboard/Peserta/beranda.php
 ?>
-<?= $this->extend('Dashboard/Peserta/layout_peserta') ?>
+<?php echo $this->extend('Dashboard/Peserta/layout_peserta') ?>
 
-<?= $this->section('meta') ?>
+<?php echo $this->section('meta') ?>
 <title>Beranda Siswa — LMS Elecomp</title>
-<?= $this->endSection() ?>
+<?php echo $this->endSection() ?>
 
-<?= $this->section('styles') ?>
+<?php echo $this->section('styles') ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<?= $this->endSection() ?>
+<?php echo $this->endSection() ?>
 
-<?= $this->section('content') ?>
+<?php echo $this->section('content') ?>
 
 <!-- PAGE HEADER -->
 <div class="page-header">
@@ -27,13 +27,13 @@
 <!-- WELCOME BANNER -->
 <div class="welcome-banner">
     <div class="welcome-text">
-        <h2>Halo, <?= esc(session()->get('nama_users') ?? 'Siswa') ?>! 👋</h2>
+        <h2>Halo, <?php echo esc(session()->get('nama') ?? 'Siswa') ?>! 👋</h2>
         <p>Semangat belajar hari ini. Kamu sudah mengerjakan <strong
-                style="color:#fff;"><?= esc($total_quiz_dikerjakan ?? 0) ?> quiz</strong> dari total yang tersedia.</p>
-        <?php if (!empty($peringkat)): ?>
+                style="color:#fff;"><?php echo esc($total_quiz_dikerjakan ?? 0) ?> quiz</strong> dari total yang tersedia.</p>
+        <?php if (! empty($peringkat)): ?>
         <div class="rank-badge">
             <i class="bi bi-trophy-fill"></i>
-            Peringkat <?= esc($peringkat) ?> dari <?= esc($total_peserta_kelas ?? '-') ?> peserta
+            Peringkat <?php echo esc($peringkat) ?> dari <?php echo esc($total_peserta_kelas ?? '-') ?> peserta
         </div>
         <?php endif; ?>
     </div>
@@ -47,7 +47,7 @@
             <div class="stat-icon blue"><i class="bi bi-book-fill"></i></div>
         </div>
         <div class="stat-label">Kelas Diikuti</div>
-        <div class="stat-value"><?= esc($total_kelas ?? 0) ?></div>
+        <div class="stat-value"><?php echo esc($total_kelas ?? 0) ?></div>
         <div class="stat-sub">Kelas aktif</div>
     </div>
     <div class="stat-card">
@@ -55,7 +55,7 @@
             <div class="stat-icon orange"><i class="bi bi-file-earmark-text-fill"></i></div>
         </div>
         <div class="stat-label">Total Materi</div>
-        <div class="stat-value"><?= esc($total_materi ?? 0) ?></div>
+        <div class="stat-value"><?php echo esc($total_materi ?? 0) ?></div>
         <div class="stat-sub">Tersedia untuk dibaca</div>
     </div>
     <div class="stat-card">
@@ -63,15 +63,15 @@
             <div class="stat-icon purple"><i class="bi bi-clipboard-check-fill"></i></div>
         </div>
         <div class="stat-label">Quiz Dikerjakan</div>
-        <div class="stat-value"><?= esc($total_quiz_dikerjakan ?? 0) ?></div>
-        <div class="stat-sub">Dari <?= esc($total_quiz_tersedia ?? 0) ?> quiz tersedia</div>
+        <div class="stat-value"><?php echo esc($total_quiz_dikerjakan ?? 0) ?></div>
+        <div class="stat-sub">Dari <?php echo esc($total_quiz_tersedia ?? 0) ?> quiz tersedia</div>
     </div>
     <div class="stat-card">
         <div class="stat-card-top">
             <div class="stat-icon green"><i class="bi bi-graph-up-arrow"></i></div>
         </div>
         <div class="stat-label">Rata-rata Nilai</div>
-        <div class="stat-value"><?= esc($rata_nilai ?? 0) ?></div>
+        <div class="stat-value"><?php echo esc($rata_nilai ?? 0) ?></div>
         <div class="stat-sub">Dari semua quiz</div>
     </div>
 </div>
@@ -92,28 +92,28 @@
         <?php else: ?>
         <?php
             $iconColors = ['blue', 'green', 'orange', 'purple'];
-            $icons = ['bi-lightning-charge-fill', 'bi-cpu-fill', 'bi-tools', 'bi-diagram-3-fill'];
+            $icons      = ['bi-lightning-charge-fill', 'bi-cpu-fill', 'bi-tools', 'bi-diagram-3-fill'];
             foreach ($kelas_list as $i => $k):
                 $colorIdx = $i % count($iconColors);
                 // Tambahkan default values
-                $total_modul = $k['total_modul'] ?? 0;
+                $total_modul   = $k['total_modul'] ?? 0;
                 $modul_selesai = $k['modul_selesai'] ?? 0;
-                $persen = $total_modul > 0 ? round(($modul_selesai / $total_modul) * 100) : 0;
-            ?>
+                $persen        = $total_modul > 0 ? round(($modul_selesai / $total_modul) * 100) : 0;
+        ?>
         <div class="kelas-item">
-            <div class="kelas-icon <?= $iconColors[$colorIdx] ?>">
-                <i class="bi <?= $icons[$colorIdx] ?>"></i>
+            <div class="kelas-icon <?php echo $iconColors[$colorIdx] ?>">
+                <i class="bi <?php echo $icons[$colorIdx] ?>"></i>
             </div>
             <div class="kelas-info">
-                <div class="kelas-nama"><?= esc($k['nama_kelas']) ?></div>
-                <div class="kelas-pengajar"><?= esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
+                <div class="kelas-nama"><?php echo esc($k['nama_kelas']) ?></div>
+                <div class="kelas-pengajar"><?php echo esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
                 <div class="kelas-progress-wrap">
                     <div class="kelas-progress-bar">
-                        <div class="kelas-progress-fill" style="width: <?= $persen ?>%"></div>
+                        <div class="kelas-progress-fill" style="width: <?php echo $persen ?>%"></div>
                     </div>
                     <div class="kelas-progress-label">
-                        <span><?= $modul_selesai ?>/<?= $total_modul ?> modul selesai</span>
-                        <span><?= $persen ?>%</span>
+                        <span><?php echo $modul_selesai ?>/<?php echo $total_modul ?> modul selesai</span>
+                        <span><?php echo $persen ?>%</span>
                     </div>
                 </div>
             </div>
@@ -137,17 +137,17 @@
                     <div class="dist-legend-item">
                         <div class="dist-dot" style="background:#059669;"></div>
                         <div class="dist-legend-label">Lulus (≥70)</div>
-                        <div class="dist-legend-val"><?= esc($dist_lulus ?? 0) ?></div>
+                        <div class="dist-legend-val"><?php echo esc($dist_lulus ?? 0) ?></div>
                     </div>
                     <div class="dist-legend-item">
                         <div class="dist-dot" style="background:#d97706;"></div>
                         <div class="dist-legend-label">Cukup (50–69)</div>
-                        <div class="dist-legend-val"><?= esc($dist_cukup ?? 0) ?></div>
+                        <div class="dist-legend-val"><?php echo esc($dist_cukup ?? 0) ?></div>
                     </div>
                     <div class="dist-legend-item">
                         <div class="dist-dot" style="background:#ef4444;"></div>
                         <div class="dist-legend-label">Kurang (&lt;50)</div>
-                        <div class="dist-legend-val"><?= esc($dist_kurang ?? 0) ?></div>
+                        <div class="dist-legend-val"><?php echo esc($dist_kurang ?? 0) ?></div>
                     </div>
                 </div>
             </div>
@@ -165,15 +165,15 @@
                     $val = (int) $qr['nilai_quiz_results'];
                     $cls = $val >= 70 ? 'high' : ($val >= 50 ? 'mid' : 'low');
                     $tgl = date('d M, H:i', strtotime($qr['waktu_selesai_quiz_results']));
-                ?>
+            ?>
             <div class="quiz-item">
                 <div class="quiz-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
                 <div class="quiz-info">
-                    <div class="quiz-name"><?= esc($qr['judul_quiz']) ?></div>
-                    <div class="quiz-kelas"><?= esc($qr['nama_kelas']) ?></div>
-                    <div class="quiz-time"><i class="bi bi-clock" style="font-size:10px;"></i> <?= $tgl ?></div>
+                    <div class="quiz-name"><?php echo esc($qr['judul_quiz']) ?></div>
+                    <div class="quiz-kelas"><?php echo esc($qr['nama_kelas']) ?></div>
+                    <div class="quiz-time"><i class="bi bi-clock" style="font-size:10px;"></i> <?php echo $tgl ?></div>
                 </div>
-                <span class="quiz-badge <?= $cls ?>"><?= $val ?></span>
+                <span class="quiz-badge <?php echo $cls ?>"><?php echo $val ?></span>
             </div>
             <?php endforeach; ?>
             <?php endif; ?>
@@ -204,11 +204,11 @@
                 <?php endif; ?>
             </div>
             <div class="materi-info">
-                <div class="materi-judul"><?= esc($m['judul_materi']) ?></div>
-                <div class="materi-modul"><?= esc($m['judul_modul']) ?> · <?= esc($m['nama_kelas']) ?></div>
+                <div class="materi-judul"><?php echo esc($m['judul_materi']) ?></div>
+                <div class="materi-modul"><?php echo esc($m['judul_modul']) ?> · <?php echo esc($m['nama_kelas']) ?></div>
             </div>
             <!-- PERBAIKAN LINK: arah ke materi-modul dengan parameter materi -->
-            <a href="<?= base_url('dashboard/peserta/materi-modul/' . $m['id_modul'] . '?materi=' . $m['id_materi']) ?>"
+            <a href="<?php echo base_url('dashboard/peserta/materi-modul/' . $m['id_modul'] . '?materi=' . $m['id_materi']) ?>"
                 class="btn-lihat-materi"
                 style="font-size: 11px; font-weight: 700; color: #2d6cdf; text-decoration: none; background: #eff6ff; padding: 5px 12px; border-radius: 8px; display: inline-block;">
                 Lihat Materi <i class="bi bi-arrow-right"></i>
@@ -219,9 +219,9 @@
     <?php endif; ?>
 </div>
 
-<?= $this->endSection() ?>
+<?php echo $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?php echo $this->section('scripts') ?>
 <script>
 const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -233,9 +233,9 @@ document.getElementById('today-date').textContent =
 
 window.addEventListener('load', function() {
     const ctx = document.getElementById('donutChart').getContext('2d');
-    const lulus = <?= (int)($dist_lulus  ?? 0) ?>;
-    const cukup = <?= (int)($dist_cukup  ?? 0) ?>;
-    const kurang = <?= (int)($dist_kurang ?? 0) ?>;
+    const lulus = <?php echo (int)($dist_lulus  ?? 0) ?>;
+    const cukup = <?php echo (int)($dist_cukup  ?? 0) ?>;
+    const kurang = <?php echo (int)($dist_kurang ?? 0) ?>;
     const total = lulus + cukup + kurang;
 
     new Chart(ctx, {
@@ -274,4 +274,4 @@ window.addEventListener('load', function() {
     });
 });
 </script>
-<?= $this->endSection() ?>
+<?php echo $this->endSection() ?>
