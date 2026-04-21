@@ -117,10 +117,14 @@ class Program extends BaseController
         // ===============================
         // Ambil info voucher (kelas gratis)
         // ===============================
+
+        $voucherModel      = new \App\Models\VoucherModel();
+        $voucherClaimModel = new \App\Models\VoucherClaimModel();
+
         foreach ($kelas_list as &$k) {
             if ($k['tipe_kelas'] === 'gratis') {
-                $k['voucher'] = $db->table('voucher')
-                    ->select('tanggal_berakhir, kuota')
+                $voucher = $db->table('voucher')
+                    ->select('id_voucher, tanggal_berakhir, kuota')
                     ->where('id_kelas', $k['id_kelas'])
                     ->where('is_active', 1)
                     ->where('deleted_at IS NULL')
@@ -128,6 +132,25 @@ class Program extends BaseController
                     ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
                     ->get()
                     ->getFirstRow('array');
+
+                if ($voucher) {
+                    // Cek apakah user sudah claim
+                    $alreadyClaimed = $voucherClaimModel->where('id_voucher', $voucher['id_voucher'])
+                        ->where('id_users', $this->idUsers)
+                        ->first() !== null;
+
+                    // Cek kuota
+                    $totalClaim = $voucherClaimModel->where('id_voucher', $voucher['id_voucher'])
+                        ->countAllResults();
+
+                    if (! $alreadyClaimed && $totalClaim < $voucher['kuota']) {
+                        $k['voucher'] = $voucher;
+                    } else {
+                        $k['voucher'] = null;
+                    }
+                } else {
+                    $k['voucher'] = null;
+                }
             } else {
                 $k['voucher'] = null;
             }
