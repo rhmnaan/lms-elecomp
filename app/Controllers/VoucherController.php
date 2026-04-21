@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\VoucherModel;
 use App\Models\KelasPesertaModel;
 use App\Models\VoucherClaimModel;
+use App\Models\VoucherModel;
 
 class VoucherController extends BaseController
 {
@@ -15,7 +14,7 @@ class VoucherController extends BaseController
 
     public function __construct()
     {
-        $this->voucherModel = new VoucherModel();
+        $this->voucherModel      = new VoucherModel();
         $this->kelasPesertaModel = new KelasPesertaModel();
         $this->voucherClaimModel = new VoucherClaimModel();
     }
@@ -25,22 +24,22 @@ class VoucherController extends BaseController
      */
     public function claim()
     {
-        if (!$this->request->isAJAX()) {
+        if (! $this->request->isAJAX()) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Request tidak valid'
+                'message' => 'Request tidak valid',
             ]);
         }
 
-        $id_users = session()->get('id_users');
+        $id_users     = session()->get('id_users');
         $kode_voucher = $this->request->getPost('kode_voucher');
-        $id_kelas = $this->request->getPost('id_kelas');
+        $id_kelas     = $this->request->getPost('id_kelas');
 
         // Validasi input
         if (empty($id_kelas) || empty($id_users)) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Data tidak lengkap'
+                'message' => 'Data tidak lengkap',
             ]);
         }
 
@@ -52,10 +51,10 @@ class VoucherController extends BaseController
             $voucher = $this->voucherModel->validateVoucher($kode_voucher, $id_kelas);
         }
 
-        if (!$voucher) {
+        if (! $voucher) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Voucher tidak valid atau sudah digunakan'
+                'message' => 'Voucher tidak valid atau sudah digunakan',
             ]);
         }
 
@@ -63,7 +62,7 @@ class VoucherController extends BaseController
         if ($this->voucherModel->isVoucherClaimedByUser($voucher['id_voucher'], $id_users)) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Voucher sudah pernah diklaim oleh Anda'
+                'message' => 'Voucher sudah pernah diklaim oleh Anda',
             ]);
         }
 
@@ -77,7 +76,7 @@ class VoucherController extends BaseController
         if ($sudahTerdaftar) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Anda sudah terdaftar di kelas ini'
+                'message' => 'Anda sudah terdaftar di kelas ini',
             ]);
         }
 
@@ -88,42 +87,39 @@ class VoucherController extends BaseController
         try {
             // 1. Simpan klaim voucher
             $this->voucherClaimModel->insert([
-                'id_voucher' => $voucher['id_voucher'],
-                'id_users' => $id_users,
+                'id_voucher'    => $voucher['id_voucher'],
+                'id_users'      => $id_users,
                 'tanggal_klaim' => date('Y-m-d H:i:s'),
-                'status' => 'claimed',
+                'status'        => 'claimed',
                 'created_at'    => date('Y-m-d H:i:s'),
             ]);
 
             // 2. Daftarkan user ke kelas
             $this->kelasPesertaModel->insert([
-                'id_users' => $id_users,
-                'id_kelas' => $id_kelas,
-                'tanggal_daftar_kelas_peserta' => date('Y-m-d H:i:s')
+                'id_users'                     => $id_users,
+                'id_kelas'                     => $id_kelas,
+                'tanggal_daftar_kelas_peserta' => date('Y-m-d H:i:s'),
             ]);
-
-            // 3. Claim voucher (nonaktifkan)
-            $this->voucherModel->claimVoucher($voucher['id_voucher']);
 
             $db->transComplete();
 
             if ($db->transStatus() === false) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'Gagal memproses claim voucher'
+                    'message' => 'Gagal memproses claim voucher',
                 ]);
             }
 
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'Berhasil claim voucher dan bergabung ke kelas!'
+                'message' => 'Berhasil claim voucher dan bergabung ke kelas!',
             ]);
 
         } catch (\Exception $e) {
             $db->transRollback();
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Terjadi kesalahan sistem'
+                'message' => 'Terjadi kesalahan sistem',
             ]);
         }
     }

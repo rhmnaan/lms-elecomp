@@ -85,89 +85,60 @@ class VideoStream extends BaseController
 
         if ($r = $this->guardPengajarJson()) return $r;
 
-        // ── FIX: Bypass rule uploaded[] CI4, cek $_FILES langsung ──
-        if (empty($_FILES['video']) || $_FILES['video']['error'] !== UPLOAD_ERR_OK) {
-            $errCode = $_FILES['video']['error'] ?? UPLOAD_ERR_NO_FILE;
-            $errMap  = [
-                UPLOAD_ERR_INI_SIZE   => 'File melebihi batas upload server (' . ini_get('upload_max_filesize') . '). Naikkan upload_max_filesize di hosting.',
-                UPLOAD_ERR_FORM_SIZE  => 'File melebihi batas MAX_FILE_SIZE form.',
-                UPLOAD_ERR_PARTIAL    => 'Upload tidak lengkap, coba lagi.',
-                UPLOAD_ERR_NO_FILE    => 'Tidak ada file yang dikirim.',
-                UPLOAD_ERR_NO_TMP_DIR => 'Folder temporary server tidak ditemukan.',
-                UPLOAD_ERR_CANT_WRITE => 'Gagal tulis ke disk. Cek permission writable/.',
-            ];
-            $msg = $errMap[$errCode] ?? 'Upload error kode: ' . $errCode;
-            log_message('error', '[VideoStream::doUpload] $_FILES error=' . $errCode . ' msg=' . $msg);
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'video' => 'uploaded[video]|max_size[video,524288]|ext_in[video,mp4,avi,mkv,mov,webm]',
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
             return $this->response
-                ->setJSON(['success' => false, 'message' => $msg])
+                ->setJSON(['success' => false, 'errors' => $validation->getErrors()])
                 ->setStatusCode(400);
         }
 
-        // ── Validasi ekstensi & ukuran manual ──
-        $allowedExt = ['mp4', 'avi', 'mkv', 'mov', 'webm'];
-        $tmpName    = $_FILES['video']['tmp_name'];
-        $origName   = $_FILES['video']['name'];
-        $fileSize   = $_FILES['video']['size'];
-        $ext        = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+        $video = $this->request->getFile('video');
 
-        if (!in_array($ext, $allowedExt)) {
+        if (!$video || !$video->isValid()) {
             return $this->response
-                ->setJSON(['success' => false, 'message' => 'Format tidak didukung. Gunakan: MP4, AVI, MKV, MOV, WEBM.'])
+                ->setJSON(['success' => false, 'message' => 'File video tidak valid.'])
                 ->setStatusCode(400);
         }
 
-        if ($fileSize > 524288 * 1024) {
-            return $this->response
-                ->setJSON(['success' => false, 'message' => 'Ukuran file melebihi 512 MB.'])
-                ->setStatusCode(400);
-        }
-
-        // ── Buat direktori ──
-        $originalPath  = WRITEPATH . 'uploads/original/';
         $encryptedPath = WRITEPATH . 'uploads/encrypted/';
 
-        foreach ([$originalPath, $encryptedPath] as $dir) {
-            if (!is_dir($dir)) mkdir($dir, 0755, true);
+        if (!is_dir($encryptedPath)) {
+            mkdir($encryptedPath, 0755, true);
         }
 
-        if (!is_writable($originalPath) || !is_writable($encryptedPath)) {
+        $videoId = uniqid('vid_', true);
+        $ext     = $video->getClientExtension();
+        $encFile = $encryptedPath . $videoId . '.enc';
+        $tempFile = $video->getTempName();
+
+        if (!$tempFile || !is_file($tempFile)) {
             return $this->response
-                ->setJSON(['success' => false, 'message' => 'Folder upload tidak writable. Jalankan: chmod -R 775 writable/'])
+                ->setJSON(['success' => false, 'message' => 'File sementara tidak ditemukan.'])
                 ->setStatusCode(500);
         }
 
-        $videoId      = uniqid('vid_', true);
-        $originalFile = $originalPath . $videoId . '.' . $ext;
-        $encFile      = $encryptedPath . $videoId . '.enc';
-
-        // ── Pindahkan file dari tmp ──
-        if (!move_uploaded_file($tmpName, $originalFile)) {
-            return $this->response
-                ->setJSON(['success' => false, 'message' => 'Gagal memindahkan file upload. Cek permission folder.'])
-                ->setStatusCode(500);
-        }
-
-        // ── Enkripsi per-chunk (hemat RAM) ──
-        if (!$this->encryptFileChunked($originalFile, $encFile)) {
-            @unlink($originalFile);
+        if (!$this->encryptFile($tempFile, $encFile)) {
+            @unlink($encFile);
             return $this->response
                 ->setJSON(['success' => false, 'message' => 'Gagal mengenkripsi video. Pastikan VIDEO_ENCRYPTION_KEY sudah diset di .env'])
                 ->setStatusCode(500);
         }
 
-        @unlink($originalFile);
-
         $judulVideo = trim((string) $this->request->getPost('judul_video'));
-        if (empty($judulVideo)) $judulVideo = $origName;
-
-        $encSize = file_exists($encFile) ? filesize($encFile) : 0;
+        if (empty($judulVideo)) {
+            $judulVideo = $video->getClientName();
+        }
 
         $db = \Config\Database::connect();
         $db->table('video_encrypted')->insert([
             'video_id'    => $videoId,
             'judul_video' => $judulVideo,
             'ext'         => $ext,
-            'size'        => $encSize,
+            'size'        => filesize($encFile),
             'id_users'    => $this->uid(),
             'created_at'  => date('Y-m-d H:i:s'),
         ]);
@@ -178,7 +149,7 @@ class VideoStream extends BaseController
             'data'    => [
                 'video_id'    => $videoId,
                 'judul_video' => $judulVideo,
-                'size'        => $encSize,
+                'size'        => filesize($encFile),
             ],
         ]);
     }
@@ -419,23 +390,34 @@ class VideoStream extends BaseController
         return $this->encryptFileChunked($source, $destination);
     }
 
-    /**
-     * ✅ FIXED: Enkripsi file dengan AES-256-CBC yang kompatibel dengan browser
-     * Untuk video kecil-menengah (<100MB)
-     */
     private function encryptFileChunked(string $source, string $destination): bool
     {
         try {
             if (empty($this->encryptionKey)) {
                 throw new \Exception('VIDEO_ENCRYPTION_KEY kosong.');
             }
+
             if (!file_exists($source)) {
                 throw new \Exception('File sumber tidak ditemukan: ' . $source);
             }
 
-            // Derive 32-byte key untuk AES-256
-            $key = hash('sha256', $this->encryptionKey, true);
-            $iv  = openssl_random_pseudo_bytes(16);
+            $iv = openssl_random_pseudo_bytes(16);
+            if ($iv === false) {
+                throw new \Exception('Gagal membuat IV acak.');
+            }
+
+            $sourceHandle = fopen($source, 'rb');
+            if (!$sourceHandle) {
+                throw new \Exception('Tidak bisa membuka file sumber: ' . $source);
+            }
+
+            $destinationHandle = fopen($destination, 'wb');
+            if (!$destinationHandle) {
+                fclose($sourceHandle);
+                throw new \Exception('Tidak bisa membuat file tujuan: ' . $destination);
+            }
+
+            fwrite($destinationHandle, $iv);
 
             $src  = fopen($source, 'rb');
             $dest = fopen($destination, 'wb');
@@ -444,77 +426,37 @@ class VideoStream extends BaseController
                 throw new \Exception('Tidak bisa membuka file untuk enkripsi.');
             }
 
-            // Tulis IV di awal (16 bytes)
-            fwrite($dest, $iv);
-
-            // ✅ FIX: Enkripsi dengan IV tetap dan padding otomatis
-            $blockSize = 16;
-            $buffer = '';
+            fwrite($dest, $iv); // Tulis IV 16 byte di awal
 
             while (!feof($src)) {
-                $chunk = fread($src, 65536); // 64KB per chunk
+                $chunk = fread($src, 65536); // 64 KB per chunk
                 if ($chunk === false) break;
 
-                $buffer .= $chunk;
-                $bufferLen = strlen($buffer);
-
-                // Enkripsi kelipatan 16 bytes (kecuali chunk terakhir)
-                if ($bufferLen >= $blockSize) {
-                    $toEncrypt = substr($buffer, 0, $bufferLen - ($bufferLen % $blockSize));
-                    $buffer = substr($buffer, strlen($toEncrypt));
-
-                    if (!empty($toEncrypt)) {
-                        $encrypted = openssl_encrypt(
-                            $toEncrypt,
-                            'aes-256-cbc',
-                            $key,
-                            OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
-                            $iv
-                        );
-
-                        if ($encrypted === false) {
-                            throw new \Exception('openssl_encrypt gagal: ' . openssl_error_string());
-                        }
-
-                        fwrite($dest, $encrypted);
-
-                        // Update IV untuk chunk berikutnya (CBC chaining)
-                        $iv = substr($encrypted, -16);
-                    }
+                $enc = openssl_encrypt($chunk, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv);
+                if ($enc === false) {
+                    throw new \Exception('openssl_encrypt gagal: ' . openssl_error_string());
                 }
-            }
-
-            // Handle sisa buffer dengan PKCS7 padding
-            if (strlen($buffer) > 0) {
-                $padLen = $blockSize - (strlen($buffer) % $blockSize);
-                $buffer .= str_repeat(chr($padLen), $padLen);
-
-                $encrypted = openssl_encrypt(
-                    $buffer,
-                    'aes-256-cbc',
-                    $key,
-                    OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
-                    $iv
-                );
-
-                if ($encrypted === false) {
-                    throw new \Exception('openssl_encrypt gagal pada chunk terakhir');
-                }
-
-                fwrite($dest, $encrypted);
+                fwrite($dest, $enc);
+                $iv = substr($enc, -16); // IV chaining
             }
 
             fclose($src);
             fclose($dest);
-
-            log_message('info', '[VideoStream] Video berhasil dienkripsi: ' . $destination);
             return true;
         } catch (\Exception $e) {
             log_message('error', '[VideoStream::encryptFileChunked] ' . $e->getMessage());
             if (isset($src)  && is_resource($src))  fclose($src);
             if (isset($dest) && is_resource($dest)) fclose($dest);
-            if (file_exists($destination)) @unlink($destination);
             return false;
         }
+    }
+
+    private function pkcs7Pad(string $data, int $blockSize): string
+    {
+        $padLen = $blockSize - (strlen($data) % $blockSize);
+        if ($padLen === 0) {
+            $padLen = $blockSize;
+        }
+        return $data . str_repeat(chr($padLen), $padLen);
     }
 }

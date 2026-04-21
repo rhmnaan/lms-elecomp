@@ -57,8 +57,11 @@ class Session extends BaseConfig
      * Please read up the manual for the format with other session drivers.
      *
      * IMPORTANT: You are REQUIRED to set a valid save path!
+     *
+     * If left empty, CodeIgniter will use PHP's configured session.save_path
+     * or fall back to writable/session without calling ini_set() at runtime.
      */
-    public string $savePath = WRITEPATH . 'session';
+    public string $savePath = '';
 
     /**
      * --------------------------------------------------------------------------

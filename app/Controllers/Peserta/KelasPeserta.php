@@ -125,30 +125,32 @@ class KelasPeserta extends BaseController
     public function kelasSaya()
     {
         $id_users = session('id_users');
-
-        $data['kelas_list'] = $this->voucherClaimModel
-            ->select('
-                kelas.id_kelas,
-                kelas.nama_kelas,
-                kelas.deskripsi_kelas
-            ')
-            ->join('voucher', 'voucher.id_voucher = voucher_claim.id_voucher')
-            ->join('kelas', 'kelas.id_kelas = voucher.id_kelas')
-            ->join(
-                'kelas_peserta',
-                'kelas_peserta.id_kelas = kelas.id_kelas
-                AND kelas_peserta.id_users = voucher_claim.id_users',
-                'left'
-            )
-            ->where('voucher_claim.id_users', $id_users)
-            ->where('voucher_claim.status', 'aktif')
-            ->where('voucher_claim.deleted_at', null)
-            ->groupBy('kelas.id_kelas')
-            ->findAll();
-
-        // Hitung progress untuk setiap kelas
         $db = \Config\Database::connect();
-        foreach ($data['kelas_list'] as &$k) {
+
+        $kelas = $db->table('kelas_peserta kp')
+            ->select('
+                k.id_kelas,
+                k.nama_kelas,
+                k.deskripsi_kelas,
+                k.id_program,
+                k.id_users as id_pengajar,
+                p.nama_program,
+                u.nama_users as nama_pengajar
+            ')
+            ->join('kelas k', 'k.id_kelas = kp.id_kelas')
+            ->join('program p', 'p.id_program = k.id_program', 'left')
+            ->join('users u', 'u.id_users = k.id_users', 'left')
+            ->where('kp.id_users', $id_users)
+            ->where('kp.deleted_at IS NULL')
+            ->get()
+            ->getResultArray();
+
+        // Debug: log jumlah kelas
+        log_message('debug', 'User ' . $id_users . ' has ' . count($kelas) . ' kelas in kelas-saya');
+
+        // Hitung progress & kelompokkan per program
+        $grouped = [];
+        foreach ($kelas as &$k) {
             $total_materi = $db->table('materi ma')
                 ->join('modul m', 'm.id_modul = ma.id_modul')
                 ->where('m.id_kelas', $k['id_kelas'])
@@ -156,7 +158,7 @@ class KelasPeserta extends BaseController
                 ->where('m.deleted_at IS NULL')
                 ->countAllResults();
 
-            $completed_materi = $db->table('user_materi_progress ump')
+            $selesai = $db->table('user_materi_progress ump')
                 ->join('materi ma', 'ma.id_materi = ump.id_materi')
                 ->join('modul m', 'm.id_modul = ma.id_modul')
                 ->where('m.id_kelas', $k['id_kelas'])
@@ -165,14 +167,30 @@ class KelasPeserta extends BaseController
                 ->countAllResults();
 
             $k['persen'] = $total_materi > 0
-                ? round(($completed_materi / $total_materi) * 100)
+                ? round(($selesai / $total_materi) * 100)
                 : 0;
+
+            $k['total_modul'] = $db->table('modul')
+                ->where('id_kelas', $k['id_kelas'])
+                ->where('deleted_at IS NULL')
+                ->countAllResults();
+
+            $k['total_materi'] = $total_materi;
+
+            $programKey = $k['id_program'] ?? 0;
+            if (! isset($grouped[$programKey])) {
+                $grouped[$programKey] = [
+                    'nama_program' => $k['nama_program'] ?? 'Tanpa Program',
+                    'kelas'        => [],
+                ];
+            }
+            $grouped[$programKey]['kelas'][] = $k;
         }
         unset($k);
 
         return view('Dashboard/Peserta/kelas-saya', [
-            'kelas_list'  => $data['kelas_list'],
-            'total_kelas' => count($data['kelas_list']),
+            'grouped'     => $grouped,
+            'total_kelas' => count($kelas),
         ]);
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use CodeIgniter\Model;
@@ -34,22 +33,61 @@ class VoucherModel extends Model
      */
     public function validateVoucher($kode_voucher, $id_kelas)
     {
-        return $this->where('kode_voucher', $kode_voucher)
+        $voucher = $this->where('kode_voucher', $kode_voucher)
             ->where('id_kelas', $id_kelas)
             ->where('is_active', 1)
             ->where('deleted_at IS NULL')
+            ->where('tanggal_mulai <=', date('Y-m-d H:i:s'))
+            ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
             ->first();
+
+        if (! $voucher) {
+            return null;
+        }
+
+        // Cek kuota
+        $totalClaim = (new \App\Models\VoucherClaimModel())
+            ->where('id_voucher', $voucher['id_voucher'])
+            ->countAllResults();
+
+        if ($totalClaim >= $voucher['kuota']) {
+            return null; // Kuota habis
+        }
+
+        return $voucher;
     }
 
     /**
-     * Claim voucher - update status menjadi tidak aktif
+     * Ambil voucher valid untuk kelas (tanpa kode, untuk auto claim)
      */
-    public function claimVoucher($id_voucher)
+    public function getValidVoucher($kode_voucher, $id_kelas)
     {
-        return $this->update($id_voucher, [
-            'is_active'  => 0,
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        $query = $this->where('id_kelas', $id_kelas)
+            ->where('is_active', 1)
+            ->where('deleted_at IS NULL')
+            ->where('tanggal_mulai <=', date('Y-m-d H:i:s'))
+            ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'));
+
+        if ($kode_voucher) {
+            $query->where('kode_voucher', $kode_voucher);
+        }
+
+        $voucher = $query->first();
+
+        if (! $voucher) {
+            return null;
+        }
+
+        // Cek kuota
+        $totalClaim = (new \App\Models\VoucherClaimModel())
+            ->where('id_voucher', $voucher['id_voucher'])
+            ->countAllResults();
+
+        if ($totalClaim >= $voucher['kuota']) {
+            return null; // Kuota habis
+        }
+
+        return $voucher;
     }
 
     /**

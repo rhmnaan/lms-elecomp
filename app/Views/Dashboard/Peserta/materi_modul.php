@@ -177,27 +177,30 @@ if ($isYouTube) {
                             </div>
 
                         <?php elseif ($isLocalVideo): ?>
-                            <!-- VIDEO LOKAL — iframe ke embed_video.php (player enkripsi AES) -->
-                            <div class="video-container mb-4"
-                                style="border-radius:12px;overflow:hidden;aspect-ratio:16/9;background:#000;position:relative;">
-                                <iframe
-                                    id="localVideoFrame"
-                                    src="<?= base_url('video/player?id=' . esc($currentMateri['video_url_materi'])) ?>"
-                                    style="width:100%;height:100%;border:none;display:block;"
-                                    allowfullscreen
-                                    allow="autoplay; encrypted-media"
-                                ></iframe>
+                            <!-- ▶️ VIDEO LOKAL -->
+                            <div class="video-container mb-4" style="border-radius:12px;overflow:hidden;">
+                                <video
+                                    id="localVideo"
+                                    controls
+                                    preload="metadata"
+                                    style="width:100%;max-width:100%;background:#000;"
+                                    controlsList="nodownload noplaybackrate"
+                                    disablePictureInPicture
+                                >
+                                    <source src="<?= base_url('video/stream/' . esc($currentMateri['video_url_materi'])) ?>" type="video/mp4">
+                                    Browser Anda tidak mendukung pemutar video.
+                                </video>
                             </div>
-
+                
                         <?php elseif ($isYouTube && $embedId): ?>
-                            <!-- VIDEO YOUTUBE -->
+                            <!-- ▶️ VIDEO YOUTUBE -->
                             <div class="video-container"
                                 style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;margin-bottom:16px;">
                                 <div id="player"></div>
                             </div>
 
                         <?php else: ?>
-                            <!-- VIDEO HTML5 BIASA -->
+                            <!-- ▶️ VIDEO HTML5 BIASA -->
                             <div class="video-container mb-4" style="border-radius:12px;overflow:hidden;">
                                 <video id="html5Video" controls preload="metadata" style="width:100%;max-width:100%;">
                                     <source src="<?= esc($currentMateri['video_url_materi']) ?>" type="video/mp4">
@@ -336,6 +339,8 @@ if ($isYouTube) {
                                     <p id="lockStatusMessage">
                                         <?php if ($hasVideo && $hasFile): ?>
                                             Video dan file materi harus diselesaikan terlebih dahulu
+                                        <?php elseif ($isLocalVideo): ?>
+                                            Klik tombol "Saya sudah menonton video ini" setelah selesai menonton
                                         <?php elseif ($hasVideo): ?>
                                             Tonton video materi sampai selesai
                                         <?php elseif ($hasFile): ?>
@@ -455,34 +460,22 @@ if ($isYouTube) {
             '<?= base_url('dashboard/peserta/materi-modul') ?>/<?= $modul['id_modul'] ?>?materi=' + idMateri;
     }
 
-    /* ════════════════════════════════════════════════════════
-       VIDEO LOKAL — terima postMessage dari iframe embed_video.php
-       embed_video.php mengirim: { type: 'VIDEO_ENDED', videoId: '...' }
-    ════════════════════════════════════════════════════════ */
-    window.addEventListener('message', (event) => {
-        if (!event.data || typeof event.data !== 'object') return;
+    /* ══════════════════════════════════════
+       STATE
+    ══════════════════════════════════════ */
+    window.videoSelesai = false;
+    window.pdfSelesai = false;
+    window.progressTerkirim = false;
 
-        if (event.data.type === 'VIDEO_ENDED') {
-            console.log('[MateriModul] VIDEO_ENDED diterima dari iframe.');
-            window.videoSelesai = true;
-            kirimProgressMateri();
-        }
-    });
-
-    /* ════════════════════════════════════════════════════════
-       VIDEO HTML5 BIASA (non-lokal, non-youtube)
-    ════════════════════════════════════════════════════════ */
-    function setupHTML5Video() {
-        const video = document.getElementById('html5Video');
+    document.addEventListener('DOMContentLoaded', () => {
+        const video = document.getElementById('localVideo');
         if (!video) return;
+    
         video.addEventListener('ended', () => {
             window.videoSelesai = true;
             kirimProgressMateri();
         });
-    }
-    document.readyState !== 'loading'
-        ? setupHTML5Video()
-        : window.addEventListener('DOMContentLoaded', setupHTML5Video);
+    });
 
     /* ════════════════════════════════════════════════════════
        YOUTUBE PLAYER API
