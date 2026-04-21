@@ -173,6 +173,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         // ═══════════════════════════════════════════════
         $routes->get('video/upload', 'VideoStream::uploadPage');
         $routes->post('video/upload', 'VideoStream::doUpload');
+        $routes->get('test/video-encryption', 'VideoTest::testEncryption');
         $routes->get('video/list', 'VideoStream::listVideos');
         $routes->post('video/delete/(:segment)', 'VideoStream::deleteVideo/$1');
     });
