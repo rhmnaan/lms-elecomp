@@ -31,7 +31,6 @@
             background: #000;
         }
 
-        /* Sembunyikan tombol download dan remote di Chrome */
         video::-webkit-media-controls-download-button,
         video::-webkit-media-controls-overflow-button,
         video::-webkit-media-controls-remote-playback-button {
@@ -52,7 +51,6 @@
             pointer-events: none;
         }
 
-        /* Progress ring */
         .ring-wrap {
             position: relative;
             width: 96px; height: 96px;
@@ -81,7 +79,6 @@
         .load-title  { margin-top: 18px; font-size: 13px; color: rgba(255,255,255,.6); letter-spacing: .5px; }
         .load-status { margin-top: 6px;  font-size: 11px; color: rgba(255,255,255,.35); }
 
-        /* Step dots */
         .steps { display: flex; gap: 6px; margin-top: 18px; }
         .step-dot {
             width: 8px; height: 8px; border-radius: 50%;
@@ -153,7 +150,6 @@
 
 </div>
 
-<!-- Bootstrap Icons (icon only, tidak ada JS besar) -->
 <link rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -178,17 +174,17 @@ const errMsg      = document.getElementById('errMsg');
 const stepDots    = [0, 1, 2, 3].map(i => document.getElementById('sd' + i));
 
 let activeStep = -1;
-const CIRCUMFERENCE = 2 * Math.PI * 43; // ≈ 270.2
+const CIRCUMFERENCE = 2 * Math.PI * 43;
 
 /* ══════════════════════════════════════════════════════════
-   SECURITY — blokir DevTools, klik kanan, shortcut
+   SECURITY
 ══════════════════════════════════════════════════════════ */
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('keydown', e => {
     const blocked = (
-        e.keyCode === 123 || // F12
-        (e.ctrlKey && e.shiftKey && [73, 74, 75].includes(e.keyCode)) || // Ctrl+Shift+I/J/K
-        (e.ctrlKey && [85, 83, 80].includes(e.keyCode)) // Ctrl+U/S/P
+        e.keyCode === 123 ||
+        (e.ctrlKey && e.shiftKey && [73, 74, 75].includes(e.keyCode)) ||
+        (e.ctrlKey && [85, 83, 80].includes(e.keyCode))
     );
     if (blocked) e.preventDefault();
 });
@@ -238,6 +234,7 @@ async function getKey() {
     const data = await res.json();
     if (!data.success) throw new Error(data.message || 'Lisensi tidak valid');
 
+    // Key sudah berupa SHA-256 derived key yang di-base64 dari server
     return crypto.subtle.importKey(
         'raw',
         b64ToBuffer(data.key),
@@ -287,7 +284,6 @@ async function downloadFile(totalSize) {
         setProgress(pct, 'Mengunduh...', (received / 1048576).toFixed(1) + ' MB diunduh');
     }
 
-    // Gabungkan semua chunk
     const total  = chunks.reduce((s, c) => s + c.byteLength, 0);
     const merged = new Uint8Array(total);
     let offset   = 0;
@@ -305,8 +301,8 @@ async function decryptBuffer(cryptoKey, buffer) {
     setProgress(75, 'Mendekripsi...', 'AES-256-CBC dekripsi', 3);
 
     const raw  = new Uint8Array(buffer);
-    const iv   = raw.slice(0, 16);   // 16 byte pertama = IV
-    const data = raw.slice(16);      // sisanya = ciphertext
+    const iv   = raw.slice(0, 16);
+    const data = raw.slice(16);
 
     return crypto.subtle.decrypt(
         { name: 'AES-CBC', iv },
@@ -343,6 +339,12 @@ async function init() {
                 vp.play().catch(() => {});
             }, 350);
         }, { once: true });
+
+        /* ══ postMessage ke parent (materi_modul) saat video selesai ══ */
+        vp.addEventListener('ended', () => {
+            window.parent.postMessage({ type: 'VIDEO_ENDED', videoId: VIDEO_ID }, '*');
+            console.log('[VideoPlayer] VIDEO_ENDED postMessage sent.');
+        });
 
         vp.addEventListener('error', () => {
             showError('Format video tidak didukung atau file rusak. Coba kontak admin.');

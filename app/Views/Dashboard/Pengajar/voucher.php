@@ -1,6 +1,20 @@
 <?= $this->extend('Dashboard/Pengajar/layout_pengajar') ?>
 <?= $this->section('content') ?>
 
+<style>
+.btn-copy {
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 12px;
+    transition: all .2s;
+}
+.btn-copy.copied {
+    background: #d1fae5;
+    border-color: #059669;
+    color: #059669;
+}
+</style>
+
 <div class="page-header">
     <div>
         <h4 class="fw-bold mb-1">Manajemen Voucher</h4>
@@ -70,9 +84,18 @@
                     <tr>
                         <td class="text-muted small"><?= $i + 1 ?></td>
                         <td>
-                            <span class="badge bg-secondary font-monospace fs-6">
-                                <?= esc($v['kode_voucher']) ?>
-                            </span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-secondary font-monospace fs-6" id="kode-<?= $v['id_voucher'] ?>">
+                                    <?= esc($v['kode_voucher']) ?>
+                                </span>
+                                <button class="btn btn-sm btn-outline-secondary btn-copy d-flex align-items-center gap-1"
+        data-kode="<?= esc($v['kode_voucher']) ?>"
+        data-id="<?= $v['id_voucher'] ?>"
+        title="Salin kode">
+    <i class="bi bi-copy" id="icon-<?= $v['id_voucher'] ?>"></i>
+    <span id="label-<?= $v['id_voucher'] ?>" style="font-size:11px;">Salin</span>
+</button>
+                            </div>
                         </td>
                         <td>
                             <div class="fw-semibold"><?= esc($v['nama_voucher']) ?></div>
@@ -373,6 +396,38 @@ document.querySelectorAll('.toggle-active').forEach(toggle => {
             }
         })
         .catch(() => { el.checked = !el.checked; });
+    });
+});
+
+// ── Salin Kode Voucher ────────────────────────────────────────────────
+document.querySelectorAll('.btn-copy').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const kode  = this.dataset.kode;
+        const id    = this.dataset.id;
+        const icon  = document.getElementById('icon-' + id);
+        const label = document.getElementById('label-' + id);
+
+        const doSalin = () => {
+            icon.className  = 'bi bi-check-lg';
+            label.textContent = 'Tersalin!';
+            this.classList.add('copied');
+
+            setTimeout(() => {
+                icon.className    = 'bi bi-copy';
+                label.textContent = 'Salin';
+                this.classList.remove('copied');
+            }, 2000);
+        };
+
+        navigator.clipboard.writeText(kode).then(doSalin).catch(() => {
+            const el = document.createElement('textarea');
+            el.value = kode;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            doSalin();
+        });
     });
 });
 </script>

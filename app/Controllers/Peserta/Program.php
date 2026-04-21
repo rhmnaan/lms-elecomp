@@ -16,11 +16,6 @@ class Program extends BaseController
         $this->idUsers = (int) session()->get('id_users');
     }
 
-    /**
-     * ===============================
-     * LIST PROGRAM PESERTA
-     * ===============================
-     */
     public function index()
     {
         $db = \Config\Database::connect();
@@ -51,20 +46,11 @@ class Program extends BaseController
         ]);
     }
 
-    /**
-     * ===============================
-     * LIST KELAS PER PROGRAM
-     * ===============================
-     */
     public function kelas($id_program)
     {
         $db = \Config\Database::connect();
 
-        // ===============================
-        // Ambil ID kelas yang SUDAH DIAKSES
-        // ===============================
-
-        // 1. dari kelas_peserta
+        // Ambil ID kelas yang sudah diakses dari kelas_peserta
         $kelasPesertaIds = $db->table('kelas_peserta')
             ->select('id_kelas')
             ->where('id_users', $this->idUsers)
@@ -72,7 +58,7 @@ class Program extends BaseController
             ->get()
             ->getResultArray();
 
-        // 2. dari voucher_claim
+        // Ambil ID kelas dari voucher_claim
         $voucherClaimIds = $db->table('voucher_claim vc')
             ->select('v.id_kelas')
             ->join('voucher v', 'v.id_voucher = vc.id_voucher')
@@ -80,15 +66,13 @@ class Program extends BaseController
             ->get()
             ->getResultArray();
 
-        // gabungkan & unique
+        // Gabungkan & unique
         $excludeIds = array_unique(array_merge(
             array_column($kelasPesertaIds, 'id_kelas'),
             array_column($voucherClaimIds, 'id_kelas')
         ));
 
-        // ===============================
-        // Ambil kelas yang BELUM DIAKSES
-        // ===============================
+        // Ambil kelas yang belum diakses
         $query = $db->table('kelas k')
             ->select('
                 k.id_kelas,
@@ -96,6 +80,7 @@ class Program extends BaseController
                 k.deskripsi_kelas,
                 k.tipe_kelas,
                 k.harga,
+                k.lynk_url,
                 COUNT(DISTINCT m.id_modul) AS total_modul,
                 COUNT(DISTINCT ma.id_materi) AS total_materi
             ')
@@ -104,8 +89,7 @@ class Program extends BaseController
             ->where('k.id_program', $id_program)
             ->where('k.deleted_at IS NULL');
 
-        // ❌ EXCLUDE kelas yang sudah pernah diikuti
-        if (! empty($excludeIds)) {
+        if (!empty($excludeIds)) {
             $query->whereNotIn('k.id_kelas', $excludeIds);
         }
 
@@ -114,9 +98,7 @@ class Program extends BaseController
             ->get()
             ->getResultArray();
 
-        // ===============================
-        // Ambil info voucher (kelas gratis)
-        // ===============================
+        // Ambil info voucher untuk kelas gratis
         foreach ($kelas_list as &$k) {
             if ($k['tipe_kelas'] === 'gratis') {
                 $k['voucher'] = $db->table('voucher')

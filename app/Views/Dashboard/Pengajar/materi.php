@@ -3,8 +3,8 @@
 
 <?php
 $success = session()->getFlashdata('success');
-$error   = session()->getFlashdata('error');
-$errors  = session()->getFlashdata('errors');
+$error = session()->getFlashdata('error');
+$errors = session()->getFlashdata('errors');
 ?>
 
 <style>
@@ -743,7 +743,8 @@ $errors  = session()->getFlashdata('errors');
         <p>Kelola konten materi untuk setiap modul kelas Anda.</p>
     </div>
     <div class="d-flex gap-2 flex-wrap">
-        <a href="<?= base_url('dashboard/pengajar/video/upload') ?>" class="btn-add" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
+        <a href="<?= base_url('dashboard/pengajar/video/upload') ?>" class="btn-add"
+            style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
             <i class="bi bi-play-circle-fill"></i> Upload Video
         </a>
         <button class="btn-add" data-bs-toggle="modal" data-bs-target="#modalTambah">
@@ -765,7 +766,8 @@ $errors  = session()->getFlashdata('errors');
             <i class="bi bi-exclamation-triangle-fill"></i> Terjadi Kesalahan Validasi
         </div>
         <ul style="margin:4px 0 0 20px;padding:0;">
-            <?php foreach ($errors as $e): ?><li style="font-weight:400;"><?= esc($e) ?></li><?php endforeach; ?>
+            <?php foreach ($errors as $e): ?>
+                <li style="font-weight:400;"><?= esc($e) ?></li><?php endforeach; ?>
         </ul>
     </div>
 <?php endif; ?>
@@ -776,12 +778,35 @@ $errors  = session()->getFlashdata('errors');
         <i class="bi bi-search"></i>
         <input type="text" id="searchInput" placeholder="Cari judul materi...">
     </div>
-    <select class="mp-select" id="filterModul">
-        <option value="">Semua Modul</option>
-        <?php foreach ($modul as $m): ?>
-            <option value="<?= $m['id_modul'] ?>"><?= esc($m['judul_modul']) ?> — <?= esc($m['nama_kelas']) ?></option>
+
+    <!-- Filter Program -->
+    <select class="mp-select" id="filterProgram" style="min-width:155px;">
+        <option value="">Semua Program</option>
+        <?php foreach (($program ?? []) as $p): ?>
+            <option value="<?= $p['id_program'] ?>"><?= esc($p['nama_program']) ?></option>
         <?php endforeach; ?>
     </select>
+
+    <!-- Filter Kelas -->
+    <select class="mp-select" id="filterKelas" style="min-width:155px;">
+        <option value="">Semua Kelas</option>
+        <?php foreach (($kelas ?? []) as $k): ?>
+            <option value="<?= $k['id_kelas'] ?>" data-program="<?= $k['id_program'] ?>">
+                <?= esc($k['nama_kelas']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+
+    <!-- Filter Modul -->
+    <select class="mp-select" id="filterModul">
+        <option value="">Semua Modul</option>
+        <?php foreach (($modul ?? []) as $m): ?>
+            <option value="<?= $m['id_modul'] ?>" data-program="<?= $m['id_program'] ?>" data-kelas="<?= $m['id_kelas'] ?>">
+                <?= esc($m['judul_modul']) ?> — <?= esc($m['nama_kelas']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+
     <div class="mp-count">Tampil: <strong id="visibleCount"><?= count($materi ?? []) ?></strong> materi</div>
 </div>
 
@@ -801,18 +826,18 @@ $errors  = session()->getFlashdata('errors');
             <tbody id="tableBody">
                 <?php if (!empty($materi)): ?>
                     <?php foreach ($materi as $i => $mt):
-                        $preArr  = json_decode($mt['pre_test']  ?? '', true);
+                        $preArr = json_decode($mt['pre_test'] ?? '', true);
                         $postArr = json_decode($mt['post_test'] ?? '', true);
-                        if (!is_array($preArr))  $preArr  = [];
-                        if (!is_array($postArr)) $postArr = [];
+                        if (!is_array($preArr))
+                            $preArr = [];
+                        if (!is_array($postArr))
+                            $postArr = [];
                         $isLocalVideo = !empty($mt['video_url_materi']) && str_starts_with($mt['video_url_materi'], 'vid_');
-                    ?>
-                        <tr data-modul="<?= $mt['id_modul'] ?>"
-                            data-judul="<?= strtolower(esc($mt['judul_materi'])) ?>"
-                            data-id="<?= $mt['id_materi'] ?>"
-                            data-judul-raw="<?= esc($mt['judul_materi']) ?>"
-                            data-modul-val="<?= $mt['id_modul'] ?>"
-                            data-file="<?= esc($mt['file_materi'] ?? '') ?>"
+                        ?>
+                        <tr data-modul="<?= $mt['id_modul'] ?>" data-program="<?= $mt['id_program'] ?>"
+                            data-kelas="<?= $mt['id_kelas'] ?>" data-judul="<?= strtolower(esc($mt['judul_materi'])) ?>"
+                            data-id="<?= $mt['id_materi'] ?>" data-judul-raw="<?= esc($mt['judul_materi']) ?>"
+                            data-modul-val="<?= $mt['id_modul'] ?>" data-file="<?= esc($mt['file_materi'] ?? '') ?>"
                             data-video="<?= esc($mt['video_url_materi'] ?? '') ?>"
                             data-pretest="<?= htmlspecialchars(json_encode($preArr), ENT_QUOTES, 'UTF-8') ?>"
                             data-posttest="<?= htmlspecialchars(json_encode($postArr), ENT_QUOTES, 'UTF-8') ?>">
@@ -832,41 +857,48 @@ $errors  = session()->getFlashdata('errors');
                                         </div>
                                         <div class="media-badges">
                                             <?php if (count($preArr) > 0): ?>
-                                                <span class="mbadge mbadge-pretest"><i class="bi bi-list-check"></i> Pre Test (<?= count($preArr) ?>)</span>
+                                                <span class="mbadge mbadge-pretest"><i class="bi bi-list-check"></i> Pre Test
+                                                    (<?= count($preArr) ?>)</span>
                                             <?php endif; ?>
                                             <?php if (!empty($mt['file_materi'])): ?>
-                                                <span class="mbadge mbadge-pdf"><i class="bi bi-file-earmark-pdf-fill"></i> PDF</span>
+                                                <span class="mbadge mbadge-pdf"><i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    PDF</span>
                                             <?php endif; ?>
                                             <?php if (!empty($mt['video_url_materi'])): ?>
                                                 <span class="mbadge mbadge-video">
-                                                    <i class="bi bi-<?= $isLocalVideo ? 'shield-lock-fill' : 'play-circle-fill' ?>"></i>
+                                                    <i
+                                                        class="bi bi-<?= $isLocalVideo ? 'shield-lock-fill' : 'play-circle-fill' ?>"></i>
                                                     <?= $isLocalVideo ? 'Video Lokal' : 'Video' ?>
                                                 </span>
                                             <?php endif; ?>
                                             <?php if (count($postArr) > 0): ?>
-                                                <span class="mbadge mbadge-posttest"><i class="bi bi-patch-question-fill"></i> Post Test (<?= count($postArr) ?>)</span>
+                                                <span class="mbadge mbadge-posttest"><i class="bi bi-patch-question-fill"></i> Post
+                                                    Test (<?= count($postArr) ?>)</span>
                                             <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <span class="badge-modul"><i class="bi bi-collection" style="font-size:10px;"></i> <?= esc($mt['judul_modul']) ?></span>
+                                <span class="badge-modul"><i class="bi bi-collection" style="font-size:10px;"></i>
+                                    <?= esc($mt['judul_modul']) ?></span>
                             </td>
                             <td>
-                                <span class="badge-kelas"><i class="bi bi-mortarboard-fill" style="font-size:10px;"></i> <?= esc($mt['nama_kelas']) ?></span>
+                                <span class="badge-kelas"><i class="bi bi-mortarboard-fill" style="font-size:10px;"></i>
+                                    <?= esc($mt['nama_kelas']) ?></span>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center justify-content-center gap-1">
-                                    <button class="btn-act btn-view btn-preview" title="Lihat Konten" data-row-id="<?= $mt['id_materi'] ?>">
+                                    <button class="btn-act btn-view btn-preview" title="Lihat Konten"
+                                        data-row-id="<?= $mt['id_materi'] ?>">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <button class="btn-act btn-edit btn-edit-materi" title="Edit Materi" data-row-id="<?= $mt['id_materi'] ?>">
+                                    <button class="btn-act btn-edit btn-edit-materi" title="Edit Materi"
+                                        data-row-id="<?= $mt['id_materi'] ?>">
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <button class="btn-act btn-delete btn-hapus-materi" title="Hapus Materi"
-                                        data-row-id="<?= $mt['id_materi'] ?>"
-                                        data-judul-raw="<?= esc($mt['judul_materi']) ?>">
+                                        data-row-id="<?= $mt['id_materi'] ?>" data-judul-raw="<?= esc($mt['judul_materi']) ?>">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -910,10 +942,33 @@ $errors  = session()->getFlashdata('errors');
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body px-4 pt-3 pb-4">
-                <form id="formTambah" action="<?= base_url('dashboard/pengajar/materi/store') ?>" method="POST" enctype="multipart/form-data">
+                <form id="formTambah" action="<?= base_url('dashboard/pengajar/materi/store') ?>" method="POST"
+                    enctype="multipart/form-data">
                     <?= csrf_field() ?>
 
-                    <div class="mb-3">
+                    <!-- Program + Kelas -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Pilih Program <span
+                                    class="text-danger">*</span></label>
+                            <select class="form-select" id="tambah_id_program">
+                                <option value="" disabled selected>-- Pilih Program --</option>
+                                <?php foreach ($program ?? [] as $p): ?>
+                                    <option value="<?= $p['id_program'] ?>"><?= esc($p['nama_program']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Pilih Kelas <span
+                                    class="text-danger">*</span></label>
+                            <select class="form-select" id="tambah_id_kelas" disabled>
+                                <option value="" disabled selected>-- Pilih Kelas --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Modul (muncul setelah kelas dipilih) -->
+                    <div class="mb-3" id="wrapModulTambah" style="display:none;">
                         <label class="form-label fw-semibold small">Modul <span class="text-danger">*</span></label>
                         <?php if (empty($modul)): ?>
                             <div class="alert alert-warning py-2 px-3 small rounded-3">
@@ -921,11 +976,12 @@ $errors  = session()->getFlashdata('errors');
                                 Belum ada modul. Silakan buat modul terlebih dahulu.
                             </div>
                         <?php else: ?>
-                            <select class="form-select" name="id_modul" required>
+                            <select class="form-select" name="id_modul" id="tambah_id_modul" required>
                                 <option value="" disabled selected>-- Pilih Modul --</option>
                                 <?php foreach ($modul as $m): ?>
-                                    <option value="<?= $m['id_modul'] ?>" <?= (old('id_modul') == $m['id_modul']) ? 'selected' : '' ?>>
-                                        <?= esc($m['judul_modul']) ?> — <?= esc($m['nama_kelas']) ?>
+                                    <option value="<?= $m['id_modul'] ?>" data-kelas="<?= $m['id_kelas'] ?>"
+                                        data-program="<?= $m['id_program'] ?>" <?= (old('id_modul') == $m['id_modul']) ? 'selected' : '' ?>>
+                                        <?= esc($m['judul_modul']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -933,9 +989,9 @@ $errors  = session()->getFlashdata('errors');
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Judul Materi <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="judul_materi"
-                            value="<?= old('judul_materi') ?>"
+                        <label class="form-label fw-semibold small">Judul Materi <span
+                                class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="judul_materi" value="<?= old('judul_materi') ?>"
                             placeholder="cth: Pengertian Resistor dan Fungsinya" required>
                     </div>
 
@@ -966,7 +1022,8 @@ $errors  = session()->getFlashdata('errors');
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div>
                                 <p class="fw-semibold small mb-0">Soal Pre Test</p>
-                                <p class="form-text mb-0">Dikerjakan peserta <strong>sebelum</strong> membaca materi.</p>
+                                <p class="form-text mb-0">Dikerjakan peserta <strong>sebelum</strong> membaca materi.
+                                </p>
                             </div>
                             <button type="button" class="btn-add-quiz blue" id="btnAddPreTambah">
                                 <i class="bi bi-plus-lg"></i> Tambah Soal
@@ -974,7 +1031,8 @@ $errors  = session()->getFlashdata('errors');
                         </div>
                         <div id="containerPreTambah"></div>
                         <div id="emptyPreTambah" class="text-center py-4" style="color:#9ca3af;font-size:12.5px;">
-                            <i class="bi bi-list-check" style="font-size:28px;display:block;color:#bae6fd;margin-bottom:8px;"></i>
+                            <i class="bi bi-list-check"
+                                style="font-size:28px;display:block;color:#bae6fd;margin-bottom:8px;"></i>
                             Belum ada soal. Klik "+ Tambah Soal" untuk membuat pre test.
                         </div>
                     </div>
@@ -985,7 +1043,8 @@ $errors  = session()->getFlashdata('errors');
                             Upload File PDF <span class="text-danger">*</span>
                             <span class="text-muted fw-normal">(wajib jika tidak ada video)</span>
                         </label>
-                        <div class="upload-zone" id="dropZoneTambah" onclick="document.getElementById('filePdfTambah').click()">
+                        <div class="upload-zone" id="dropZoneTambah"
+                            onclick="document.getElementById('filePdfTambah').click()">
                             <input type="file" id="filePdfTambah" name="file_materi" accept=".pdf">
                             <i class="bi bi-cloud-arrow-up"></i>
                             <p class="mb-1"><strong>Klik untuk upload</strong> atau drag &amp; drop</p>
@@ -1029,13 +1088,13 @@ $errors  = session()->getFlashdata('errors');
 
                         <div class="mt-2">
                             <p class="form-text mb-1">Atau masukkan Video ID secara manual:</p>
-                            <input type="text" class="form-control form-control-sm"
-                                id="videoManualTambah"
+                            <input type="text" class="form-control form-control-sm" id="videoManualTambah"
                                 placeholder="cth: vid_abc123def456..."
                                 oninput="syncManual('videoSelectTambah','videoManualTambah','videoInfoTambah','videoInfoTextTambah')">
                         </div>
 
-                        <div class="mt-2 p-2 rounded-3" style="background:#fffbeb;border:1px solid #fde68a;font-size:11.5px;color:#92400e;">
+                        <div class="mt-2 p-2 rounded-3"
+                            style="background:#fffbeb;border:1px solid #fde68a;font-size:11.5px;color:#92400e;">
                             <i class="bi bi-info-circle me-1"></i>
                             Video diputar aman di browser dengan dekripsi AES-256-CBC. Tidak bisa didownload.
                         </div>
@@ -1046,7 +1105,8 @@ $errors  = session()->getFlashdata('errors');
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div>
                                 <p class="fw-semibold small mb-0">Soal Post Test</p>
-                                <p class="form-text mb-0">Dikerjakan peserta <strong>setelah</strong> membaca materi.</p>
+                                <p class="form-text mb-0">Dikerjakan peserta <strong>setelah</strong> membaca materi.
+                                </p>
                             </div>
                             <button type="button" class="btn-add-quiz" id="btnAddPostTambah">
                                 <i class="bi bi-plus-lg"></i> Tambah Soal
@@ -1054,7 +1114,8 @@ $errors  = session()->getFlashdata('errors');
                         </div>
                         <div id="containerPostTambah"></div>
                         <div id="emptyPostTambah" class="text-center py-4" style="color:#9ca3af;font-size:12.5px;">
-                            <i class="bi bi-patch-question" style="font-size:28px;display:block;color:#ddd6fe;margin-bottom:8px;"></i>
+                            <i class="bi bi-patch-question"
+                                style="font-size:28px;display:block;color:#ddd6fe;margin-bottom:8px;"></i>
                             Belum ada soal. Klik "+ Tambah Soal" untuk membuat post test.
                         </div>
                     </div>
@@ -1087,19 +1148,43 @@ $errors  = session()->getFlashdata('errors');
             <div class="modal-body px-4 pt-3 pb-4">
                 <form id="formEdit" method="POST" enctype="multipart/form-data">
                     <?= csrf_field() ?>
-
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Pilih Program <span
+                                    class="text-danger">*</span></label>
+                            <select class="form-select" id="edit_id_program">
+                                <option value="" disabled selected>-- Pilih Program --</option>
+                                <?php foreach ($program ?? [] as $p): ?>
+                                    <option value="<?= $p['id_program'] ?>"><?= esc($p['nama_program']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Pilih Kelas <span
+                                    class="text-danger">*</span></label>
+                            <select class="form-select" id="edit_id_kelas" disabled>
+                                <option value="" disabled selected>-- Pilih Kelas --</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">Modul <span class="text-danger">*</span></label>
                         <select class="form-select" name="id_modul" id="edit_id_modul" required>
                             <option value="" disabled>-- Pilih Modul --</option>
                             <?php foreach ($modul as $m): ?>
-                                <option value="<?= $m['id_modul'] ?>"><?= esc($m['judul_modul']) ?> — <?= esc($m['nama_kelas']) ?></option>
+                                <option value="<?= $m['id_modul'] ?>"><?= esc($m['judul_modul']) ?> —
+                                    <?= esc($m['nama_kelas']) ?></option>
                             <?php endforeach; ?>
+                            <option value="<?= $m['id_modul'] ?>" data-kelas="<?= $m['id_kelas'] ?>"
+                                data-program="<?= $m['id_program'] ?>">
+                                <?= esc($m['judul_modul']) ?> — <?= esc($m['nama_kelas']) ?>
+                            </option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Judul Materi <span class="text-danger">*</span></label>
+                        <label class="form-label fw-semibold small">Judul Materi <span
+                                class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="judul_materi" id="edit_judul_materi" required>
                     </div>
 
@@ -1130,7 +1215,8 @@ $errors  = session()->getFlashdata('errors');
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div>
                                 <p class="fw-semibold small mb-0">Soal Pre Test</p>
-                                <p class="form-text mb-0">Dikerjakan peserta <strong>sebelum</strong> membaca materi.</p>
+                                <p class="form-text mb-0">Dikerjakan peserta <strong>sebelum</strong> membaca materi.
+                                </p>
                             </div>
                             <button type="button" class="btn-add-quiz blue" id="btnAddPreEdit">
                                 <i class="bi bi-plus-lg"></i> Tambah Soal
@@ -1138,7 +1224,8 @@ $errors  = session()->getFlashdata('errors');
                         </div>
                         <div id="containerPreEdit"></div>
                         <div id="emptyPreEdit" class="text-center py-4" style="color:#9ca3af;font-size:12.5px;">
-                            <i class="bi bi-list-check" style="font-size:28px;display:block;color:#bae6fd;margin-bottom:8px;"></i>
+                            <i class="bi bi-list-check"
+                                style="font-size:28px;display:block;color:#bae6fd;margin-bottom:8px;"></i>
                             Belum ada soal pre test.
                         </div>
                     </div>
@@ -1156,7 +1243,8 @@ $errors  = session()->getFlashdata('errors');
                             </span>
                             <small class="text-muted ms-2">— upload baru untuk mengganti</small>
                         </div>
-                        <div class="upload-zone" id="dropZoneEdit" onclick="document.getElementById('filePdfEdit').click()">
+                        <div class="upload-zone" id="dropZoneEdit"
+                            onclick="document.getElementById('filePdfEdit').click()">
                             <input type="file" id="filePdfEdit" name="file_materi" accept=".pdf">
                             <i class="bi bi-cloud-arrow-up"></i>
                             <p class="mb-1"><strong>Klik untuk upload</strong> atau drag &amp; drop</p>
@@ -1200,8 +1288,7 @@ $errors  = session()->getFlashdata('errors');
 
                         <div class="mt-2">
                             <p class="form-text mb-1">Atau masukkan Video ID secara manual:</p>
-                            <input type="text" class="form-control form-control-sm"
-                                id="videoManualEdit"
+                            <input type="text" class="form-control form-control-sm" id="videoManualEdit"
                                 placeholder="cth: vid_abc123def456..."
                                 oninput="syncManual('videoSelectEdit','videoManualEdit','videoInfoEdit','videoInfoTextEdit')">
                         </div>
@@ -1212,7 +1299,8 @@ $errors  = session()->getFlashdata('errors');
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div>
                                 <p class="fw-semibold small mb-0">Soal Post Test</p>
-                                <p class="form-text mb-0">Dikerjakan peserta <strong>setelah</strong> membaca materi.</p>
+                                <p class="form-text mb-0">Dikerjakan peserta <strong>setelah</strong> membaca materi.
+                                </p>
                             </div>
                             <button type="button" class="btn-add-quiz" id="btnAddPostEdit">
                                 <i class="bi bi-plus-lg"></i> Tambah Soal
@@ -1220,7 +1308,8 @@ $errors  = session()->getFlashdata('errors');
                         </div>
                         <div id="containerPostEdit"></div>
                         <div id="emptyPostEdit" class="text-center py-4" style="color:#9ca3af;font-size:12.5px;">
-                            <i class="bi bi-patch-question" style="font-size:28px;display:block;color:#ddd6fe;margin-bottom:8px;"></i>
+                            <i class="bi bi-patch-question"
+                                style="font-size:28px;display:block;color:#ddd6fe;margin-bottom:8px;"></i>
                             Belum ada soal post test.
                         </div>
                     </div>
@@ -1274,8 +1363,7 @@ $errors  = session()->getFlashdata('errors');
                             <div class="fw-bold" style="font-size:13px;">Video Lokal Terenkripsi</div>
                             <div style="font-size:11.5px;color:#6b7280;" id="previewVideoId"></div>
                         </div>
-                        <a id="previewVideoLink" href="#" target="_blank"
-                            class="ms-auto btn btn-sm btn-success">
+                        <a id="previewVideoLink" href="#" target="_blank" class="ms-auto btn btn-sm btn-success">
                             <i class="bi bi-play-fill me-1"></i> Play
                         </a>
                     </div>
@@ -1300,7 +1388,8 @@ $errors  = session()->getFlashdata('errors');
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-body text-center py-4 px-4">
                 <div class="mb-3">
-                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10"
+                    <span
+                        class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10"
                         style="width:62px;height:62px;">
                         <i class="bi bi-trash-fill text-danger" style="font-size:24px;"></i>
                     </span>
@@ -1326,7 +1415,7 @@ $errors  = session()->getFlashdata('errors');
      JAVASCRIPT
 ════════════════════════════════════════ -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
 
         const BASE_URL = '<?= base_url('dashboard/pengajar/materi') ?>';
         const BASE_ROOT = '<?= base_url() ?>';
@@ -1361,28 +1450,78 @@ $errors  = session()->getFlashdata('errors');
         }
 
         /* ══════════════════════════════════════
-           TABLE FILTER
-        ══════════════════════════════════════ */
+    TABLE FILTER (cascade: program → kelas → modul)
+ ══════════════════════════════════════ */
         function filterTable() {
             const kw = document.getElementById('searchInput').value.toLowerCase().trim();
+            const pid = document.getElementById('filterProgram').value;
+            const kid = document.getElementById('filterKelas').value;
             const mid = document.getElementById('filterModul').value;
             const rows = document.querySelectorAll('#tableBody tr[data-id]');
             let vis = 0;
+
             rows.forEach(row => {
-                const ok = row.dataset.judul.includes(kw) && (!mid || row.dataset.modul === mid);
+                const ok = row.dataset.judul.includes(kw)
+                    && (!pid || row.dataset.program === pid)
+                    && (!kid || row.dataset.kelas === kid)
+                    && (!mid || row.dataset.modul === mid);
                 row.style.display = ok ? '' : 'none';
                 if (ok) vis++;
             });
+
             let n = 1;
             rows.forEach(row => {
                 if (row.style.display !== 'none') row.querySelector('.row-num').textContent = n++;
             });
+
             document.getElementById('visibleCount').textContent = vis;
             document.getElementById('mp-no-results').style.display = vis === 0 ? 'block' : 'none';
             const er = document.getElementById('emptyRow');
             if (er) er.style.display = 'none';
         }
+
+        // Cascade: pilih Program → filter Kelas & Modul
+        function cascadeFromProgram() {
+            const pid = document.getElementById('filterProgram').value;
+            const kSel = document.getElementById('filterKelas');
+            const mSel = document.getElementById('filterModul');
+
+            kSel.value = '';
+            mSel.value = '';
+
+            Array.from(kSel.options).forEach(opt => {
+                if (!opt.value) return;
+                opt.hidden = pid ? opt.dataset.program !== pid : false;
+            });
+            Array.from(mSel.options).forEach(opt => {
+                if (!opt.value) return;
+                opt.hidden = pid ? opt.dataset.program !== pid : false;
+            });
+
+            filterTable();
+        }
+
+        // Cascade: pilih Kelas → filter Modul
+        function cascadeFromKelas() {
+            const pid = document.getElementById('filterProgram').value;
+            const kid = document.getElementById('filterKelas').value;
+            const mSel = document.getElementById('filterModul');
+
+            mSel.value = '';
+
+            Array.from(mSel.options).forEach(opt => {
+                if (!opt.value) return;
+                const okProgram = !pid || opt.dataset.program === pid;
+                const okKelas = !kid || opt.dataset.kelas === kid;
+                opt.hidden = !(okProgram && okKelas);
+            });
+
+            filterTable();
+        }
+
         document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('filterProgram').addEventListener('change', cascadeFromProgram);
+        document.getElementById('filterKelas').addEventListener('change', cascadeFromKelas);
         document.getElementById('filterModul').addEventListener('change', filterTable);
 
         /* ══════════════════════════════════════
@@ -1392,7 +1531,7 @@ $errors  = session()->getFlashdata('errors');
             const nav = document.getElementById(navId);
             if (!nav) return;
             nav.querySelectorAll('.mtab-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     nav.querySelectorAll('.mtab-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     const mc = nav.closest('.modal-content');
@@ -1403,6 +1542,58 @@ $errors  = session()->getFlashdata('errors');
         }
         initTabs('tabNavTambah');
         initTabs('tabNavEdit');
+        /* CASCADE Program → Kelas → Modul */
+        const allKelas = <?= json_encode($kelas ?? []) ?>;
+        const allModul = <?= json_encode($modul ?? []) ?>;
+
+        function populateKelas(programId, kelasSelId) {
+            const sel = document.getElementById(kelasSelId);
+            sel.innerHTML = '<option value="" disabled selected>-- Pilih Kelas --</option>';
+            sel.disabled = true;
+            if (!programId) return;
+            allKelas.filter(k => String(k.id_program) === String(programId))
+                .forEach(k => sel.add(new Option(k.nama_kelas, k.id_kelas)));
+            sel.disabled = false;
+        }
+
+        function populateModul(kelasId, modulSelId, wrapId) {
+            const sel = document.getElementById(modulSelId);
+            const wrap = wrapId ? document.getElementById(wrapId) : null;
+            sel.innerHTML = '<option value="" disabled selected>-- Pilih Modul --</option>';
+            sel.disabled = true;
+            if (wrap) wrap.style.display = 'none';
+            if (!kelasId) return;
+            const list = allModul.filter(m => String(m.id_kelas) === String(kelasId));
+            list.forEach(m => {
+                const o = new Option(m.judul_modul, m.id_modul);
+                o.dataset.kelas = m.id_kelas;
+                o.dataset.program = m.id_program;
+                sel.add(o);
+            });
+            if (list.length > 0) { sel.disabled = false; if (wrap) wrap.style.display = 'block'; }
+        }
+
+        // Event Tambah
+        document.getElementById('tambah_id_program')
+            ?.addEventListener('change', function () {
+                populateKelas(this.value, 'tambah_id_kelas');
+                populateModul(null, 'tambah_id_modul', 'wrapModulTambah');
+            });
+        document.getElementById('tambah_id_kelas')
+            ?.addEventListener('change', function () {
+                populateModul(this.value, 'tambah_id_modul', 'wrapModulTambah');
+            });
+
+        // Event Edit
+        document.getElementById('edit_id_program')
+            ?.addEventListener('change', function () {
+                populateKelas(this.value, 'edit_id_kelas');
+                populateModul(null, 'edit_id_modul', null);
+            });
+        document.getElementById('edit_id_kelas')
+            ?.addEventListener('change', function () {
+                populateModul(this.value, 'edit_id_modul', null);
+            });
 
         function resetTabs(navId) {
             const nav = document.getElementById(navId);
@@ -1470,7 +1661,7 @@ $errors  = session()->getFlashdata('errors');
             return b + ' B';
         }
 
-        window.loadVideoOptions = async function(selectId, infoId, infoTextId) {
+        window.loadVideoOptions = async function (selectId, infoId, infoTextId) {
             const sel = document.getElementById(selectId);
             if (!sel) return;
             const currentVal = sel.value;
@@ -1503,7 +1694,7 @@ $errors  = session()->getFlashdata('errors');
             }
         };
 
-        window.syncManual = function(selId, inputId, infoId, infoTextId) {
+        window.syncManual = function (selId, inputId, infoId, infoTextId) {
             const val = document.getElementById(inputId).value.trim();
             const sel = document.getElementById(selId);
             if (!sel) return;
@@ -1593,7 +1784,7 @@ $errors  = session()->getFlashdata('errors');
         <div class="quiz-item ${itemClass}" id="${uid}">
             <span class="quiz-num">${label} Soal ${num}</span>
             <button type="button" class="quiz-remove"
-                onclick="removeSoal('${uid}','${containerId}','${containerId.replace('container','empty')}')">
+                onclick="removeSoal('${uid}','${containerId}','${containerId.replace('container', 'empty')}')">
                 <i class="bi bi-x"></i>
             </button>
             <div class="mb-2 mt-2">
@@ -1609,7 +1800,7 @@ $errors  = session()->getFlashdata('errors');
         </div>`;
         }
 
-        window.removeSoal = function(itemId, containerId, emptyId) {
+        window.removeSoal = function (itemId, containerId, emptyId) {
             const el = document.getElementById(itemId);
             if (el) el.remove();
             checkEmpty(containerId, emptyId);
@@ -1677,7 +1868,7 @@ $errors  = session()->getFlashdata('errors');
            PREVIEW MODAL
         ══════════════════════════════════════ */
         document.querySelectorAll('.btn-preview').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const d = getRowData(this.dataset.rowId);
                 if (!d) return;
 
@@ -1720,13 +1911,26 @@ $errors  = session()->getFlashdata('errors');
            EDIT MODAL
         ══════════════════════════════════════ */
         document.querySelectorAll('.btn-edit-materi').forEach(btn => {
-            btn.addEventListener('click', async function() {
+            btn.addEventListener('click', async function () {
                 const d = getRowData(this.dataset.rowId);
                 if (!d) return;
 
                 document.getElementById('formEdit').action = `${BASE_URL}/update/${d.id}`;
                 document.getElementById('edit_judul_materi').value = d.judul;
                 document.getElementById('edit_id_modul').value = d.modul;
+                // Pre-fill Program & Kelas
+                const editRow = document.querySelector(`tr[data-id="${this.dataset.rowId}"]`);
+                const rowProgram = editRow?.dataset.program;
+                const rowKelas = editRow?.dataset.kelas;
+
+                const progSel = document.getElementById('edit_id_program');
+                if (progSel && rowProgram) {
+                    progSel.value = rowProgram;
+                    populateKelas(rowProgram, 'edit_id_kelas');
+                    const kelasSel = document.getElementById('edit_id_kelas');
+                    if (kelasSel) kelasSel.value = rowKelas;
+                    populateModul(rowKelas, 'edit_id_modul', null);
+                }
 
                 const cfDiv = document.getElementById('currentFileEdit');
                 const cfName = document.getElementById('currentFileName');
@@ -1765,7 +1969,7 @@ $errors  = session()->getFlashdata('errors');
            HAPUS MODAL
         ══════════════════════════════════════ */
         document.querySelectorAll('.btn-hapus-materi').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 document.getElementById('formHapus').action = `${BASE_URL}/delete/${this.dataset.rowId}`;
                 document.getElementById('hapusJudul').textContent = this.dataset.judulRaw;
                 new bootstrap.Modal(document.getElementById('modalHapus')).show();
@@ -1775,7 +1979,7 @@ $errors  = session()->getFlashdata('errors');
         /* ══════════════════════════════════════
            VALIDASI: PDF atau VIDEO wajib salah satu
         ══════════════════════════════════════ */
-        document.getElementById('formTambah').addEventListener('submit', function(e) {
+        document.getElementById('formTambah').addEventListener('submit', function (e) {
             const hasFile = document.getElementById('filePdfTambah')?.files?.length > 0;
             const hasVideo = document.getElementById('videoSelectTambah')?.value.trim() !== '';
             const alertEl = document.getElementById('alertPdfVideoTambah');
@@ -1792,14 +1996,14 @@ $errors  = session()->getFlashdata('errors');
                 alertEl.style.display = 'none';
             }
         });
-        document.getElementById('filePdfTambah').addEventListener('change', function() {
+        document.getElementById('filePdfTambah').addEventListener('change', function () {
             if (this.files.length > 0) document.getElementById('alertPdfVideoTambah').style.display = 'none';
         });
-        document.getElementById('videoSelectTambah').addEventListener('change', function() {
+        document.getElementById('videoSelectTambah').addEventListener('change', function () {
             if (this.value) document.getElementById('alertPdfVideoTambah').style.display = 'none';
         });
 
-        document.getElementById('formEdit').addEventListener('submit', function(e) {
+        document.getElementById('formEdit').addEventListener('submit', function (e) {
             const fileInput = document.getElementById('filePdfEdit');
             const currentFile = document.getElementById('currentFileEdit');
             const hasNewFile = fileInput?.files?.length > 0;
@@ -1819,10 +2023,10 @@ $errors  = session()->getFlashdata('errors');
                 alertEl.style.display = 'none';
             }
         });
-        document.getElementById('filePdfEdit').addEventListener('change', function() {
+        document.getElementById('filePdfEdit').addEventListener('change', function () {
             if (this.files.length > 0) document.getElementById('alertPdfVideoEdit').style.display = 'none';
         });
-        document.getElementById('videoSelectEdit').addEventListener('change', function() {
+        document.getElementById('videoSelectEdit').addEventListener('change', function () {
             if (this.value) document.getElementById('alertPdfVideoEdit').style.display = 'none';
         });
 
@@ -1852,6 +2056,11 @@ $errors  = session()->getFlashdata('errors');
             document.getElementById('videoSelectTambah').value = '';
             document.getElementById('videoManualTambah').value = '';
             document.getElementById('videoInfoTambah').classList.remove('show');
+            document.getElementById('tambah_id_program').value = '';
+            const kSel = document.getElementById('tambah_id_kelas');
+            kSel.innerHTML = '<option value="" disabled selected>-- Pilih Kelas --</option>';
+            kSel.disabled = true;
+            document.getElementById('wrapModulTambah').style.display = 'none';
         });
 
     });

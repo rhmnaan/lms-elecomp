@@ -3,6 +3,7 @@
 <?= $this->section('meta') ?>
 <title><?= esc($modul['judul_modul']) ?> — LMS Elecomp</title>
 <?= $this->endSection() ?>
+
 <?= $this->section('styles') ?>
 <link rel="stylesheet" href="<?= base_url('css/materi-modul.css') ?>">
 <?= $this->endSection() ?>
@@ -41,7 +42,6 @@ $hasQuiz  = !empty($quizSoal);
 $isLocalVideo = $hasVideo && str_starts_with($currentMateri['video_url_materi'], 'vid_');
 $isYouTube    = $hasVideo && !$isLocalVideo;
 
-// Untuk YouTube backward compat
 $embedId = null;
 if ($isYouTube) {
     preg_match(
@@ -68,16 +68,16 @@ if ($isYouTube) {
                 $hasF = !empty($m['file_materi']);
                 $isLoc = $hasV && str_starts_with($m['video_url_materi'], 'vid_');
                 if ($hasV && $hasF) {
-                    $tipeIcon = '<i class="bi bi-collection-play-fill"></i>';
+                    $tipeIcon  = '<i class="bi bi-collection-play-fill"></i>';
                     $tipeLabel = 'Video & PDF';
                 } elseif ($hasV) {
-                    $tipeIcon = $isLoc ? '<i class="bi bi-shield-lock-fill"></i>' : '<i class="bi bi-play-circle-fill"></i>';
+                    $tipeIcon  = $isLoc ? '<i class="bi bi-shield-lock-fill"></i>' : '<i class="bi bi-play-circle-fill"></i>';
                     $tipeLabel = $isLoc ? 'Video Lokal' : 'Video';
                 } elseif ($hasF) {
-                    $tipeIcon = '<i class="bi bi-file-earmark-pdf-fill"></i>';
+                    $tipeIcon  = '<i class="bi bi-file-earmark-pdf-fill"></i>';
                     $tipeLabel = 'PDF';
                 } else {
-                    $tipeIcon = '<i class="bi bi-file-text-fill"></i>';
+                    $tipeIcon  = '<i class="bi bi-file-text-fill"></i>';
                     $tipeLabel = 'Artikel';
                 }
             ?>
@@ -120,14 +120,15 @@ if ($isYouTube) {
                                 <?= $isLocalVideo ? 'Video Lokal' : 'Video' ?>
                             </span>
                         <?php endif; ?>
-                        <?php if ($hasFile):  ?><span class="tipe-badge pdf"><i class="bi bi-file-earmark-pdf-fill"></i> PDF</span><?php endif; ?>
-                        <?php if ($hasIsi):   ?><span class="tipe-badge artikel"><i class="bi bi-file-text-fill"></i> Artikel</span><?php endif; ?>
-                        <?php if ($hasQuiz):  ?><span class="tipe-badge quiz"><i class="bi bi-patch-question-fill"></i> Quiz</span><?php endif; ?>
+                        <?php if ($hasFile): ?><span class="tipe-badge pdf"><i class="bi bi-file-earmark-pdf-fill"></i> PDF</span><?php endif; ?>
+                        <?php if ($hasIsi):  ?><span class="tipe-badge artikel"><i class="bi bi-file-text-fill"></i> Artikel</span><?php endif; ?>
+                        <?php if ($hasQuiz): ?><span class="tipe-badge quiz"><i class="bi bi-patch-question-fill"></i> Quiz</span><?php endif; ?>
                     </div>
                 </div>
             </div>
 
             <div class="content-body">
+
                 <!-- PRE TEST -->
                 <div class="content-section">
                     <div class="section-label">
@@ -165,41 +166,38 @@ if ($isYouTube) {
                 <!-- 1. VIDEO -->
                 <?php if ($hasVideo): ?>
                     <div class="content-section">
-                
+
                         <?php if (!$has_pretest): ?>
-                            <!-- 🔒 VIDEO TERKUNCI -->
+                            <!-- VIDEO TERKUNCI -->
                             <div class="video-container locked">
                                 <div class="locked-overlay">
                                     <i class="bi bi-lock-fill"></i>
                                     <p>Selesaikan Pre Test untuk membuka video</p>
                                 </div>
                             </div>
-                
+
                         <?php elseif ($isLocalVideo): ?>
-                            <!-- ▶️ VIDEO LOKAL -->
-                            <div class="video-container mb-4" style="border-radius:12px;overflow:hidden;">
-                                <video
-                                    id="localVideo"
-                                    controls
-                                    preload="metadata"
-                                    style="width:100%;max-width:100%;background:#000;"
-                                    controlsList="nodownload noplaybackrate"
-                                    disablePictureInPicture
-                                >
-                                    <source src="<?= base_url('video/stream/' . esc($currentMateri['video_url_materi'])) ?>" type="video/mp4">
-                                    Browser Anda tidak mendukung pemutar video.
-                                </video>
+                            <!-- VIDEO LOKAL — iframe ke embed_video.php (player enkripsi AES) -->
+                            <div class="video-container mb-4"
+                                style="border-radius:12px;overflow:hidden;aspect-ratio:16/9;background:#000;position:relative;">
+                                <iframe
+                                    id="localVideoFrame"
+                                    src="<?= base_url('video/player?id=' . esc($currentMateri['video_url_materi'])) ?>"
+                                    style="width:100%;height:100%;border:none;display:block;"
+                                    allowfullscreen
+                                    allow="autoplay; encrypted-media"
+                                ></iframe>
                             </div>
-                
+
                         <?php elseif ($isYouTube && $embedId): ?>
-                            <!-- ▶️ VIDEO YOUTUBE -->
+                            <!-- VIDEO YOUTUBE -->
                             <div class="video-container"
                                 style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;margin-bottom:16px;">
                                 <div id="player"></div>
                             </div>
-                
+
                         <?php else: ?>
-                            <!-- ▶️ VIDEO HTML5 BIASA -->
+                            <!-- VIDEO HTML5 BIASA -->
                             <div class="video-container mb-4" style="border-radius:12px;overflow:hidden;">
                                 <video id="html5Video" controls preload="metadata" style="width:100%;max-width:100%;">
                                     <source src="<?= esc($currentMateri['video_url_materi']) ?>" type="video/mp4">
@@ -207,7 +205,7 @@ if ($isYouTube) {
                                 </video>
                             </div>
                         <?php endif; ?>
-                
+
                     </div>
                 <?php endif; ?>
 
@@ -231,7 +229,7 @@ if ($isYouTube) {
                                 <div class="file-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
                                 <div class="file-info">
                                     <h4><?= esc($currentMateri['judul_materi']) ?></h4>
-                                    <p>Klik tombol di bawah untuk membaca materi PDF. Sistem akan otomatis membuka posttest setelah Anda selesai membaca.</p>
+                                    <p>Klik tombol di bawah untuk membaca materi PDF.</p>
                                 </div>
                                 <button class="btn-view-pdf" onclick="openPDFModal()">Baca Materi</button>
                             </div>
@@ -349,13 +347,15 @@ if ($isYouTube) {
                                 </div>
                                 <span class="btn-posttest disabled">Terkunci</span>
                             </div>
-                            <div class="posttest-card" id="posttestUnlocked" style="display:none;opacity:0;pointer-events:none;transition:opacity .25s ease;">
+                            <div class="posttest-card" id="posttestUnlocked"
+                                style="display:none;opacity:0;pointer-events:none;transition:opacity .25s ease;">
                                 <div class="posttest-icon"><i class="bi bi-patch-question-fill"></i></div>
                                 <div class="posttest-info">
                                     <h4>Post Test Modul</h4>
                                     <p>Kerjakan test setelah menyelesaikan semua materi.</p>
                                 </div>
-                                <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] . '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
+                                <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] .
+                                    '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
                                     Mulai Post Test
                                 </a>
                             </div>
@@ -367,7 +367,8 @@ if ($isYouTube) {
                                     <h4>Post Test Modul</h4>
                                     <p>Kerjakan test setelah menyelesaikan semua materi.</p>
                                 </div>
-                                <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] . '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
+                                <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] .
+                                    '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
                                     Mulai Post Test
                                 </a>
                             </div>
@@ -376,7 +377,7 @@ if ($isYouTube) {
                     <?php endif; ?>
                 </div>
 
-                <!-- Navigasi -->
+                <!-- NAVIGASI -->
                 <div class="nav-buttons">
                     <?php if ($prevMateri): ?>
                         <button onclick="loadMateri(<?= $prevMateri['id_materi'] ?>)" class="nav-btn prev">
@@ -419,8 +420,7 @@ if ($isYouTube) {
 <script>
     const pdfUrl = <?= !empty($currentMateri['file_materi'])
                         ? '"' . base_url($currentMateri['file_materi']) . '"'
-                        : 'null'
-                    ?>;
+                        : 'null' ?>;
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -428,73 +428,50 @@ if ($isYouTube) {
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 </script>
+
 <script>
-    const MATERI_SELESAI = <?= $materi_selesai ? 'true' : 'false' ?>;
+    /* ── CONFIG ── */
+    const MATERI_SELESAI     = <?= $materi_selesai ? 'true' : 'false' ?>;
     const MATERI_PUNYA_VIDEO = <?= $hasVideo ? 'true' : 'false' ?>;
-    const MATERI_PUNYA_FILE = <?= $hasFile  ? 'true' : 'false' ?>;
-    const IS_LOCAL_VIDEO = <?= $isLocalVideo ? 'true' : 'false' ?>;
-    const SOAL_DATA = <?= json_encode($quizSoal, JSON_UNESCAPED_UNICODE) ?>;
-    const TOTAL_SOAL = SOAL_DATA.length;
-    const CSRF_TOKEN = '<?= csrf_hash() ?>';
-    const CSRF_NAME = '<?= csrf_token() ?>';
-    const SAVE_URL = '<?= base_url('dashboard/peserta/quiz/simpan-materi') ?>';
-    const BASE_URL_JS = '<?= base_url() ?>';
-</script>
+    const MATERI_PUNYA_FILE  = <?= $hasFile  ? 'true' : 'false' ?>;
+    const IS_LOCAL_VIDEO     = <?= $isLocalVideo ? 'true' : 'false' ?>;
+    const SOAL_DATA          = <?= json_encode($quizSoal, JSON_UNESCAPED_UNICODE) ?>;
+    const TOTAL_SOAL         = SOAL_DATA.length;
+    const CSRF_TOKEN         = '<?= csrf_hash() ?>';
+    const CSRF_NAME          = '<?= csrf_token() ?>';
+    const SAVE_URL           = '<?= base_url('dashboard/peserta/quiz/simpan-materi') ?>';
+    const BASE_URL_JS        = '<?= base_url() ?>';
 
-<script>
-    /* ══════════════════════════════════════
-   NAVIGASI
-══════════════════════════════════════ */
-    function loadMateri(idMateri) {
-        window.location.href = '<?= base_url('dashboard/peserta/materi-modul') ?>/<?= $modul['id_modul'] ?>?materi=' + idMateri;
-    }
-
-    /* ══════════════════════════════════════
-       STATE
-    ══════════════════════════════════════ */
-    window.videoSelesai = false;
-    window.pdfSelesai = false;
+    /* ── STATE ── */
+    window.videoSelesai     = false;
+    window.pdfSelesai       = false;
     window.progressTerkirim = false;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const video = document.getElementById('localVideo');
-        if (!video) return;
-    
-        video.addEventListener('ended', () => {
+    /* ════════════════════════════════════════════════════════
+       NAVIGASI
+    ════════════════════════════════════════════════════════ */
+    function loadMateri(idMateri) {
+        window.location.href =
+            '<?= base_url('dashboard/peserta/materi-modul') ?>/<?= $modul['id_modul'] ?>?materi=' + idMateri;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       VIDEO LOKAL — terima postMessage dari iframe embed_video.php
+       embed_video.php mengirim: { type: 'VIDEO_ENDED', videoId: '...' }
+    ════════════════════════════════════════════════════════ */
+    window.addEventListener('message', (event) => {
+        if (!event.data || typeof event.data !== 'object') return;
+
+        if (event.data.type === 'VIDEO_ENDED') {
+            console.log('[MateriModul] VIDEO_ENDED diterima dari iframe.');
             window.videoSelesai = true;
             kirimProgressMateri();
-        });
+        }
     });
 
-    /* ══════════════════════════════════════
-       YOUTUBE PLAYER API (backward compat)
-    ══════════════════════════════════════ */
-    <?php if ($isYouTube && $embedId): ?>
-        let player;
-
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '390',
-                width: '640',
-                videoId: '<?= $embedId ?>',
-                events: {
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-        }
-
-        function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.ENDED) {
-                window.videoSelesai = true;
-                kirimProgressMateri();
-            }
-        }
-    <?php else: ?>
-
-        function onYouTubeIframeAPIReady() {}
-    <?php endif; ?>
-
-    /* HTML5 video (file langsung) */
+    /* ════════════════════════════════════════════════════════
+       VIDEO HTML5 BIASA (non-lokal, non-youtube)
+    ════════════════════════════════════════════════════════ */
     function setupHTML5Video() {
         const video = document.getElementById('html5Video');
         if (!video) return;
@@ -503,107 +480,125 @@ if ($isYouTube) {
             kirimProgressMateri();
         });
     }
-    document.readyState !== 'loading' ?
-        setupHTML5Video() :
-        window.addEventListener('DOMContentLoaded', setupHTML5Video);
+    document.readyState !== 'loading'
+        ? setupHTML5Video()
+        : window.addEventListener('DOMContentLoaded', setupHTML5Video);
 
-    /* ══════════════════════════════════════
-       CEK APAKAH SEMUA KONTEN SELESAI
-    ══════════════════════════════════════ */
+    /* ════════════════════════════════════════════════════════
+       YOUTUBE PLAYER API
+    ════════════════════════════════════════════════════════ */
+    <?php if ($isYouTube && $embedId): ?>
+        let player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '390', width: '640',
+                videoId: '<?= $embedId ?>',
+                events: { 'onStateChange': onPlayerStateChange }
+            });
+        }
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.ENDED) {
+                window.videoSelesai = true;
+                kirimProgressMateri();
+            }
+        }
+    <?php else: ?>
+        function onYouTubeIframeAPIReady() {}
+    <?php endif; ?>
+
+    /* ════════════════════════════════════════════════════════
+       CEK SEMUA KONTEN SELESAI
+    ════════════════════════════════════════════════════════ */
     function checkAllMateriCompleted() {
         if (MATERI_PUNYA_VIDEO && !window.videoSelesai) return false;
-        if (MATERI_PUNYA_FILE && !window.pdfSelesai) return false;
+        if (MATERI_PUNYA_FILE  && !window.pdfSelesai)   return false;
         return true;
     }
 
-    /* ══════════════════════════════════════
+    /* ════════════════════════════════════════════════════════
        KIRIM PROGRESS KE SERVER
-    ══════════════════════════════════════ */
+    ════════════════════════════════════════════════════════ */
     function kirimProgressMateri() {
         if (!checkAllMateriCompleted()) return;
-        if (window.progressTerkirim) return;
-
+        if (window.progressTerkirim)    return;
         window.progressTerkirim = true;
 
         const idMateri = <?= (int)($materi_aktif['id_materi'] ?? 0) ?>;
-        const csrfName = '<?= csrf_token() ?>';
-        const csrfHash = '<?= csrf_hash() ?>';
-
         const fd = new FormData();
-        fd.append(csrfName, csrfHash);
+        fd.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
         fd.append('id_materi', idMateri);
 
         fetch(BASE_URL_JS + 'dashboard/peserta/materi/selesai', {
-                method: 'POST',
-                body: fd,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    showSuccessNotification();
-                    unlockPosttest();
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    window.progressTerkirim = false;
-                    showErrorNotification(res.error || 'Gagal menyimpan progress');
-                }
-            })
-            .catch(() => {
+            method: 'POST',
+            body: fd,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                showSuccessNotification();
+                unlockPosttest();
+                setTimeout(() => location.reload(), 1500);
+            } else {
                 window.progressTerkirim = false;
-            });
+                showErrorNotification(res.error || 'Gagal menyimpan progress');
+            }
+        })
+        .catch(() => { window.progressTerkirim = false; });
     }
 
-    /* ══════════════════════════════════════
+    /* ════════════════════════════════════════════════════════
        UI HELPERS
-    ══════════════════════════════════════ */
+    ════════════════════════════════════════════════════════ */
     function showSuccessNotification() {
         const n = document.createElement('div');
-        n.innerHTML = `<div style="position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:10000;">
-        <strong>✓ Sukses!</strong> Materi selesai. Posttest sekarang tersedia.
-    </div>`;
+        n.innerHTML = `<div style="position:fixed;top:20px;right:20px;background:#10b981;color:#fff;
+            padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);
+            z-index:10000;font-family:system-ui,sans-serif;">
+            <strong>✓ Sukses!</strong> Materi selesai. Posttest sekarang tersedia.
+        </div>`;
         document.body.appendChild(n);
         setTimeout(() => n.remove(), 3000);
     }
 
     function showErrorNotification(msg) {
         const n = document.createElement('div');
-        n.innerHTML = `<div style="position:fixed;top:20px;right:20px;background:#ef4444;color:#fff;padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:10000;">
-        <strong>✗ Error!</strong> ${msg}
-    </div>`;
+        n.innerHTML = `<div style="position:fixed;top:20px;right:20px;background:#ef4444;color:#fff;
+            padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);
+            z-index:10000;font-family:system-ui,sans-serif;">
+            <strong>✗ Error!</strong> ${msg}
+        </div>`;
         document.body.appendChild(n);
         setTimeout(() => n.remove(), 5000);
     }
 
     function unlockPosttest() {
-        const locked = document.getElementById('posttestLocked');
+        const locked   = document.getElementById('posttestLocked');
         const unlocked = document.getElementById('posttestUnlocked');
         if (locked) {
-            locked.style.opacity = '0';
+            locked.style.opacity      = '0';
             locked.style.pointerEvents = 'none';
-            locked.style.height = '0';
-            locked.style.overflow = 'hidden';
+            locked.style.height        = '0';
+            locked.style.overflow      = 'hidden';
         }
         if (unlocked) {
-            unlocked.style.display = 'block';
-            unlocked.style.opacity = '1';
-            unlocked.style.height = 'auto';
+            unlocked.style.display      = 'block';
+            unlocked.style.opacity      = '1';
+            unlocked.style.height       = 'auto';
             unlocked.style.pointerEvents = 'auto';
         }
     }
 
     function updateProgressBar(percent) {
         const fill = document.getElementById('pdfProgressFill');
-        const txt = document.getElementById('pdfProgressText');
+        const txt  = document.getElementById('pdfProgressText');
         if (fill) fill.style.width = percent + '%';
-        if (txt) txt.textContent = Math.round(percent) + '%';
+        if (txt)  txt.textContent  = Math.round(percent) + '%';
     }
 
-    /* ══════════════════════════════════════
+    /* ════════════════════════════════════════════════════════
        PDF MODAL & PROGRESS
-    ══════════════════════════════════════ */
+    ════════════════════════════════════════════════════════ */
     function openPDFModal() {
         <?php if (!$has_pretest): ?>
             alert('Anda harus menyelesaikan Pre Test terlebih dahulu untuk membuka materi PDF.');
@@ -646,20 +641,16 @@ if ($isYouTube) {
         const pw = document.querySelector('.pdf-modal-progress');
         const st = document.getElementById('pdfStatusText');
         if (pw) pw.style.display = 'none';
-        if (st) st.textContent = 'Materi telah selesai. Anda dapat membaca kembali.';
+        if (st) st.textContent   = 'Materi telah selesai. Anda dapat membaca kembali.';
     }
 
     /* ── PDF.js render ── */
-    let pdfDoc = null,
-        totalPages = 0,
-        highestPageSeen = 0;
+    let pdfDoc = null, totalPages = 0, highestPageSeen = 0;
 
     if (pdfUrl) {
-        pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-            pdfDoc = pdf;
-            totalPages = pdf.numPages;
-            renderAllPages();
-        }).catch(err => console.error('Gagal memuat PDF:', err));
+        pdfjsLib.getDocument(pdfUrl).promise
+            .then(pdf => { pdfDoc = pdf; totalPages = pdf.numPages; renderAllPages(); })
+            .catch(err => console.error('Gagal memuat PDF:', err));
     }
 
     function renderAllPages() {
@@ -671,26 +662,21 @@ if ($isYouTube) {
 
     function renderPage(pageNum, container) {
         pdfDoc.getPage(pageNum).then(page => {
-            const vp = page.getViewport({
-                scale: 1.2
-            });
+            const vp     = page.getViewport({ scale: 1.2 });
             const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.height = vp.height;
-            canvas.width = vp.width;
+            const ctx    = canvas.getContext('2d');
+            canvas.height       = vp.height;
+            canvas.width        = vp.width;
             canvas.dataset.page = pageNum;
             canvas.style.cssText = 'display:block;margin:0 auto 20px;';
             container.appendChild(canvas);
-            page.render({
-                canvasContext: ctx,
-                viewport: vp
-            });
+            page.render({ canvasContext: ctx, viewport: vp });
         });
     }
 
     function detectPageProgress() {
         if (MATERI_SELESAI) return;
-        const viewer = document.getElementById('pdfViewer');
+        const viewer   = document.getElementById('pdfViewer');
         const canvases = viewer.querySelectorAll('canvas');
         canvases.forEach(canvas => {
             const rect = canvas.getBoundingClientRect();
@@ -718,15 +704,13 @@ if ($isYouTube) {
         kirimProgressMateri();
     }
 
-    /* ══════════════════════════════════════
-       Status lock message update (realtime)
-    ══════════════════════════════════════ */
+    /* ── Realtime lock status update ── */
     setInterval(() => {
         if (!MATERI_PUNYA_VIDEO || !MATERI_PUNYA_FILE) return;
         const msgEl = document.getElementById('lockStatusMessage');
         if (!msgEl) return;
-        const vs = window.videoSelesai ? '✓ Video selesai' : '○ ' + (IS_LOCAL_VIDEO ? 'Klik tombol selesai menonton' : 'Tonton video sampai selesai');
-        const fs = window.pdfSelesai ? '✓ PDF selesai' : '○ Scroll PDF sampai akhir';
+        const vs = window.videoSelesai ? '✓ Video selesai' : '○ Tonton video sampai selesai';
+        const fs = window.pdfSelesai   ? '✓ PDF selesai'   : '○ Scroll PDF sampai akhir';
         msgEl.innerHTML = vs + '<br>' + fs;
     }, 500);
 </script>

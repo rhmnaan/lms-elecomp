@@ -29,7 +29,7 @@
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body py-3">
         <div class="row align-items-center g-2">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="bi bi-search text-muted"></i>
@@ -39,11 +39,24 @@
                 </div>
             </div>
             <div class="col-md-3">
+                <select class="form-select form-select-sm" id="filterProgram">
+                    <option value="">Semua Program</option>
+                    <?php if (!empty($program)): ?>
+                        <?php foreach ($program as $p): ?>
+                            <option value="<?= $p['id_program'] ?>"><?= esc($p['nama_program']) ?></option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
+            </div>
+            <div class="col-md-3">
                 <select class="form-select form-select-sm" id="filterKelas">
                     <option value="">Semua Kelas</option>
                     <?php if (!empty($kelas)): ?>
                         <?php foreach ($kelas as $k): ?>
-                            <option value="<?= $k['id_kelas'] ?>"><?= esc($k['nama_kelas']) ?></option>
+                            <option value="<?= $k['id_kelas'] ?>"
+                                    data-program="<?= $k['id_program'] ?>">
+                                <?= esc($k['nama_kelas']) ?>
+                            </option>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </select>
@@ -73,7 +86,7 @@
                 <tbody>
                     <?php if (!empty($modul)): ?>
                         <?php foreach ($modul as $i => $m): ?>
-                        <tr data-kelas="<?= $m['id_kelas'] ?>">
+                        <tr data-kelas="<?= $m['id_kelas'] ?>" data-program="<?= $m['id_program'] ?? '' ?>">
                             <td class="ps-4 text-muted"><?= $i + 1 ?></td>
                             <td>
                                 <div class="d-flex align-items-center gap-3">
@@ -105,6 +118,7 @@
                                         data-id="<?= $m['id_modul'] ?>"
                                         data-judul="<?= esc($m['judul_modul']) ?>"
                                         data-kelas="<?= $m['id_kelas'] ?>"
+                                        data-program="<?= $m['id_program'] ?? '' ?>"
                                         data-urutan="<?= $m['urutan_modul'] ?? '' ?>">
                                     <i class="bi bi-pencil"></i>
                                 </button>
@@ -149,16 +163,28 @@
                 <form action="<?= base_url('dashboard/pengajar/modul/store') ?>" method="POST">
                     <?= csrf_field() ?>
 
+                    <!-- Pilih Program -->
                     <div class="mb-3">
-                        <label class="form-label fw-medium small">Kelas <span class="text-danger">*</span></label>
-                        <select class="form-select" name="id_kelas" required>
-                            <option value="" disabled selected>-- Pilih Kelas --</option>
-                            <?php if (!empty($kelas)): ?>
-                                <?php foreach ($kelas as $k): ?>
-                                    <option value="<?= $k['id_kelas'] ?>"><?= esc($k['nama_kelas']) ?></option>
+                        <label class="form-label fw-medium small">Program <span class="text-danger">*</span></label>
+                        <select class="form-select" id="tambah_program" required>
+                            <option value="" disabled selected>-- Pilih Program --</option>
+                            <?php if (!empty($program)): ?>
+                                <?php foreach ($program as $p): ?>
+                                    <option value="<?= $p['id_program'] ?>"><?= esc($p['nama_program']) ?></option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
+                    </div>
+
+                    <!-- Pilih Kelas (cascade) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-medium small">Kelas <span class="text-danger">*</span></label>
+                        <select class="form-select" name="id_kelas" id="tambah_kelas" required disabled>
+                            <option value="" disabled selected>-- Pilih Program dulu --</option>
+                        </select>
+                        <div id="loadingTambahKelas" class="form-text text-muted d-none">
+                            <span class="spinner-border spinner-border-sm me-1"></span> Memuat kelas...
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -201,16 +227,28 @@
                 <form id="formEditModul" method="POST">
                     <?= csrf_field() ?>
 
+                    <!-- Pilih Program -->
                     <div class="mb-3">
-                        <label class="form-label fw-medium small">Kelas <span class="text-danger">*</span></label>
-                        <select class="form-select" name="id_kelas" id="edit_id_kelas" required>
-                            <option value="" disabled>-- Pilih Kelas --</option>
-                            <?php if (!empty($kelas)): ?>
-                                <?php foreach ($kelas as $k): ?>
-                                    <option value="<?= $k['id_kelas'] ?>"><?= esc($k['nama_kelas']) ?></option>
+                        <label class="form-label fw-medium small">Program <span class="text-danger">*</span></label>
+                        <select class="form-select" id="edit_program">
+                            <option value="" disabled>-- Pilih Program --</option>
+                            <?php if (!empty($program)): ?>
+                                <?php foreach ($program as $p): ?>
+                                    <option value="<?= $p['id_program'] ?>"><?= esc($p['nama_program']) ?></option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
+                    </div>
+
+                    <!-- Pilih Kelas (cascade) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-medium small">Kelas <span class="text-danger">*</span></label>
+                        <select class="form-select" name="id_kelas" id="edit_id_kelas" required disabled>
+                            <option value="" disabled>-- Pilih Program dulu --</option>
+                        </select>
+                        <div id="loadingEditKelas" class="form-text text-muted d-none">
+                            <span class="spinner-border spinner-border-sm me-1"></span> Memuat kelas...
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -265,21 +303,101 @@
 
 
 <script>
+// ── Helper: fetch kelas by program ───────────────────────────────────
+function loadKelasByProgram(idProgram, selectEl, loadingEl, selectedId = null) {
+    selectEl.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    selectEl.disabled  = true;
+    loadingEl.classList.remove('d-none');
+
+    fetch(`<?= base_url('dashboard/pengajar/kelas-by-program') ?>/${idProgram}`)
+        .then(r => r.json())
+        .then(data => {
+            loadingEl.classList.add('d-none');
+            if (data.success && data.kelas.length > 0) {
+                data.kelas.forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value       = k.id_kelas;
+                    opt.textContent = k.nama_kelas;
+                    if (selectedId && k.id_kelas == selectedId) opt.selected = true;
+                    selectEl.appendChild(opt);
+                });
+                selectEl.disabled = false;
+            } else {
+                selectEl.innerHTML = '<option value="">Tidak ada kelas di program ini</option>';
+            }
+        })
+        .catch(() => {
+            loadingEl.classList.add('d-none');
+            selectEl.innerHTML = '<option value="">Gagal memuat kelas</option>';
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Edit
+    // ── Cascade Program → Kelas (Modal Tambah) ───────────────────────
+    document.getElementById('tambah_program').addEventListener('change', function () {
+        if (!this.value) return;
+        loadKelasByProgram(
+            this.value,
+            document.getElementById('tambah_kelas'),
+            document.getElementById('loadingTambahKelas')
+        );
+    });
+
+    // ── Cascade Program → Kelas (Modal Edit) ─────────────────────────
+    document.getElementById('edit_program').addEventListener('change', function () {
+        if (!this.value) return;
+        loadKelasByProgram(
+            this.value,
+            document.getElementById('edit_id_kelas'),
+            document.getElementById('loadingEditKelas')
+        );
+    });
+
+    // ── Filter Program → filter dropdown Kelas di tabel ──────────────
+    document.getElementById('filterProgram').addEventListener('change', function () {
+        const idProgram  = this.value;
+        const selKelas   = document.getElementById('filterKelas');
+        const allOptions = selKelas.querySelectorAll('option');
+
+        allOptions.forEach(opt => {
+            if (!opt.value) return; // skip "Semua Kelas"
+            opt.style.display = (!idProgram || opt.dataset.program === idProgram) ? '' : 'none';
+        });
+
+        // Reset pilihan kelas jika kelas yang dipilih tidak sesuai program
+        if (selKelas.value && selKelas.options[selKelas.selectedIndex]?.dataset.program !== idProgram) {
+            selKelas.value = '';
+        }
+
+        filterTable();
+    });
+
+    // ── Edit modal ────────────────────────────────────────────────────
     document.querySelectorAll('.btn-edit-modul').forEach(btn => {
         btn.addEventListener('click', function () {
-            const baseUrl = '<?= base_url('dashboard/pengajar/modul/update') ?>';
-            document.getElementById('formEditModul').action    = `${baseUrl}/${this.dataset.id}`;
-            document.getElementById('edit_judul_modul').value  = this.dataset.judul;
-            document.getElementById('edit_urutan_modul').value = this.dataset.urutan;
-            document.getElementById('edit_id_kelas').value     = this.dataset.kelas;
+            const baseUrl   = '<?= base_url('dashboard/pengajar/modul/update') ?>';
+            const idProgram = this.dataset.program;
+            const idKelas   = this.dataset.kelas;
+
+            document.getElementById('formEditModul').action      = `${baseUrl}/${this.dataset.id}`;
+            document.getElementById('edit_judul_modul').value    = this.dataset.judul;
+            document.getElementById('edit_urutan_modul').value   = this.dataset.urutan;
+            document.getElementById('edit_program').value        = idProgram;
+
+            // Load kelas sesuai program, lalu set kelas yang aktif
+            loadKelasByProgram(
+                idProgram,
+                document.getElementById('edit_id_kelas'),
+                document.getElementById('loadingEditKelas'),
+                idKelas
+            );
+
             new bootstrap.Modal(document.getElementById('modalEditModul')).show();
         });
     });
 
-    // Hapus
+    // ── Hapus modal ───────────────────────────────────────────────────
     document.querySelectorAll('.btn-delete-modul').forEach(btn => {
         btn.addEventListener('click', function () {
             const baseUrl = '<?= base_url('dashboard/pengajar/modul/delete') ?>';
@@ -289,23 +407,33 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Search + filter kelas
+    // ── Search + filter tabel ─────────────────────────────────────────
     function filterTable() {
-        const keyword = document.getElementById('searchModul').value.toLowerCase();
-        const kelasId = document.getElementById('filterKelas').value;
-        const rows    = document.querySelectorAll('#tabelModul tbody tr:not(#emptyRow)');
-        let visible   = 0;
+        const keyword   = document.getElementById('searchModul').value.toLowerCase();
+        const kelasId   = document.getElementById('filterKelas').value;
+        const programId = document.getElementById('filterProgram').value;
+        const rows      = document.querySelectorAll('#tabelModul tbody tr:not(#emptyRow)');
+        let visible     = 0;
+
         rows.forEach(row => {
-            const judul = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-            const kelas = row.dataset.kelas || '';
-            const ok    = judul.includes(keyword) && (!kelasId || kelas === kelasId);
+            const judul   = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+            const kelas   = row.dataset.kelas   || '';
+            const program = row.dataset.program || '';
+
+            const ok = judul.includes(keyword)
+                    && (!kelasId   || kelas   === kelasId)
+                    && (!programId || program === programId);
+
             row.style.display = ok ? '' : 'none';
             if (ok) visible++;
         });
+
         document.getElementById('totalModul').textContent = visible;
     }
+
     document.getElementById('searchModul').addEventListener('input', filterTable);
     document.getElementById('filterKelas').addEventListener('change', filterTable);
+    window.filterTable = filterTable; // expose untuk filterProgram
 });
 </script>
 

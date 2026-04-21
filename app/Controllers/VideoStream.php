@@ -301,13 +301,16 @@ class VideoStream extends BaseController
 
         if (empty($this->encryptionKey)) {
             return $this->response
-                ->setJSON(['success' => false, 'message' => 'Kunci enkripsi belum dikonfigurasi di server.'])
+                ->setJSON(['success' => false, 'message' => 'Kunci enkripsi belum dikonfigurasi.'])
                 ->setStatusCode(500);
         }
 
+        // ✅ Derive dulu seperti saat enkripsi, baru kirim ke browser
+        $derivedKey = hash('sha256', $this->encryptionKey, true); // 32 bytes binary
+
         return $this->response->setJSON([
             'success' => true,
-            'key'     => base64_encode($this->encryptionKey),
+            'key'     => base64_encode($derivedKey), // kirim derived key
         ]);
     }
 
@@ -408,15 +411,18 @@ class VideoStream extends BaseController
     }
 
     // ═══════════════════════════════════════════════════════════════
-    //  PRIVATE: ENKRIPSI FILE AES-256-CBC
+    //  PRIVATE: ENKRIPSI FILE AES-256-CBC (FIXED)
     // ═══════════════════════════════════════════════════════════════
 
-    // ── encryptFile lama diganti chunked agar hemat RAM di hosting ──
     private function encryptFile(string $source, string $destination): bool
     {
         return $this->encryptFileChunked($source, $destination);
     }
 
+    /**
+     * ✅ FIXED: Enkripsi file dengan AES-256-CBC yang kompatibel dengan browser
+     * Untuk video kecil-menengah (<100MB)
+     */
     private function encryptFileChunked(string $source, string $destination): bool
     {
         try {
@@ -438,28 +444,76 @@ class VideoStream extends BaseController
                 throw new \Exception('Tidak bisa membuka file untuk enkripsi.');
             }
 
-            fwrite($dest, $iv); // Tulis IV 16 byte di awal
+            // Tulis IV di awal (16 bytes)
+            fwrite($dest, $iv);
+
+            // ✅ FIX: Enkripsi dengan IV tetap dan padding otomatis
+            $blockSize = 16;
+            $buffer = '';
 
             while (!feof($src)) {
-                $chunk = fread($src, 65536); // 64 KB per chunk
+                $chunk = fread($src, 65536); // 64KB per chunk
                 if ($chunk === false) break;
 
-                $enc = openssl_encrypt($chunk, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv);
-                if ($enc === false) {
-                    throw new \Exception('openssl_encrypt gagal: ' . openssl_error_string());
+                $buffer .= $chunk;
+                $bufferLen = strlen($buffer);
+
+                // Enkripsi kelipatan 16 bytes (kecuali chunk terakhir)
+                if ($bufferLen >= $blockSize) {
+                    $toEncrypt = substr($buffer, 0, $bufferLen - ($bufferLen % $blockSize));
+                    $buffer = substr($buffer, strlen($toEncrypt));
+
+                    if (!empty($toEncrypt)) {
+                        $encrypted = openssl_encrypt(
+                            $toEncrypt,
+                            'aes-256-cbc',
+                            $key,
+                            OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
+                            $iv
+                        );
+
+                        if ($encrypted === false) {
+                            throw new \Exception('openssl_encrypt gagal: ' . openssl_error_string());
+                        }
+
+                        fwrite($dest, $encrypted);
+
+                        // Update IV untuk chunk berikutnya (CBC chaining)
+                        $iv = substr($encrypted, -16);
+                    }
                 }
-                fwrite($dest, $enc);
-                $iv = substr($enc, -16); // IV chaining
+            }
+
+            // Handle sisa buffer dengan PKCS7 padding
+            if (strlen($buffer) > 0) {
+                $padLen = $blockSize - (strlen($buffer) % $blockSize);
+                $buffer .= str_repeat(chr($padLen), $padLen);
+
+                $encrypted = openssl_encrypt(
+                    $buffer,
+                    'aes-256-cbc',
+                    $key,
+                    OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
+                    $iv
+                );
+
+                if ($encrypted === false) {
+                    throw new \Exception('openssl_encrypt gagal pada chunk terakhir');
+                }
+
+                fwrite($dest, $encrypted);
             }
 
             fclose($src);
             fclose($dest);
-            return true;
 
+            log_message('info', '[VideoStream] Video berhasil dienkripsi: ' . $destination);
+            return true;
         } catch (\Exception $e) {
             log_message('error', '[VideoStream::encryptFileChunked] ' . $e->getMessage());
             if (isset($src)  && is_resource($src))  fclose($src);
             if (isset($dest) && is_resource($dest)) fclose($dest);
+            if (file_exists($destination)) @unlink($destination);
             return false;
         }
     }

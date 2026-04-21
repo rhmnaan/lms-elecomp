@@ -45,7 +45,6 @@ class DashboardPengajar extends BaseController
         $db = \Config\Database::connect();
         $uid = $this->myId();
 
-        // ── Stat cards ──────────────────────────────────────────────────
         $total_kelas = $db->table('kelas')
             ->where('id_users', $uid)
             ->where('deleted_at IS NULL')
@@ -69,7 +68,6 @@ class DashboardPengajar extends BaseController
             ->where('deleted_at IS NULL')
             ->countAllResults();
 
-        // ── Kelas list (untuk card kiri) ────────────────────────────────
         $kelas_list = $db->query("
             SELECT k.id_kelas, k.nama_kelas,
                    COUNT(DISTINCT m.id_modul)          AS jumlah_modul,
@@ -83,7 +81,6 @@ class DashboardPengajar extends BaseController
             LIMIT 2
         ")->getResultArray();
 
-        // ── Peserta terbaru (untuk card kanan atas) ─────────────────────
         $peserta_terbaru = $db->query("
             SELECT u.nama_users, k.nama_kelas, kp.tanggal_daftar_kelas_peserta AS created_at
             FROM kelas_peserta kp
@@ -96,7 +93,6 @@ class DashboardPengajar extends BaseController
             LIMIT 2
         ")->getResultArray();
 
-        // ── Materi per kelas (untuk progress bar kanan bawah) ───────────
         $materi_per_kelas = $db->query("
             SELECT k.nama_kelas, COUNT(mt.id_materi) AS jumlah_materi
             FROM kelas k
@@ -120,7 +116,7 @@ class DashboardPengajar extends BaseController
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  Program
+    //  PROGRAM
     // ══════════════════════════════════════════════════════════════════════
     public function program()
     {
@@ -462,28 +458,34 @@ class DashboardPengajar extends BaseController
     // ══════════════════════════════════════════════════════════════════════
     public function modul()
     {
-        if ($r = $this->guardPengajar())
-            return $r;
+        if ($r = $this->guardPengajar()) return $r;
 
         $db     = \Config\Database::connect();
         $uid    = $this->myId();
         $search = $this->request->getGet('search');
 
         $query = $db->table('modul m')
-            ->select('m.*, k.nama_kelas, COUNT(mt.id_materi) AS total_materi')
+            ->select('m.*, k.nama_kelas, k.id_program, COUNT(mt.id_materi) AS total_materi')
             ->join('kelas k', 'k.id_kelas = m.id_kelas')
             ->join('materi mt', 'mt.id_modul = m.id_modul AND mt.deleted_at IS NULL', 'left')
             ->where('k.id_users', $uid)
             ->where('m.deleted_at IS NULL')
             ->groupBy('m.id_modul');
 
-        if ($search)
-            $query->like('m.judul_modul', $search);
+        if ($search) $query->like('m.judul_modul', $search);
+
+        $kelasList = (new KelasModel())->where('id_users', $uid)->findAll();
+
+        $programIds = array_unique(array_column($kelasList, 'id_program'));
+        $programList = !empty($programIds)
+            ? $db->table('program')->whereIn('id_program', $programIds)->get()->getResultArray()
+            : [];
 
         return view('Dashboard/Pengajar/modul', [
-            'modul'  => $query->get()->getResultArray(),
-            'kelas'  => (new KelasModel())->where('id_users', $uid)->findAll(),
-            'search' => $search,
+            'modul'   => $query->get()->getResultArray(),
+            'kelas'   => $kelasList,
+            'program' => $programList,
+            'search'  => $search,
         ]);
     }
 
@@ -572,6 +574,42 @@ class DashboardPengajar extends BaseController
     // ══════════════════════════════════════════════════════════════════════
     //  MATERI
     // ══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Helper privat: ambil data modul, program, dan kelas milik pengajar.
+     * Dipakai bersama oleh materi() dan materiList() agar tidak duplikasi.
+     */
+    private function getMateriFilterData(int $uid): array
+    {
+        $db = \Config\Database::connect();
+
+        $modul = $db->table('modul m')
+            ->select('m.id_modul, m.judul_modul, k.nama_kelas, k.id_kelas, k.id_program')
+            ->join('kelas k', 'k.id_kelas = m.id_kelas')
+            ->where('k.id_users', $uid)
+            ->where('m.deleted_at IS NULL')
+            ->orderBy('k.id_kelas, m.urutan_modul')
+            ->get()->getResultArray();
+
+        $programIds = array_unique(array_column($modul, 'id_program'));
+        $program = !empty($programIds)
+            ? $db->table('program')
+                ->whereIn('id_program', $programIds)
+                ->where('deleted_at IS NULL')
+                ->orderBy('nama_program')
+                ->get()->getResultArray()
+            : [];
+
+        $kelas = $db->table('kelas')
+            ->select('id_kelas, nama_kelas, id_program')
+            ->where('id_users', $uid)
+            ->where('deleted_at IS NULL')
+            ->orderBy('nama_kelas')
+            ->get()->getResultArray();
+
+        return compact('modul', 'program', 'kelas');
+    }
+
     public function materi()
     {
         if ($r = $this->guardPengajar())
@@ -582,7 +620,7 @@ class DashboardPengajar extends BaseController
         $search = $this->request->getGet('search');
 
         $query = $db->table('materi mt')
-            ->select('mt.*, m.judul_modul, k.nama_kelas, k.id_kelas,
+            ->select('mt.*, m.judul_modul, k.nama_kelas, k.id_kelas, k.id_program,
                       (mt.post_test IS NOT NULL AND mt.post_test != "") AS has_post_test,
                       (mt.pre_test  IS NOT NULL AND mt.pre_test  != "") AS has_pre_test')
             ->join('modul m', 'm.id_modul = mt.id_modul')
@@ -594,18 +632,14 @@ class DashboardPengajar extends BaseController
         if ($search)
             $query->like('mt.judul_materi', $search);
 
-        $modul = $db->table('modul m')
-            ->select('m.id_modul, m.judul_modul, k.nama_kelas')
-            ->join('kelas k', 'k.id_kelas = m.id_kelas')
-            ->where('k.id_users', $uid)
-            ->where('m.deleted_at IS NULL')
-            ->orderBy('k.id_kelas, m.urutan_modul')
-            ->get()->getResultArray();
+        $filter = $this->getMateriFilterData($uid);
 
         return view('Dashboard/Pengajar/materi', [
-            'materi' => $query->get()->getResultArray(),
-            'modul'  => $modul,
-            'search' => $search,
+            'materi'  => $query->get()->getResultArray(),
+            'modul'   => $filter['modul'],
+            'program' => $filter['program'],
+            'kelas'   => $filter['kelas'],
+            'search'  => $search,
         ]);
     }
 
@@ -734,7 +768,7 @@ class DashboardPengajar extends BaseController
         $uid = $this->myId();
 
         $materi = $db->table('materi mt')
-            ->select('mt.*, m.judul_modul, k.nama_kelas,
+            ->select('mt.*, m.judul_modul, k.nama_kelas, k.id_kelas, k.id_program,
                       (mt.post_test IS NOT NULL AND mt.post_test != "") AS has_post_test,
                       (mt.pre_test  IS NOT NULL AND mt.pre_test  != "") AS has_pre_test')
             ->join('modul m', 'm.id_modul = mt.id_modul')
@@ -744,17 +778,13 @@ class DashboardPengajar extends BaseController
             ->orderBy('k.id_kelas, m.urutan_modul, mt.id_materi')
             ->get()->getResultArray();
 
-        $modul = $db->table('modul m')
-            ->select('m.id_modul, m.judul_modul, k.nama_kelas')
-            ->join('kelas k', 'k.id_kelas = m.id_kelas')
-            ->where('k.id_users', $uid)
-            ->where('m.deleted_at IS NULL')
-            ->orderBy('k.id_kelas, m.urutan_modul')
-            ->get()->getResultArray();
+        $filter = $this->getMateriFilterData($uid);
 
         return view('Dashboard/Pengajar/materi', [
             'materi'      => $materi,
-            'modul'       => $modul,
+            'modul'       => $filter['modul'],
+            'program'     => $filter['program'],
+            'kelas'       => $filter['kelas'],
             'search'      => null,
             'materi_list' => $materi,
             'total'       => count($materi),
