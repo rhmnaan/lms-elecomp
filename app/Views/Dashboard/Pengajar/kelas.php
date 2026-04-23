@@ -54,13 +54,34 @@ $errors  = session()->getFlashdata('errors');
     }
     .kelas-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.11); }
 
-    .kelas-card-band { height: 8px; width: 100%; }
-    .band-green  { background: linear-gradient(90deg, #059669, #34d399); }
-    .band-blue   { background: linear-gradient(90deg, #2563eb, #60a5fa); }
-    .band-purple { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
-    .band-orange { background: linear-gradient(90deg, #ea580c, #fb923c); }
-    .band-teal   { background: linear-gradient(90deg, #0d9488, #2dd4bf); }
-    .band-rose   { background: linear-gradient(90deg, #e11d48, #fb7185); }
+    /* ── Gambar kelas di card ── */
+    .kelas-card-img-wrap { position: relative; }
+    .kelas-card-img {
+        width: 100%; height: 160px; object-fit: cover; display: block;
+    }
+    .kelas-card-img-placeholder {
+        width: 100%; height: 160px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 36px; position: relative; overflow: hidden;
+    }
+    .kelas-card-img-placeholder::after {
+        content: ''; position: absolute; inset: 0;
+        background: rgba(0,0,0,.08);
+    }
+    .img-green  { background: linear-gradient(135deg, #059669, #34d399); color:#fff; }
+    .img-blue   { background: linear-gradient(135deg, #2563eb, #60a5fa); color:#fff; }
+    .img-purple { background: linear-gradient(135deg, #7c3aed, #a78bfa); color:#fff; }
+    .img-orange { background: linear-gradient(135deg, #ea580c, #fb923c); color:#fff; }
+    .img-teal   { background: linear-gradient(135deg, #0d9488, #2dd4bf); color:#fff; }
+    .img-rose   { background: linear-gradient(135deg, #e11d48, #fb7185); color:#fff; }
+
+    .img-overlay-badge {
+        position: absolute; top: 10px; right: 10px;
+        background: rgba(0,0,0,.42); color: #fff;
+        font-size: 10px; font-weight: 700; padding: 3px 9px;
+        border-radius: 20px; letter-spacing: .3px;
+        backdrop-filter: blur(4px);
+    }
 
     .kelas-card-body { padding: 22px 24px 18px; flex: 1; display: flex; flex-direction: column; }
 
@@ -76,15 +97,6 @@ $errors  = session()->getFlashdata('errors');
     .kelas-id-badge { font-size: 11px; font-weight: 700; letter-spacing: .5px; color: #9ca3af; text-transform: uppercase; background: #f3f4f6; padding: 4px 10px; border-radius: 20px; }
     .kelas-name  { font-size: 17px; font-weight: 700; color: #111; margin-bottom: 8px; line-height: 1.3; }
     .kelas-desc  { font-size: 12.5px; color: #6b7280; line-height: 1.55; flex: 1; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-    /* Badge tipe kelas */
-    .badge-tipe {
-        display: inline-flex; align-items: center; gap: 4px;
-        font-size: 11px; font-weight: 700; padding: 3px 10px;
-        border-radius: 20px; margin-bottom: 14px;
-    }
-    .badge-gratis   { background: #d1fae5; color: #065f46; }
-    .badge-berbayar { background: #fef3c7; color: #92400e; }
 
     .kelas-stats { display: flex; gap: 16px; padding: 14px 0; border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6; margin-bottom: 16px; }
     .kelas-stat  { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 3px; }
@@ -131,37 +143,12 @@ $errors  = session()->getFlashdata('errors');
 
     #noResults { display: none; grid-column: 1 / -1; text-align: center; padding: 48px; color: #9ca3af; font-size: 13.5px; }
 
-    /* Tipe radio button style */
-    .tipe-radio-group { display: flex; gap: 10px; }
-    .tipe-radio-label {
-        flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
-        padding: 10px 16px; border-radius: 12px; border: 2px solid #e5e7eb;
-        cursor: pointer; font-size: 13px; font-weight: 600; color: #6b7280;
-        transition: all .18s; user-select: none;
-    }
-    .tipe-radio-label:has(input:checked) { border-color: #059669; background: #f0fdf4; color: #065f46; }
-    .tipe-radio-label.berbayar:has(input:checked) { border-color: #d97706; background: #fffbeb; color: #92400e; }
-    .tipe-radio-label input { display: none; }
-
-    /* Field berbayar slide animation */
-    .field-berbayar {
-        overflow: hidden;
-        max-height: 0;
-        transition: max-height .3s ease, opacity .3s ease;
-        opacity: 0;
-    }
-    .field-berbayar.show {
-        max-height: 200px;
-        opacity: 1;
-    }
-
-    /* ── Peserta modal styles ── */
+    /* ── Peserta modal ── */
     .peserta-list { max-height: 280px; overflow-y: auto; }
     .peserta-item {
         display: flex; align-items: center; gap: 12px;
         padding: 10px 14px; border-radius: 10px;
-        border: 1px solid #f0f0f0; margin-bottom: 8px;
-        background: #fafafa;
+        border: 1px solid #f0f0f0; margin-bottom: 8px; background: #fafafa;
     }
     .peserta-avatar {
         width: 36px; height: 36px; border-radius: 50%;
@@ -177,24 +164,21 @@ $errors  = session()->getFlashdata('errors');
         display: inline-flex; align-items: center; justify-content: center;
         width: 28px; height: 28px; border-radius: 7px;
         background: #fff5f5; color: #ef4444; border: none; cursor: pointer;
-        font-size: 11px; transition: background .14s; flex-shrink: 0;
+        font-size: 11px; flex-shrink: 0;
     }
     .btn-kick:hover { background: #fee2e2; }
     .peserta-empty-box { text-align: center; padding: 28px; color: #9ca3af; font-size: 12.5px; }
-
     .search-peserta-box { position: relative; margin-bottom: 12px; }
     .search-peserta-box i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 12px; }
     .search-peserta-box input {
         width: 100%; padding: 8px 12px 8px 30px; border: 1.5px solid #e5e7eb;
-        border-radius: 9px; font-size: 13px; outline: none; background: #f9fafb;
-        transition: border .18s;
+        border-radius: 9px; font-size: 13px; outline: none; background: #f9fafb; transition: border .18s;
     }
     .search-peserta-box input:focus { border-color: #059669; background: #fff; }
-
     .add-peserta-form { border-top: 1px solid #f0f0f0; padding-top: 16px; margin-top: 4px; }
     .add-peserta-form label { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 6px; display: block; }
 
-    /* FILTER BOX MODERN */
+    /* FILTER BOX */
     .filter-box {
         position: relative; display: flex; align-items: center;
         background: #f9fafb; border: 1.5px solid #e5e7eb;
@@ -202,14 +186,45 @@ $errors  = session()->getFlashdata('errors');
         min-width: 200px; max-width: 240px; transition: all .2s ease;
     }
     .filter-box i { color: #9ca3af; font-size: 13px; margin-right: 6px; }
-    .filter-box select {
-        border: none; outline: none; background: transparent;
-        font-size: 13px; color: #374151; width: 100%;
-        cursor: pointer; appearance: none;
-    }
-    .filter-box:hover { border-color: #059669; background: #fff; }
-    .filter-box:focus-within { border-color: #059669; background: #fff; box-shadow: 0 0 0 3px rgba(5,150,105,0.15); }
+    .filter-box select { border: none; outline: none; background: transparent; font-size: 13px; color: #374151; width: 100%; cursor: pointer; appearance: none; }
+    .filter-box:hover, .filter-box:focus-within { border-color: #059669; background: #fff; }
+    .filter-box:focus-within { box-shadow: 0 0 0 3px rgba(5,150,105,0.15); }
     .filter-box::after { content: "▾"; position: absolute; right: 12px; font-size: 12px; color: #9ca3af; pointer-events: none; }
+
+    /* ── Upload gambar di modal ── */
+    .img-upload-box {
+        border: 2px dashed #e5e7eb; border-radius: 14px;
+        padding: 22px 18px; text-align: center; cursor: pointer;
+        transition: border-color .2s, background .2s;
+        position: relative; overflow: hidden; background: #fafafa;
+    }
+    .img-upload-box:hover { border-color: #059669; background: #f0fdf4; }
+    .img-upload-box input[type="file"] {
+        position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .img-upload-box .upload-icon { font-size: 30px; color: #9ca3af; margin-bottom: 7px; display: block; line-height: 1; }
+    .img-upload-box .upload-title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 3px; }
+    .img-upload-box .upload-title span { color: #059669; }
+    .img-upload-box .upload-sub { font-size: 11.5px; color: #9ca3af; }
+
+    .img-preview-wrap {
+        position: relative; margin-top: 10px; display: none;
+        border-radius: 12px; overflow: hidden; border: 1.5px solid #e5e7eb;
+    }
+    .img-preview-wrap img { width: 100%; height: 150px; object-fit: cover; display: block; }
+    .img-preview-wrap .img-preview-label {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,.5));
+        padding: 18px 10px 8px; font-size: 11px; color: #fff; font-weight: 600;
+    }
+    .img-preview-wrap .btn-remove-img {
+        position: absolute; top: 8px; right: 8px;
+        width: 28px; height: 28px; border-radius: 50%;
+        background: rgba(0,0,0,.6); color: #fff; border: none;
+        font-size: 13px; cursor: pointer; display: flex;
+        align-items: center; justify-content: center; transition: background .15s;
+    }
+    .img-preview-wrap .btn-remove-img:hover { background: rgba(220,38,38,.85); }
 
     @media (max-width: 768px) {
         .kelas-grid { grid-template-columns: 1fr; }
@@ -250,9 +265,7 @@ $errors  = session()->getFlashdata('errors');
         <select id="filterProgramGrid">
             <option value="">Semua Program</option>
             <?php foreach ($programList as $p): ?>
-                <option value="<?= $p['id_program'] ?>">
-                    <?= esc($p['nama_program']) ?>
-                </option>
+                <option value="<?= $p['id_program'] ?>"><?= esc($p['nama_program']) ?></option>
             <?php endforeach; ?>
         </select>
     </div>
@@ -263,15 +276,40 @@ $colors = ['green', 'blue', 'purple', 'orange', 'teal', 'rose'];
 $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-fill', 'bi-diagram-3-fill', 'bi-book-fill'];
 ?>
 
-<!-- Grid -->
+<!-- Grid Kelas -->
 <div class="kelas-grid" id="kelasGrid">
     <?php if (!empty($kelas_list)): ?>
         <?php foreach ($kelas_list as $i => $k): ?>
             <?php $c = $colors[$i % count($colors)]; $ic = $icons[$i % count($icons)]; ?>
             <div class="kelas-card"
-                data-nama="<?= strtolower(esc($k['nama_kelas'])) ?>"
-                data-program="<?= $k['id_program'] ?? '' ?>">
-                <div class="kelas-card-band band-<?= $c ?>"></div>
+                 data-nama="<?= strtolower(esc($k['nama_kelas'])) ?>"
+                 data-program="<?= $k['id_program'] ?? '' ?>">
+
+                <!-- ── Gambar / Placeholder ── -->
+                <div class="kelas-card-img-wrap">
+                    <?php if (!empty($k['gambar_kelas'])): ?>
+                        <?php
+                            /*
+                             * gambar_kelas di DB hanya menyimpan nama file, misal: "abc123xyz.jpg"
+                             * Di-serve melalui route: GET /kelas/gambar/{namafile}
+                             * yang ditangani FileController::kelasGambar()
+                             */
+                        ?>
+                        <img src="<?= base_url('kelas/gambar/' . esc($k['gambar_kelas'])) ?>"
+                             class="kelas-card-img"
+                             alt="<?= esc($k['nama_kelas']) ?>"
+                             loading="lazy"
+                             onerror="this.closest('.kelas-card-img-wrap').innerHTML='<div class=\'kelas-card-img-placeholder img-<?= $c ?>\'><i class=\'bi <?= $ic ?>\' style=\'position:relative;z-index:1;\'></i></div>'">
+                        <span class="img-overlay-badge">
+                            <i class="bi bi-image me-1"></i>Foto
+                        </span>
+                    <?php else: ?>
+                        <div class="kelas-card-img-placeholder img-<?= $c ?>">
+                            <i class="bi <?= $ic ?>" style="position:relative;z-index:1;"></i>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
                 <div class="kelas-card-body">
                     <div class="kelas-icon-row">
                         <div class="kelas-icon icon-<?= $c ?>"><i class="bi <?= $ic ?>"></i></div>
@@ -279,18 +317,6 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                     </div>
                     <div class="kelas-name"><?= esc($k['nama_kelas']) ?></div>
                     <div class="kelas-desc"><?= esc($k['deskripsi_kelas'] ?: 'Belum ada deskripsi untuk kelas ini.') ?></div>
-
-                    <!-- Badge tipe kelas -->
-                    <?php if (($k['tipe_kelas'] ?? 'gratis') === 'berbayar'): ?>
-                        <span class="badge-tipe badge-berbayar">
-                            <i class="bi bi-tag-fill"></i>
-                            Berbayar — Rp <?= number_format($k['harga'] ?? 0, 0, ',', '.') ?>
-                        </span>
-                    <?php else: ?>
-                        <span class="badge-tipe badge-gratis">
-                            <i class="bi bi-gift-fill"></i> Gratis
-                        </span>
-                    <?php endif; ?>
 
                     <div class="kelas-stats">
                         <div class="kelas-stat">
@@ -308,6 +334,7 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                             <span class="kelas-stat-label">Peserta</span>
                         </div>
                     </div>
+
                     <div class="kelas-actions">
                         <button class="btn-kelas-peserta btn-kelola-peserta"
                                 data-id="<?= $k['id_kelas'] ?>"
@@ -317,11 +344,11 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                         <button class="btn-kelas-edit btn-edit-kelas" title="Edit kelas"
                                 data-id="<?= $k['id_kelas'] ?>"
                                 data-program="<?= $k['id_program'] ?? '' ?>"
-                                data-tipe="<?= esc($k['tipe_kelas'] ?? 'gratis') ?>"
                                 data-harga="<?= esc($k['harga'] ?? '') ?>"
                                 data-lynk="<?= esc($k['lynk_url'] ?? '') ?>"
                                 data-nama="<?= esc($k['nama_kelas']) ?>"
-                                data-deskripsi="<?= esc($k['deskripsi_kelas'] ?? '') ?>">
+                                data-deskripsi="<?= esc($k['deskripsi_kelas'] ?? '') ?>"
+                                data-gambar="<?= !empty($k['gambar_kelas']) ? base_url('kelas/gambar/' . esc($k['gambar_kelas'])) : '' ?>">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button class="btn-kelas-delete btn-delete-kelas" title="Hapus kelas"
@@ -413,7 +440,7 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
      MODAL TAMBAH KELAS
 ════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modalTambahKelas" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header border-0 pb-0 pt-4 px-4">
                 <h5 class="modal-title fw-bold">
@@ -422,88 +449,85 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body px-4 pt-3 pb-4">
-                <form action="<?= base_url('dashboard/pengajar/kelas/store') ?>" method="POST">
+                <form action="<?= base_url('dashboard/pengajar/kelas/store') ?>"
+                      method="POST"
+                      enctype="multipart/form-data">
                     <?= csrf_field() ?>
-
                     <!-- Program -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">
-                            Program <span class="text-danger">*</span>
-                        </label>
+                        <label class="form-label fw-semibold small">Program <span class="text-danger">*</span></label>
                         <select name="id_program" class="form-select" required>
                             <option value="">-- Pilih Program --</option>
                             <?php foreach ($programList as $p): ?>
-                                <option value="<?= $p['id_program'] ?>">
-                                    <?= esc($p['nama_program']) ?>
-                                </option>
+                                <option value="<?= $p['id_program'] ?>"><?= esc($p['nama_program']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <!-- Tipe Kelas -->
+                    <!-- Harga -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">
-                            Tipe Kelas <span class="text-danger">*</span>
-                        </label>
-                        <div class="tipe-radio-group">
-                            <label class="tipe-radio-label">
-                                <input type="radio" name="tipe_kelas" value="gratis"
-                                       id="addTipeGratis" checked
-                                       onchange="toggleBerbayar('Add')">
-                                <i class="bi bi-gift-fill text-success"></i> Gratis
-                            </label>
-                            <label class="tipe-radio-label berbayar">
-                                <input type="radio" name="tipe_kelas" value="berbayar"
-                                       id="addTipeBerbayar"
-                                       onchange="toggleBerbayar('Add')">
-                                <i class="bi bi-tag-fill text-warning"></i> Berbayar
-                            </label>
+                        <label class="form-label fw-semibold small">Harga <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text fw-semibold">Rp</span>
+                            <input type="number" name="harga" class="form-control"
+                                   placeholder="cth: 150000" min="0" step="500" required>
                         </div>
                     </div>
 
-                    <!-- Field Berbayar (toggle) -->
-                    <div class="field-berbayar" id="fieldBerbayarAdd">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">
-                                Harga <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text fw-semibold">Rp</span>
-                                <input type="number" name="harga" id="addHarga"
-                                       class="form-control"
-                                       placeholder="cth: 150000" min="0" step="500">
-                            </div>
+                    <!-- Link Pembayaran -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Link Pembayaran (Lynk.id)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                            <input type="url" name="lynk_url" class="form-control"
+                                   placeholder="https://lynk.id/username/...">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">
-                                Link Pembayaran (Lynk.id) <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
-                                <input type="url" name="lynk_url" id="addLynk"
-                                       class="form-control"
-                                       placeholder="https://lynk.id/username/...">
-                            </div>
-                            <div class="form-text">Link halaman pembayaran Lynk.id milikmu.</div>
-                        </div>
+                        <div class="form-text">Link halaman pembayaran Lynk.id milikmu.</div>
                     </div>
 
                     <!-- Nama Kelas -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">
-                            Nama Kelas <span class="text-danger">*</span>
-                        </label>
+                        <label class="form-label fw-semibold small">Nama Kelas <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="nama_kelas"
-                               placeholder="cth: Teknik Elektronika Dasar" required
-                               minlength="3" maxlength="150">
+                               placeholder="cth: Teknik Elektronika Dasar"
+                               required minlength="3" maxlength="150">
                     </div>
 
                     <!-- Deskripsi -->
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label class="form-label fw-semibold small">Deskripsi Kelas</label>
                         <textarea class="form-control" name="deskripsi_kelas" rows="3"
                                   placeholder="Deskripsi singkat tentang kelas ini..."
                                   maxlength="500"></textarea>
+                    </div>
+
+                    <!-- ── Upload Gambar Kelas ── -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small d-flex align-items-center gap-2">
+                            <i class="bi bi-image text-success"></i>
+                            Gambar Kelas
+                            <span class="text-muted fw-normal">(opsional · JPG/PNG · maks. 2 MB)</span>
+                        </label>
+                        <div class="img-upload-box" id="uploadBoxTambah">
+                            <input type="file"
+                                   name="gambar_kelas"
+                                   id="inputGambarTambah"
+                                   accept=".jpg,.jpeg,.png"
+                                   onchange="previewGambar(this,'previewWrapTambah','previewImgTambah','previewLabelTambah','uploadBoxTambah')">
+                            <span class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></span>
+                            <div class="upload-title"><span>Klik untuk pilih</span> atau seret & lepas</div>
+                            <div class="upload-sub">JPG, JPEG, PNG &nbsp;·&nbsp; Maks. 2 MB</div>
+                        </div>
+                        <div class="img-preview-wrap" id="previewWrapTambah">
+                            <img id="previewImgTambah" src="" alt="Preview gambar kelas">
+                            <div class="img-preview-label" id="previewLabelTambah"></div>
+                            <button type="button"
+                                    class="btn-remove-img"
+                                    onclick="hapusGambar('inputGambarTambah','previewWrapTambah','uploadBoxTambah')"
+                                    title="Hapus gambar">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 border-top pt-3">
@@ -523,7 +547,7 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
      MODAL EDIT KELAS
 ════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="modalEditKelas" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header border-0 pb-0 pt-4 px-4">
                 <h5 class="modal-title fw-bold">
@@ -532,85 +556,94 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body px-4 pt-3 pb-4">
-                <form id="formEditKelas" method="POST">
+                <form id="formEditKelas" method="POST" enctype="multipart/form-data">
                     <?= csrf_field() ?>
-
                     <!-- Program -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">
-                            Program <span class="text-danger">*</span>
-                        </label>
+                        <label class="form-label fw-semibold small">Program <span class="text-danger">*</span></label>
                         <select name="id_program" id="editIdProgram" class="form-select" required>
                             <option value="">-- Pilih Program --</option>
                             <?php foreach ($programList as $p): ?>
-                                <option value="<?= $p['id_program'] ?>">
-                                    <?= esc($p['nama_program']) ?>
-                                </option>
+                                <option value="<?= $p['id_program'] ?>"><?= esc($p['nama_program']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <!-- Tipe Kelas -->
+                    <!-- Harga -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">
-                            Tipe Kelas <span class="text-danger">*</span>
-                        </label>
-                        <div class="tipe-radio-group">
-                            <label class="tipe-radio-label">
-                                <input type="radio" name="tipe_kelas" value="gratis"
-                                       id="editTipeGratis"
-                                       onchange="toggleBerbayar('Edit')">
-                                <i class="bi bi-gift-fill text-success"></i> Gratis
-                            </label>
-                            <label class="tipe-radio-label berbayar">
-                                <input type="radio" name="tipe_kelas" value="berbayar"
-                                       id="editTipeBerbayar"
-                                       onchange="toggleBerbayar('Edit')">
-                                <i class="bi bi-tag-fill text-warning"></i> Berbayar
-                            </label>
+                        <label class="form-label fw-semibold small">Harga <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text fw-semibold">Rp</span>
+                            <input type="number" name="harga" id="editHarga" class="form-control"
+                                   placeholder="cth: 150000" min="0" step="500" required>
                         </div>
                     </div>
 
-                    <!-- Field Berbayar (toggle) -->
-                    <div class="field-berbayar" id="fieldBerbayarEdit">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">
-                                Harga <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text fw-semibold">Rp</span>
-                                <input type="number" name="harga" id="editHarga"
-                                       class="form-control"
-                                       placeholder="cth: 150000" min="0" step="500">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">
-                                Link Pembayaran (Lynk.id) <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
-                                <input type="url" name="lynk_url" id="editLynk"
-                                       class="form-control"
-                                       placeholder="https://lynk.id/username/...">
-                            </div>
+                    <!-- Link Pembayaran -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Link Pembayaran (Lynk.id)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                            <input type="url" name="lynk_url" id="editLynk" class="form-control"
+                                   placeholder="https://lynk.id/username/...">
                         </div>
                     </div>
 
                     <!-- Nama Kelas -->
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">
-                            Nama Kelas <span class="text-danger">*</span>
-                        </label>
+                        <label class="form-label fw-semibold small">Nama Kelas <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="nama_kelas"
                                id="edit_nama_kelas" required minlength="3" maxlength="150">
                     </div>
 
                     <!-- Deskripsi -->
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label class="form-label fw-semibold small">Deskripsi Kelas</label>
                         <textarea class="form-control" name="deskripsi_kelas"
                                   id="edit_deskripsi_kelas" rows="3" maxlength="500"></textarea>
+                    </div>
+
+                    <!-- ── Gambar saat ini + Upload baru ── -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small d-flex align-items-center gap-2">
+                            <i class="bi bi-image text-warning"></i>
+                            Gambar Kelas
+                            <span class="text-muted fw-normal">(kosongkan jika tidak ingin mengubah)</span>
+                        </label>
+
+                        <!-- Gambar yang sudah ada -->
+                        <div id="editGambarExistingWrap" style="display:none; margin-bottom:10px;">
+                            <div style="position:relative; border-radius:12px; overflow:hidden; border:1.5px solid #e5e7eb;">
+                                <img id="editGambarExisting" src="" alt="Gambar saat ini"
+                                     style="width:100%;height:130px;object-fit:cover;display:block;">
+                                <div style="position:absolute;bottom:0;left:0;right:0;
+                                            background:linear-gradient(transparent,rgba(0,0,0,.5));
+                                            padding:14px 10px 7px;font-size:11px;color:#fff;font-weight:600;">
+                                    Gambar saat ini
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="img-upload-box" id="uploadBoxEdit">
+                            <input type="file"
+                                   name="gambar_kelas"
+                                   id="inputGambarEdit"
+                                   accept=".jpg,.jpeg,.png"
+                                   onchange="previewGambar(this,'previewWrapEdit','previewImgEdit','previewLabelEdit','uploadBoxEdit')">
+                            <span class="upload-icon"><i class="bi bi-arrow-repeat"></i></span>
+                            <div class="upload-title"><span>Klik untuk ganti gambar</span></div>
+                            <div class="upload-sub">JPG, JPEG, PNG &nbsp;·&nbsp; Maks. 2 MB</div>
+                        </div>
+                        <div class="img-preview-wrap" id="previewWrapEdit">
+                            <img id="previewImgEdit" src="" alt="Preview gambar baru">
+                            <div class="img-preview-label" id="previewLabelEdit"></div>
+                            <button type="button"
+                                    class="btn-remove-img"
+                                    onclick="hapusGambar('inputGambarEdit','previewWrapEdit','uploadBoxEdit')"
+                                    title="Batal ganti gambar">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 border-top pt-3">
@@ -684,23 +717,6 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
 
 
 <script>
-// ══════════════════════════════════════════════════════════
-//  TOGGLE FIELD BERBAYAR
-// ══════════════════════════════════════════════════════════
-function toggleBerbayar(suffix) {
-    const isBerbayar = document.getElementById(suffix === 'Add' ? 'addTipeBerbayar' : 'editTipeBerbayar').checked;
-    const fieldDiv   = document.getElementById('fieldBerbayar' + suffix);
-
-    if (isBerbayar) {
-        fieldDiv.classList.add('show');
-    } else {
-        fieldDiv.classList.remove('show');
-        // Kosongkan nilai saat beralih ke gratis
-        fieldDiv.querySelector('input[name="harga"]').value   = '';
-        fieldDiv.querySelector('input[name="lynk_url"]').value = '';
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function () {
     const BASE = '<?= base_url('dashboard/pengajar') ?>';
 
@@ -710,53 +726,45 @@ document.addEventListener('DOMContentLoaded', function () {
         const progId = document.getElementById('filterProgramGrid').value;
         const cards  = document.querySelectorAll('#kelasGrid .kelas-card');
         let visible  = 0;
-
         cards.forEach(card => {
             const show = card.dataset.nama.includes(q) && (!progId || card.dataset.program === progId);
             card.style.display = show ? '' : 'none';
             if (show) visible++;
         });
-
         document.getElementById('totalKelas').textContent = visible;
         document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
     }
-
     document.getElementById('searchKelas').addEventListener('input', applyFilter);
     document.getElementById('filterProgramGrid').addEventListener('change', applyFilter);
 
     // ── Edit kelas ──
     document.querySelectorAll('.btn-edit-kelas').forEach(btn => {
         btn.addEventListener('click', function () {
-            const id      = this.dataset.id;
-            const tipe    = this.dataset.tipe    || 'gratis';
-            const harga   = this.dataset.harga   || '';
-            const lynk    = this.dataset.lynk    || '';
-            const program = this.dataset.program || '';
+            const id     = this.dataset.id;
+            const gambar = this.dataset.gambar || '';
 
-            // Set action form
-            document.getElementById('formEditKelas').action = `${BASE}/kelas/update/${id}`;
-
-            // Isi program
-            document.getElementById('editIdProgram').value = program;
-
-            // Set tipe kelas
-            if (tipe === 'berbayar') {
-                document.getElementById('editTipeBerbayar').checked = true;
-                document.getElementById('editTipeGratis').checked   = false;
-                document.getElementById('fieldBerbayarEdit').classList.add('show');
-                document.getElementById('editHarga').value = harga;
-                document.getElementById('editLynk').value  = lynk;
-            } else {
-                document.getElementById('editTipeGratis').checked   = true;
-                document.getElementById('editTipeBerbayar').checked = false;
-                document.getElementById('fieldBerbayarEdit').classList.remove('show');
-                document.getElementById('editHarga').value = '';
-                document.getElementById('editLynk').value  = '';
-            }
-
-            // Isi nama & deskripsi
+            document.getElementById('formEditKelas').action       = `${BASE}/kelas/update/${id}`;
+            document.getElementById('editIdProgram').value        = this.dataset.program || '';
+            document.getElementById('editHarga').value            = this.dataset.harga   || '';
+            document.getElementById('editLynk').value             = this.dataset.lynk    || '';
             document.getElementById('edit_nama_kelas').value      = this.dataset.nama;
             document.getElementById('edit_deskripsi_kelas').value = this.dataset.deskripsi;
+
+            // Reset input file & preview baru
+            document.getElementById('inputGambarEdit').value          = '';
+            document.getElementById('previewWrapEdit').style.display  = 'none';
+            document.getElementById('uploadBoxEdit').style.display    = 'block';
+
+            // Tampilkan gambar yang sudah ada
+            const existingWrap = document.getElementById('editGambarExistingWrap');
+            const existingImg  = document.getElementById('editGambarExisting');
+            if (gambar) {
+                existingImg.src            = gambar;
+                existingWrap.style.display = 'block';
+            } else {
+                existingWrap.style.display = 'none';
+                existingImg.src            = '';
+            }
 
             new bootstrap.Modal(document.getElementById('modalEditKelas')).show();
         });
@@ -769,6 +777,13 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('hapusNamaKelas').textContent = this.dataset.nama;
             new bootstrap.Modal(document.getElementById('modalHapusKelas')).show();
         });
+    });
+
+    // ── Reset form Tambah saat modal ditutup ──
+    document.getElementById('modalTambahKelas').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('inputGambarTambah').value          = '';
+        document.getElementById('previewWrapTambah').style.display  = 'none';
+        document.getElementById('uploadBoxTambah').style.display    = 'block';
     });
 
     // ── Auto dismiss alerts ──
@@ -788,12 +803,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderPesertaList(pesertaArr) {
         const container = document.getElementById('pesertaListContainer');
         document.getElementById('modalPesertaJumlah').textContent = `${pesertaArr.length} peserta terdaftar`;
-
         if (currentKelasId) {
             const el = document.querySelector(`.peserta-count-${currentKelasId}`);
             if (el) el.textContent = pesertaArr.length;
         }
-
         if (pesertaArr.length === 0) {
             container.innerHTML = `
                 <div class="peserta-empty-box">
@@ -802,7 +815,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>`;
             return;
         }
-
         container.innerHTML = pesertaArr.map(p => {
             const inisial = p.nama_users.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
             const tgl = p.tanggal_daftar_kelas_peserta
@@ -827,23 +839,20 @@ document.addEventListener('DOMContentLoaded', function () {
     function loadPeserta(idKelas) {
         const container = document.getElementById('pesertaListContainer');
         container.innerHTML = `<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-success"></div><span class="ms-2 small text-muted">Memuat...</span></div>`;
-
-        fetch(`${BASE}/kelas/peserta/${idKelas}`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(r => r.json())
-        .then(data => renderPesertaList(data.peserta || []))
-        .catch(() => {
-            container.innerHTML = `<div class="text-center py-3 text-danger small"><i class="bi bi-exclamation-circle me-1"></i>Gagal memuat data.</div>`;
-        });
+        fetch(`${BASE}/kelas/peserta/${idKelas}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.json())
+            .then(data => renderPesertaList(data.peserta || []))
+            .catch(() => {
+                container.innerHTML = `<div class="text-center py-3 text-danger small"><i class="bi bi-exclamation-circle me-1"></i>Gagal memuat data.</div>`;
+            });
     }
 
     document.querySelectorAll('.btn-kelola-peserta').forEach(btn => {
         btn.addEventListener('click', function () {
             currentKelasId = this.dataset.id;
             document.getElementById('modalPesertaNamaKelas').textContent = this.dataset.nama;
-            document.getElementById('addPesertaIdKelas').value = currentKelasId;
-            document.getElementById('searchPesertaModal').value = '';
+            document.getElementById('addPesertaIdKelas').value           = currentKelasId;
+            document.getElementById('searchPesertaModal').value          = '';
             loadPeserta(currentKelasId);
             new bootstrap.Modal(document.getElementById('modalPeserta')).show();
         });
@@ -859,8 +868,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('formTambahPeserta').addEventListener('submit', function (e) {
         e.preventDefault();
         fetch(`${BASE}/kelas/peserta/store`, {
-            method: 'POST',
-            body: new FormData(this),
+            method: 'POST', body: new FormData(this),
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(r => r.json())
@@ -877,16 +885,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.konfirmasiKick = function(idKP, namaPeserta) {
-        document.getElementById('formKickPeserta').action = `${BASE}/kelas/peserta/kick/${idKP}`;
-        document.getElementById('kickNamaPeserta').textContent = namaPeserta;
+        document.getElementById('formKickPeserta').action       = `${BASE}/kelas/peserta/kick/${idKP}`;
+        document.getElementById('kickNamaPeserta').textContent  = namaPeserta;
         new bootstrap.Modal(document.getElementById('modalKickPeserta')).show();
     };
 
     document.getElementById('formKickPeserta').addEventListener('submit', function (e) {
         e.preventDefault();
         fetch(this.action, {
-            method: 'POST',
-            body: new FormData(this),
+            method: 'POST', body: new FormData(this),
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(r => r.json())
@@ -922,6 +929,54 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 });
+
+// ════════════════════════════════════════════════════
+//  FUNGSI GLOBAL: Preview & Hapus Gambar Upload
+// ════════════════════════════════════════════════════
+
+/**
+ * Tampilkan preview setelah user pilih file gambar.
+ * Validasi format (JPG/PNG) dan ukuran (maks 2MB) di sisi client.
+ */
+function previewGambar(input, wrapId, imgId, labelId, uploadBoxId) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowed.includes(file.type)) {
+        alert('Format gambar harus JPG, JPEG, atau PNG.');
+        input.value = '';
+        return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Ukuran gambar maksimal 2 MB.');
+        input.value = '';
+        return;
+    }
+
+    const wrap      = document.getElementById(wrapId);
+    const img       = document.getElementById(imgId);
+    const label     = document.getElementById(labelId);
+    const uploadBox = document.getElementById(uploadBoxId);
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        img.src            = e.target.result;
+        wrap.style.display = 'block';
+        if (label)     label.textContent     = file.name;
+        if (uploadBox) uploadBox.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Hapus / reset pilihan gambar, tampilkan kembali kotak upload.
+ */
+function hapusGambar(inputId, wrapId, uploadBoxId) {
+    document.getElementById(inputId).value             = '';
+    document.getElementById(wrapId).style.display      = 'none';
+    document.getElementById(uploadBoxId).style.display = 'block';
+}
 </script>
 
 <?= $this->endSection() ?>

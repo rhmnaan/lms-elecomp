@@ -50,7 +50,9 @@ class Program extends BaseController
     {
         $db = \Config\Database::connect();
 
-        // Ambil ID kelas yang sudah diakses dari kelas_peserta
+        // ===============================
+        // Ambil kelas yang sudah dimiliki user
+        // ===============================
         $kelasPesertaIds = $db->table('kelas_peserta')
             ->select('id_kelas')
             ->where('id_users', $this->idUsers)
@@ -58,7 +60,9 @@ class Program extends BaseController
             ->get()
             ->getResultArray();
 
-        // Ambil ID kelas dari voucher_claim
+        // ===============================
+        // Ambil kelas dari voucher yang sudah di-claim
+        // ===============================
         $voucherClaimIds = $db->table('voucher_claim vc')
             ->select('v.id_kelas')
             ->join('voucher v', 'v.id_voucher = vc.id_voucher')
@@ -72,7 +76,9 @@ class Program extends BaseController
             array_column($voucherClaimIds, 'id_kelas')
         ));
 
+        // ===============================
         // Ambil kelas yang belum diakses
+        // ===============================
         $query = $db->table('kelas k')
             ->select('
                 k.id_kelas,
@@ -103,6 +109,7 @@ class Program extends BaseController
         // ===============================
         foreach ($kelas_list as &$k) {
             if ($k['tipe_kelas'] === 'gratis') {
+
                 $voucher = $db->table('voucher')
                     ->select('id_voucher, tanggal_berakhir, kuota')
                     ->where('id_kelas', $k['id_kelas'])
@@ -114,23 +121,28 @@ class Program extends BaseController
                     ->getFirstRow('array');
 
                 if ($voucher) {
-                    // Cek apakah user sudah claim
-                    $alreadyClaimed = $voucherClaimModel->where('id_voucher', $voucher['id_voucher'])
+
+                    // ✅ cek apakah user sudah claim
+                    $alreadyClaimed = model('App\Models\VoucherClaimModel')
+                        ->where('id_voucher', $voucher['id_voucher'])
                         ->where('id_users', $this->idUsers)
                         ->first() !== null;
 
-                    // Cek kuota
-                    $totalClaim = $voucherClaimModel->where('id_voucher', $voucher['id_voucher'])
+                    // ✅ cek total claim (kuota)
+                    $totalClaim = model('App\Models\VoucherClaimModel')
+                        ->where('id_voucher', $voucher['id_voucher'])
                         ->countAllResults();
 
-                    if (! $alreadyClaimed && $totalClaim < $voucher['kuota']) {
+                    if (!$alreadyClaimed && $totalClaim < $voucher['kuota']) {
                         $k['voucher'] = $voucher;
                     } else {
                         $k['voucher'] = null;
                     }
+
                 } else {
                     $k['voucher'] = null;
                 }
+
             } else {
                 $k['voucher'] = null;
             }

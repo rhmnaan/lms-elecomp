@@ -221,7 +221,7 @@ class DashboardPengajar extends BaseController
 
         $sql = "
             SELECT k.*,
-                k.tipe_kelas, k.harga, k.lynk_url,
+                k.harga, k.lynk_url,
                 COUNT(DISTINCT m.id_modul)          AS total_modul,
                 COUNT(DISTINCT mt.id_materi)        AS total_materi,
                 COUNT(DISTINCT kp.id_kelas_peserta) AS total_peserta
@@ -260,6 +260,10 @@ class DashboardPengajar extends BaseController
         ]);
     }
 
+    // ──────────────────────────────────────────────────────────────────────
+    //  kelasStore — DIUBAH: upload gambar ke writable/uploads/kelas/
+    //  hanya nama file yang disimpan di kolom gambar_kelas
+    // ──────────────────────────────────────────────────────────────────────
     public function kelasStore()
     {
         if ($r = $this->guardPengajar()) return $r;
@@ -268,7 +272,6 @@ class DashboardPengajar extends BaseController
             'nama_kelas'      => 'required|min_length[3]|max_length[150]',
             'deskripsi_kelas' => 'permit_empty|max_length[500]',
             'id_program'      => 'required|is_natural_no_zero',
-            'tipe_kelas'      => 'required|in_list[gratis,berbayar]',
             'harga'           => 'permit_empty|decimal',
             'lynk_url'        => 'permit_empty|max_length[255]',
         ];
@@ -277,26 +280,49 @@ class DashboardPengajar extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $tipe    = $this->request->getPost('tipe_kelas');
-        $harga   = $this->request->getPost('harga');
-        $lynkUrl = $this->request->getPost('lynk_url');
+        // ── Upload gambar (opsional) ──────────────────────────────────────
+        $gambarNamaFile = null;
+        $gambar = $this->request->getFile('gambar_kelas');
 
-        $finalHarga   = ($tipe === 'berbayar' && $harga   !== '') ? $harga   : null;
-        $finalLynkUrl = ($tipe === 'berbayar' && $lynkUrl !== '') ? $lynkUrl : null;
+        if ($gambar && $gambar->isValid() && !$gambar->hasMoved()) {
+            $ext = strtolower($gambar->getExtension());
+            if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Format gambar harus JPG, JPEG, atau PNG.');
+            }
+            if ($gambar->getSize() > 2 * 1024 * 1024) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Ukuran gambar maksimal 2 MB.');
+            }
+
+            $uploadDir = WRITEPATH . 'uploads/kelas/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $newName = $gambar->getRandomName();
+            $gambar->move($uploadDir, $newName);
+            $gambarNamaFile = $newName;   // ← hanya nama file, bukan full path
+        }
+        // ─────────────────────────────────────────────────────────────────
 
         (new KelasModel())->insert([
             'nama_kelas'      => $this->request->getPost('nama_kelas'),
             'deskripsi_kelas' => $this->request->getPost('deskripsi_kelas'),
             'id_users'        => $this->myId(),
             'id_program'      => $this->request->getPost('id_program'),
-            'tipe_kelas'      => $tipe,
-            'harga'           => $finalHarga,
-            'lynk_url'        => $finalLynkUrl,
+            'harga'           => $this->request->getPost('harga') ?: null,
+            'lynk_url'        => $this->request->getPost('lynk_url') ?: null,
+            'gambar_kelas'    => $gambarNamaFile,
         ]);
 
         return redirect()->to('/dashboard/pengajar/kelas')->with('success', 'Kelas berhasil dibuat.');
     }
 
+    // ──────────────────────────────────────────────────────────────────────
+    //  kelasUpdate — DIUBAH: upload gambar ke writable/uploads/kelas/
+    //  hapus file lama otomatis jika upload gambar baru
+    // ──────────────────────────────────────────────────────────────────────
     public function kelasUpdate(int $id)
     {
         if ($r = $this->guardPengajar()) return $r;
@@ -310,7 +336,6 @@ class DashboardPengajar extends BaseController
             'nama_kelas'      => 'required|min_length[3]|max_length[150]',
             'deskripsi_kelas' => 'permit_empty|max_length[500]',
             'id_program'      => 'required|is_natural_no_zero',
-            'tipe_kelas'      => 'required|in_list[gratis,berbayar]',
             'harga'           => 'permit_empty|decimal',
             'lynk_url'        => 'permit_empty|max_length[255]',
         ];
@@ -319,20 +344,50 @@ class DashboardPengajar extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $tipe    = $this->request->getPost('tipe_kelas');
-        $harga   = $this->request->getPost('harga');
-        $lynkUrl = $this->request->getPost('lynk_url');
+        // Ambil data kelas lama (untuk gambar lama)
+        $existing = $model->withDeleted()->find($id);
 
-        $finalHarga   = ($tipe === 'berbayar' && $harga   !== '') ? $harga   : null;
-        $finalLynkUrl = ($tipe === 'berbayar' && $lynkUrl !== '') ? $lynkUrl : null;
+        // ── Upload gambar baru (opsional) ─────────────────────────────────
+        $gambarNamaFile = $existing['gambar_kelas'] ?? null;   // default: tetap gambar lama
+        $gambar = $this->request->getFile('gambar_kelas');
+
+        if ($gambar && $gambar->isValid() && !$gambar->hasMoved()) {
+            $ext = strtolower($gambar->getExtension());
+            if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Format gambar harus JPG, JPEG, atau PNG.');
+            }
+            if ($gambar->getSize() > 2 * 1024 * 1024) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Ukuran gambar maksimal 2 MB.');
+            }
+
+            // Hapus file lama jika ada
+            if (!empty($existing['gambar_kelas'])) {
+                $oldPath = WRITEPATH . 'uploads/kelas/' . $existing['gambar_kelas'];
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+
+            $uploadDir = WRITEPATH . 'uploads/kelas/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $newName = $gambar->getRandomName();
+            $gambar->move($uploadDir, $newName);
+            $gambarNamaFile = $newName;   // ← hanya nama file
+        }
+        // ─────────────────────────────────────────────────────────────────
 
         $model->update($id, [
             'nama_kelas'      => $this->request->getPost('nama_kelas'),
             'deskripsi_kelas' => $this->request->getPost('deskripsi_kelas'),
             'id_program'      => $this->request->getPost('id_program'),
-            'tipe_kelas'      => $tipe,
-            'harga'           => $finalHarga,
-            'lynk_url'        => $finalLynkUrl,
+            'harga'           => $this->request->getPost('harga') ?: null,
+            'lynk_url'        => $this->request->getPost('lynk_url') ?: null,
+            'gambar_kelas'    => $gambarNamaFile,
         ]);
 
         return redirect()->to('/dashboard/pengajar/kelas')->with('success', 'Kelas berhasil diperbarui.');
@@ -346,6 +401,15 @@ class DashboardPengajar extends BaseController
         $model = new KelasModel();
         if (!$this->isMyKelas($model, $id)) {
             return redirect()->to('/dashboard/pengajar/kelas')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        // Hapus file gambar dari writable jika ada
+        $existing = $model->withDeleted()->find($id);
+        if (!empty($existing['gambar_kelas'])) {
+            $imgPath = WRITEPATH . 'uploads/kelas/' . $existing['gambar_kelas'];
+            if (file_exists($imgPath)) {
+                @unlink($imgPath);
+            }
         }
 
         $model->delete($id);
@@ -574,11 +638,6 @@ class DashboardPengajar extends BaseController
     // ══════════════════════════════════════════════════════════════════════
     //  MATERI
     // ══════════════════════════════════════════════════════════════════════
-
-    /**
-     * Helper privat: ambil data modul, program, dan kelas milik pengajar.
-     * Dipakai bersama oleh materi() dan materiList() agar tidak duplikasi.
-     */
     private function getMateriFilterData(int $uid): array
     {
         $db = \Config\Database::connect();

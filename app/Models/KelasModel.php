@@ -16,7 +16,6 @@ class KelasModel extends Model
 
     protected $allowedFields = [
         'id_program',
-        'tipe_kelas',      // gratis | berbayar
         'harga',           // nullable
         'lynk_url',        // nullable
         'nama_kelas',
@@ -32,15 +31,11 @@ class KelasModel extends Model
 
     protected $validationRules = [
         'id_program'  => 'required|numeric',
-        'tipe_kelas'  => 'required|in_list[gratis,berbayar]',
         'nama_kelas'  => 'required|min_length[3]|max_length[100]',
         'id_users'    => 'required|numeric'
     ];
 
     protected $validationMessages = [
-        'tipe_kelas' => [
-            'in_list' => 'Tipe kelas harus gratis atau berbayar'
-        ]
     ];
 
     /* =========================
@@ -121,22 +116,18 @@ class KelasModel extends Model
     // Kelas GRATIS → butuh voucher
     public function getGratisByProgram($id_program)
     {
-        return $this->where([
-                'id_program' => $id_program,
-                'tipe_kelas' => 'gratis'
-            ])
-            ->where('deleted_at', null)
+        return $this->where('id_program', $id_program)
+            ->groupStart()
+            ->where('harga', null)
+            ->orWhere('harga', 0)
+            ->groupEnd()
             ->findAll();
     }
 
-    // Kelas BERBAYAR → via Lynk
     public function getBerbayarByProgram($id_program)
     {
-        return $this->where([
-                'id_program' => $id_program,
-                'tipe_kelas' => 'berbayar'
-            ])
-            ->where('deleted_at', null)
+        return $this->where('id_program', $id_program)
+            ->where('harga >', 0)
             ->findAll();
     }
 

@@ -18,7 +18,10 @@ class Users extends Model
         'password_users',
         'role_users',
         'fingerprint_device',
-        'action'
+        'action',
+        'email_verified',
+        'verification_token',
+        'token_expires_at',
     ];
 
     protected $useTimestamps = true;
