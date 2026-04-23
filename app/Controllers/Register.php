@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Users;
+use CodeIgniter\I18n\Time;
 
 class Register extends BaseController
 {
@@ -60,35 +61,113 @@ class Register extends BaseController
             ]);
         }
 
-        // Ambil fingerprint dari cookie (sudah di-set oleh register.php view sebelum submit)
-        // Jika tidak ada (misal JS disabled), biarkan null — SSE akan skip guard
         $fp = $_COOKIE['device_fp'] ?? null;
 
-        // Simpan ke DB — termasuk fingerprint perangkat pertama
+        // Generate token verifikasi
+        $verificationToken = bin2hex(random_bytes(32)); // 64 karakter
+        $tokenExpires = Time::now()->addHours(24); // Berlaku 24 jam
+
+        // Simpan ke DB dengan status belum terverifikasi
         $usersModel->insert([
             'nama_users'         => $nama,
             'email_users'        => $email,
             'password_users'     => password_hash($password, PASSWORD_BCRYPT),
             'role_users'         => 'peserta',
-            'fingerprint_device' => $fp,      // ← set dari awal agar SSE punya baseline
-            // action dibiarkan NULL — user langsung aktif, tidak ada konflik sesi
+            'fingerprint_device' => $fp,
+            'email_verified'     => false, // ← Belum terverifikasi
+            'verification_token' => $verificationToken,
+            'token_expires_at'   => $tokenExpires,
         ]);
 
-        // Ambil data user yang baru dibuat
-        $newUser = $usersModel->where('email_users', $email)->first();
+        // Kirim email verifikasi
+        $emailSent = $this->sendVerificationEmail($email, $nama, $verificationToken);
 
-        // Langsung set session — user tidak perlu login manual lagi
-        session()->set([
-            'logged_in' => true,
-            'id_users'  => $newUser['id_users'],
-            'nama'      => $newUser['nama_users'],
-            'email'     => $newUser['email_users'],
-            'role'      => $newUser['role_users'],
-        ]);
+        if (!$emailSent) {
+            log_message('error', 'Email verifikasi gagal dikirim ke: ' . $email);
+        }
 
         return $this->response->setJSON([
             'status'   => 'successful',
-            'redirect' => base_url('/dashboard/peserta/beranda'),
+            'message'  => 'Registrasi berhasil! Silakan cek email Anda untuk verifikasi.',
+            'redirect' => base_url('/register/verification-sent'),
         ]);
+    }
+
+    private function sendVerificationEmail($email, $nama, $token)
+    {
+        $verificationLink = base_url("register/verify?token={$token}");
+
+        $emailService = \Config\Services::email();
+        
+        $emailService->setTo($email);
+        $emailService->setSubject('Verifikasi Email Akun LMS Elecomp Anda');
+        
+        $message = view('emails/verification', [
+            'nama' => $nama,
+            'link' => $verificationLink
+        ]);
+        
+        $emailService->setMessage($message);
+
+        if ($emailService->send()) {
+            return true;
+        } else {
+            log_message('error', 'SMTP Error: ' . $emailService->printDebugger(['headers']));
+            return false;
+        }
+    }
+
+    // GET /register/verify?token=xxx
+    public function verify()
+    {
+        $token = $this->request->getGet('token');
+
+        if (!$token) {
+            return redirect()->to('/register')->with('error', 'Token tidak valid.');
+        }
+
+        $usersModel = new Users();
+        $user = $usersModel->where('verification_token', $token)->first();
+
+        if (!$user) {
+            return view('auth/verification_failed', [
+                'message' => 'Token tidak ditemukan atau sudah digunakan.'
+            ]);
+        }
+
+        // Cek apakah token expired
+        $now = Time::now();
+        $expiresAt = Time::parse($user['token_expires_at']);
+
+        if ($now->isAfter($expiresAt)) {
+            return view('auth/verification_failed', [
+                'message' => 'Token sudah kedaluwarsa. Silakan daftar ulang.'
+            ]);
+        }
+
+        // Update user jadi verified
+        $usersModel->update($user['id_users'], [
+            'email_verified'     => true,
+            'verification_token' => null,
+            'token_expires_at'   => null,
+        ]);
+
+        // Auto login setelah verifikasi
+        session()->set([
+            'logged_in' => true,
+            'id_users'  => $user['id_users'],
+            'nama'      => $user['nama_users'],
+            'email'     => $user['email_users'],
+            'role'      => $user['role_users'],
+        ]);
+
+        return redirect()->to('/dashboard/peserta/beranda')
+                        ->with('success', 'Email berhasil diverifikasi!');
+    }
+
+    // Halaman konfirmasi email terkirim
+    public function verificationSent()
+    {
+        return view('auth/verification_sent');
     }
 }

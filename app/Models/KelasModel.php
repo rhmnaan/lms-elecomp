@@ -17,6 +17,7 @@ class KelasModel extends Model
         'id_program',
         'harga',    // nullable
         'lynk_url', // nullable
+        'gambar_kelas',
         'nama_kelas',
         'deskripsi_kelas',
         'id_users',
@@ -32,6 +33,9 @@ class KelasModel extends Model
         'id_program' => 'required|numeric',
         'nama_kelas' => 'required|min_length[3]|max_length[100]',
         'id_users'   => 'required|numeric',
+    ];
+
+    protected $validationMessages = [
     ];
 
     /* =========================

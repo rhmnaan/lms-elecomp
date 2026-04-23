@@ -11,10 +11,12 @@ $routes->get('/', 'Auth::index');
 $routes->get('login', 'Auth::index');
 $routes->get('logout', 'Auth::logout');
 $routes->post('auth/authenticate', 'Auth::authenticate');
-
+$routes->post('auth/resend-verification', 'Auth::resendVerification');
 $routes->get('register', 'Register::index');
 $routes->post('register', 'Register::store');
-
+$routes->get('register/verify', 'Register::verify');
+$routes->get('register/verification-sent', 'Register::verificationSent');
+$routes->get('testemail', 'TestEmail::index');
 // Webhook / API ringan
 $routes->get('cekaction/(:segment)', 'Webhook::cekAction/$1');
 $routes->get('api/realtime/attendance-stream', 'RealtimeDatabaseMonitoring::attendanceStream');
@@ -132,6 +134,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('kelas/peserta/(:num)', 'DashboardPengajar::kelasPesertaList/$1');
         $routes->post('kelas/peserta/store', 'DashboardPengajar::kelasPesertaStore');
         $routes->post('kelas/peserta/kick/(:num)', 'DashboardPengajar::kelasPesertaKick/$1');
+        $routes->get('kelas/gambar/(:segment)', 'FileController::kelasGambar/$1');
 
         // Modul
         $routes->get('modul', 'DashboardPengajar::modul');

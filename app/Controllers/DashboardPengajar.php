@@ -227,7 +227,7 @@ class DashboardPengajar extends BaseController
 
         $sql = "
             SELECT k.*,
-                 k.harga, k.lynk_url,
+                k.harga, k.lynk_url,
                 COUNT(DISTINCT m.id_modul)          AS total_modul,
                 COUNT(DISTINCT mt.id_materi)        AS total_materi,
                 COUNT(DISTINCT kp.id_kelas_peserta) AS total_peserta
@@ -266,6 +266,10 @@ class DashboardPengajar extends BaseController
         ]);
     }
 
+    // ──────────────────────────────────────────────────────────────────────
+    //  kelasStore — DIUBAH: upload gambar ke public/uploads/kelas/
+    //  hanya nama file yang disimpan di kolom gambar_kelas
+    // ──────────────────────────────────────────────────────────────────────
     public function kelasStore()
     {
         if ($r = $this->guardPengajar()) {
@@ -278,6 +282,7 @@ class DashboardPengajar extends BaseController
             'id_program'      => 'required|is_natural_no_zero',
             'harga'           => 'permit_empty|decimal',
             'lynk_url'        => 'permit_empty|max_length[255]',
+            'gambar_kelas'    => 'permit_empty|uploaded[gambar_kelas]|max_size[gambar_kelas,2048]|ext_in[gambar_kelas,jpg,jpeg,png]|mime_in[gambar_kelas,image/jpg,image/jpeg,image/png]',
         ];
 
         if (! $this->validate($rules)) {
@@ -290,6 +295,16 @@ class DashboardPengajar extends BaseController
         $finalHarga   = ($harga !== '') ? $harga : null;
         $finalLynkUrl = ($lynkUrl !== '') ? $lynkUrl : null;
 
+        // Handle gambar upload
+        $gambarPath = null;
+        if ($gambar = $this->request->getFile('gambar_kelas')) {
+            if ($gambar->isValid() && ! $gambar->hasMoved()) {
+                $newName = $gambar->getRandomName();
+                $gambar->move(FCPATH . 'uploads/kelas/', $newName);
+                $gambarPath = $newName;
+            }
+        }
+
         (new KelasModel())->insert([
             'nama_kelas'      => $this->request->getPost('nama_kelas'),
             'deskripsi_kelas' => $this->request->getPost('deskripsi_kelas'),
@@ -297,11 +312,16 @@ class DashboardPengajar extends BaseController
             'id_program'      => $this->request->getPost('id_program'),
             'harga'           => $finalHarga,
             'lynk_url'        => $finalLynkUrl,
+            'gambar_kelas'    => $gambarPath,
         ]);
 
         return redirect()->to('/dashboard/pengajar/kelas')->with('success', 'Kelas berhasil dibuat.');
     }
 
+    // ──────────────────────────────────────────────────────────────────────
+    //  kelasUpdate — DIUBAH: upload gambar ke public/uploads/kelas/
+    //  hapus file lama otomatis jika upload gambar baru
+    // ──────────────────────────────────────────────────────────────────────
     public function kelasUpdate(int $id)
     {
         if ($r = $this->guardPengajar()) {
@@ -319,6 +339,7 @@ class DashboardPengajar extends BaseController
             'id_program'      => 'required|is_natural_no_zero',
             'harga'           => 'permit_empty|decimal',
             'lynk_url'        => 'permit_empty|max_length[255]',
+            'gambar_kelas'    => 'permit_empty|uploaded[gambar_kelas]|max_size[gambar_kelas,2048]|ext_in[gambar_kelas,jpg,jpeg,png]|mime_in[gambar_kelas,image/jpg,image/jpeg,image/png]',
         ];
 
         if (! $this->validate($rules)) {
@@ -331,12 +352,34 @@ class DashboardPengajar extends BaseController
         $finalHarga   = ($harga !== '') ? $harga : null;
         $finalLynkUrl = ($lynkUrl !== '') ? $lynkUrl : null;
 
+        // Handle gambar upload
+        $gambarPath = null;
+        $existing   = $model->find($id);
+        if ($gambar = $this->request->getFile('gambar_kelas')) {
+            if ($gambar->isValid() && ! $gambar->hasMoved()) {
+                // Hapus gambar lama jika ada
+                if (! empty($existing['gambar_kelas'])) {
+                    $oldPath = FCPATH . 'uploads/kelas/' . $existing['gambar_kelas'];
+                    if (file_exists($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
+                $newName = $gambar->getRandomName();
+                $gambar->move(FCPATH . 'uploads/kelas/', $newName);
+                $gambarPath = $newName;
+            }
+        } else {
+            // Jika tidak ada gambar baru, gunakan yang lama
+            $gambarPath = $existing['gambar_kelas'] ?? null;
+        }
+
         $model->update($id, [
             'nama_kelas'      => $this->request->getPost('nama_kelas'),
             'deskripsi_kelas' => $this->request->getPost('deskripsi_kelas'),
             'id_program'      => $this->request->getPost('id_program'),
             'harga'           => $finalHarga,
             'lynk_url'        => $finalLynkUrl,
+            'gambar_kelas'    => $gambarPath,
         ]);
 
         return redirect()->to('/dashboard/pengajar/kelas')->with('success', 'Kelas berhasil diperbarui.');
@@ -351,6 +394,15 @@ class DashboardPengajar extends BaseController
         $model = new KelasModel();
         if (! $this->isMyKelas($model, $id)) {
             return redirect()->to('/dashboard/pengajar/kelas')->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        // Hapus file gambar dari public jika ada
+        $existing = $model->withDeleted()->find($id);
+        if (! empty($existing['gambar_kelas'])) {
+            $imgPath = FCPATH . 'uploads/kelas/' . $existing['gambar_kelas'];
+            if (file_exists($imgPath)) {
+                @unlink($imgPath);
+            }
         }
 
         $model->delete($id);
@@ -589,11 +641,6 @@ class DashboardPengajar extends BaseController
     // ══════════════════════════════════════════════════════════════════════
     //  MATERI
     // ══════════════════════════════════════════════════════════════════════
-
-    /**
-     * Helper privat: ambil data modul, program, dan kelas milik pengajar.
-     * Dipakai bersama oleh materi() dan materiList() agar tidak duplikasi.
-     */
     private function getMateriFilterData(int $uid): array
     {
         $db = \Config\Database::connect();
