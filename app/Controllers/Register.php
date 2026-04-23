@@ -53,7 +53,6 @@ class Register extends BaseController
 
         $usersModel = new Users();
 
-        // Cek email sudah terdaftar
         if ($usersModel->where('email_users', $email)->first()) {
             return $this->response->setJSON([
                 'status'  => 'failed',
@@ -63,23 +62,20 @@ class Register extends BaseController
 
         $fp = $_COOKIE['device_fp'] ?? null;
 
-        // Generate token verifikasi
-        $verificationToken = bin2hex(random_bytes(32)); // 64 karakter
-        $tokenExpires = Time::now()->addHours(24); // Berlaku 24 jam
+        $verificationToken = bin2hex(random_bytes(32));
+        $tokenExpires = Time::now()->addHours(24);
 
-        // Simpan ke DB dengan status belum terverifikasi
         $usersModel->insert([
             'nama_users'         => $nama,
             'email_users'        => $email,
             'password_users'     => password_hash($password, PASSWORD_BCRYPT),
             'role_users'         => 'peserta',
             'fingerprint_device' => $fp,
-            'email_verified'     => false, // ← Belum terverifikasi
+            'email_verified'     => false,
             'verification_token' => $verificationToken,
             'token_expires_at'   => $tokenExpires,
         ]);
 
-        // Kirim email verifikasi
         $emailSent = $this->sendVerificationEmail($email, $nama, $verificationToken);
 
         if (!$emailSent) {
@@ -98,16 +94,12 @@ class Register extends BaseController
         $verificationLink = base_url("register/verify?token={$token}");
 
         $emailService = \Config\Services::email();
-        
         $emailService->setTo($email);
         $emailService->setSubject('Verifikasi Email Akun LMS Elecomp Anda');
-        
-        $message = view('emails/verification', [
+        $emailService->setMessage(view('emails/verification', [
             'nama' => $nama,
             'link' => $verificationLink
-        ]);
-        
-        $emailService->setMessage($message);
+        ]));
 
         if ($emailService->send()) {
             return true;
@@ -135,8 +127,7 @@ class Register extends BaseController
             ]);
         }
 
-        // Cek apakah token expired
-        $now = Time::now();
+        $now       = Time::now();
         $expiresAt = Time::parse($user['token_expires_at']);
 
         if ($now->isAfter($expiresAt)) {
@@ -145,7 +136,6 @@ class Register extends BaseController
             ]);
         }
 
-        // Update user jadi verified
         $usersModel->update($user['id_users'], [
             'email_verified'     => true,
             'verification_token' => null,
@@ -154,15 +144,23 @@ class Register extends BaseController
 
         // Auto login setelah verifikasi
         session()->set([
-            'logged_in' => true,
-            'id_users'  => $user['id_users'],
-            'nama'      => $user['nama_users'],
-            'email'     => $user['email_users'],
-            'role'      => $user['role_users'],
+            'logged_in'   => true,
+            'id_users'    => $user['id_users'],
+            'nama'        => $user['nama_users'],
+            'email_users' => $user['email_users'], // ← konsisten dengan Auth
+            'role'        => $user['role_users'],
         ]);
 
-        return redirect()->to('/dashboard/peserta/beranda')
-                        ->with('success', 'Email berhasil diverifikasi!');
+        // Redirect sesuai role
+        $redirect = match ($user['role_users']) {
+            'admin'    => '/dashboard/admin/beranda',
+            'pengajar' => '/dashboard/pengajar',
+            'peserta'  => '/dashboard/peserta/beranda',
+            default    => '/dashboard',
+        };
+
+        return redirect()->to($redirect)
+                         ->with('success', 'Email berhasil diverifikasi!');
     }
 
     // Halaman konfirmasi email terkirim
