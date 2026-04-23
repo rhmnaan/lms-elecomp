@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use CodeIgniter\Model;
@@ -37,57 +38,72 @@ class VoucherModel extends Model
             ->where('id_kelas', $id_kelas)
             ->where('is_active', 1)
             ->where('deleted_at IS NULL')
-            ->where('tanggal_mulai <=', date('Y-m-d H:i:s'))
-            ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
+            ->where('tanggal_mulai <=', date('Y-m-d'))
+            ->where('tanggal_berakhir >=', date('Y-m-d'))
             ->first();
 
-        if (! $voucher) {
-            return null;
-        }
+        if (!$voucher) return null;
 
-        // Cek kuota
-        $totalClaim = (new \App\Models\VoucherClaimModel())
-            ->where('id_voucher', $voucher['id_voucher'])
-            ->countAllResults();
+        // Cek kuota tidak habis
+        if ($voucher['kuota'] !== null) {
+            $totalKlaim = (new \App\Models\VoucherClaimModel())
+                ->where('id_voucher', $voucher['id_voucher'])
+                ->countAllResults();
 
-        if ($totalClaim >= $voucher['kuota']) {
-            return null; // Kuota habis
+            if ($totalKlaim >= $voucher['kuota']) return null;
         }
 
         return $voucher;
     }
 
     /**
-     * Ambil voucher valid untuk kelas (tanpa kode, untuk auto claim)
+     * Cari voucher valid untuk kelas (tanpa kode)
      */
-    public function getValidVoucher($kode_voucher, $id_kelas)
+    public function getValidVoucher($kode_voucher = null, $id_kelas = null)
     {
-        $query = $this->where('id_kelas', $id_kelas)
+        $vouchers = $this->where('id_kelas', $id_kelas)
             ->where('is_active', 1)
             ->where('deleted_at IS NULL')
-            ->where('tanggal_mulai <=', date('Y-m-d H:i:s'))
-            ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'));
+            ->where('tanggal_mulai <=', date('Y-m-d'))
+            ->where('tanggal_berakhir >=', date('Y-m-d'))
+            ->findAll();
 
-        if ($kode_voucher) {
-            $query->where('kode_voucher', $kode_voucher);
+        foreach ($vouchers as $voucher) {
+            if ($voucher['kuota'] !== null) {
+                $totalKlaim = (new \App\Models\VoucherClaimModel())
+                    ->where('id_voucher', $voucher['id_voucher'])
+                    ->countAllResults();
+
+                if ($totalKlaim >= $voucher['kuota']) continue;
+            }
+            return $voucher;
         }
 
-        $voucher = $query->first();
+        return null;
+    }
 
-        if (! $voucher) {
-            return null;
-        }
+    /**
+     * Claim voucher - nonaktifkan jika kuota sudah habis
+     */
+    public function claimVoucher($id_voucher)
+    {
+        $voucher = $this->find($id_voucher);
 
-        // Cek kuota
-        $totalClaim = (new \App\Models\VoucherClaimModel())
-            ->where('id_voucher', $voucher['id_voucher'])
+        // Hitung total klaim setelah insert
+        $totalKlaim = (new \App\Models\VoucherClaimModel())
+            ->where('id_voucher', $id_voucher)
             ->countAllResults();
 
-        if ($totalClaim >= $voucher['kuota']) {
-            return null; // Kuota habis
+        // Nonaktifkan hanya jika kuota sudah terpenuhi
+        $isActive = 1;
+        if ($voucher['kuota'] !== null && $totalKlaim >= $voucher['kuota']) {
+            $isActive = 0;
         }
 
-        return $voucher;
+        return $this->update($id_voucher, [
+            'is_active'  => $isActive,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 
     /**
@@ -96,7 +112,8 @@ class VoucherModel extends Model
     public function isVoucherClaimedByUser($id_voucher, $id_users)
     {
         $voucherClaimModel = new \App\Models\VoucherClaimModel();
-        return $voucherClaimModel->where('id_voucher', $id_voucher)
+        return $voucherClaimModel
+            ->where('id_voucher', $id_voucher)
             ->where('id_users', $id_users)
             ->first() !== null;
     }
