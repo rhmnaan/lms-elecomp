@@ -1,10 +1,10 @@
-<?= $this->extend('Dashboard/Pengajar/layout_pengajar') ?>
-<?= $this->section('content') ?>
+<?php echo $this->extend('Dashboard/Pengajar/layout_pengajar') ?>
+<?php echo $this->section('content') ?>
 
 <?php
-$success = session()->getFlashdata('success');
-$error   = session()->getFlashdata('error');
-$errors  = session()->getFlashdata('errors');
+    $success = session()->getFlashdata('success');
+    $error   = session()->getFlashdata('error');
+    $errors  = session()->getFlashdata('errors');
 ?>
 
 <style>
@@ -230,10 +230,10 @@ $errors  = session()->getFlashdata('errors');
 
 <!-- Flash Messages -->
 <?php if ($success): ?>
-    <div class="mp-alert mp-alert-success"><i class="bi bi-check-circle-fill"></i> <?= esc($success) ?></div>
+    <div class="mp-alert mp-alert-success"><i class="bi bi-check-circle-fill"></i> <?php echo esc($success) ?></div>
 <?php endif; ?>
 <?php if ($error): ?>
-    <div class="mp-alert mp-alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> <?= esc($error) ?></div>
+    <div class="mp-alert mp-alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> <?php echo esc($error) ?></div>
 <?php endif; ?>
 
 <!-- Toolbar -->
@@ -243,15 +243,15 @@ $errors  = session()->getFlashdata('errors');
         <input type="text" id="searchKelas" placeholder="Cari nama kelas...">
     </div>
     <div class="toolbar-count">
-        Total: <strong id="totalKelas"><?= count($kelas_list ?? []) ?></strong> kelas
+        Total: <strong id="totalKelas"><?php echo count($kelas_list ?? []) ?></strong> kelas
     </div>
     <div class="filter-box">
         <i class="bi bi-funnel-fill"></i>
         <select id="filterProgramGrid">
             <option value="">Semua Program</option>
             <?php foreach ($programList as $p): ?>
-                <option value="<?= $p['id_program'] ?>">
-                    <?= esc($p['nama_program']) ?>
+                <option value="<?php echo $p['id_program'] ?>">
+                    <?php echo esc($p['nama_program']) ?>
                 </option>
             <?php endforeach; ?>
         </select>
@@ -259,32 +259,33 @@ $errors  = session()->getFlashdata('errors');
 </div>
 
 <?php
-$colors = ['green', 'blue', 'purple', 'orange', 'teal', 'rose'];
-$icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-fill', 'bi-diagram-3-fill', 'bi-book-fill'];
+    $colors = ['green', 'blue', 'purple', 'orange', 'teal', 'rose'];
+    $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-fill', 'bi-diagram-3-fill', 'bi-book-fill'];
 ?>
 
 <!-- Grid -->
 <div class="kelas-grid" id="kelasGrid">
-    <?php if (!empty($kelas_list)): ?>
+    <?php if (! empty($kelas_list)): ?>
         <?php foreach ($kelas_list as $i => $k): ?>
-            <?php $c = $colors[$i % count($colors)]; $ic = $icons[$i % count($icons)]; ?>
+            <?php $c = $colors[$i % count($colors)];
+            $ic                  = $icons[$i % count($icons)]; ?>
             <div class="kelas-card"
-                data-nama="<?= strtolower(esc($k['nama_kelas'])) ?>"
-                data-program="<?= $k['id_program'] ?? '' ?>">
-                <div class="kelas-card-band band-<?= $c ?>"></div>
+                data-nama="<?php echo strtolower(esc($k['nama_kelas'])) ?>"
+                data-program="<?php echo $k['id_program'] ?? '' ?>">
+                <div class="kelas-card-band band-<?php echo $c ?>"></div>
                 <div class="kelas-card-body">
                     <div class="kelas-icon-row">
-                        <div class="kelas-icon icon-<?= $c ?>"><i class="bi <?= $ic ?>"></i></div>
-                        <span class="kelas-id-badge">ID #<?= $k['id_kelas'] ?></span>
+                        <div class="kelas-icon icon-<?php echo $c ?>"><i class="bi <?php echo $ic ?>"></i></div>
+                        <span class="kelas-id-badge">ID #<?php echo $k['id_kelas'] ?></span>
                     </div>
-                    <div class="kelas-name"><?= esc($k['nama_kelas']) ?></div>
-                    <div class="kelas-desc"><?= esc($k['deskripsi_kelas'] ?: 'Belum ada deskripsi untuk kelas ini.') ?></div>
+                    <div class="kelas-name"><?php echo esc($k['nama_kelas']) ?></div>
+                    <div class="kelas-desc"><?php echo esc($k['deskripsi_kelas'] ?: 'Belum ada deskripsi untuk kelas ini.') ?></div>
 
                     <!-- Badge tipe kelas -->
-                    <?php if (($k['tipe_kelas'] ?? 'gratis') === 'berbayar'): ?>
+                    <?php if (($k['harga'] ?? 0) > 0): ?>
                         <span class="badge-tipe badge-berbayar">
                             <i class="bi bi-tag-fill"></i>
-                            Berbayar — Rp <?= number_format($k['harga'] ?? 0, 0, ',', '.') ?>
+                            Berbayar — Rp <?php echo number_format($k['harga'] ?? 0, 0, ',', '.') ?>
                         </span>
                     <?php else: ?>
                         <span class="badge-tipe badge-gratis">
@@ -294,39 +295,38 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
 
                     <div class="kelas-stats">
                         <div class="kelas-stat">
-                            <span class="kelas-stat-value"><?= $k['total_modul'] ?? 0 ?></span>
+                            <span class="kelas-stat-value"><?php echo $k['total_modul'] ?? 0 ?></span>
                             <span class="kelas-stat-label">Modul</span>
                         </div>
                         <div class="stat-divider"></div>
                         <div class="kelas-stat">
-                            <span class="kelas-stat-value"><?= $k['total_materi'] ?? 0 ?></span>
+                            <span class="kelas-stat-value"><?php echo $k['total_materi'] ?? 0 ?></span>
                             <span class="kelas-stat-label">Materi</span>
                         </div>
                         <div class="stat-divider"></div>
                         <div class="kelas-stat">
-                            <span class="kelas-stat-value peserta-count-<?= $k['id_kelas'] ?>"><?= $k['total_peserta'] ?? 0 ?></span>
+                            <span class="kelas-stat-value peserta-count-<?php echo $k['id_kelas'] ?>"><?php echo $k['total_peserta'] ?? 0 ?></span>
                             <span class="kelas-stat-label">Peserta</span>
                         </div>
                     </div>
                     <div class="kelas-actions">
                         <button class="btn-kelas-peserta btn-kelola-peserta"
-                                data-id="<?= $k['id_kelas'] ?>"
-                                data-nama="<?= esc($k['nama_kelas']) ?>">
+                                data-id="<?php echo $k['id_kelas'] ?>"
+                                data-nama="<?php echo esc($k['nama_kelas']) ?>">
                             <i class="bi bi-people-fill"></i> Peserta
                         </button>
                         <button class="btn-kelas-edit btn-edit-kelas" title="Edit kelas"
-                                data-id="<?= $k['id_kelas'] ?>"
-                                data-program="<?= $k['id_program'] ?? '' ?>"
-                                data-tipe="<?= esc($k['tipe_kelas'] ?? 'gratis') ?>"
-                                data-harga="<?= esc($k['harga'] ?? '') ?>"
-                                data-lynk="<?= esc($k['lynk_url'] ?? '') ?>"
-                                data-nama="<?= esc($k['nama_kelas']) ?>"
-                                data-deskripsi="<?= esc($k['deskripsi_kelas'] ?? '') ?>">
+                                data-id="<?php echo $k['id_kelas'] ?>"
+                                data-program="<?php echo $k['id_program'] ?? '' ?>"
+                                data-harga="<?php echo esc($k['harga'] ?? '') ?>"
+                                data-lynk="<?php echo esc($k['lynk_url'] ?? '') ?>"
+                                data-nama="<?php echo esc($k['nama_kelas']) ?>"
+                                data-deskripsi="<?php echo esc($k['deskripsi_kelas'] ?? '') ?>">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button class="btn-kelas-delete btn-delete-kelas" title="Hapus kelas"
-                                data-id="<?= $k['id_kelas'] ?>"
-                                data-nama="<?= esc($k['nama_kelas']) ?>">
+                                data-id="<?php echo $k['id_kelas'] ?>"
+                                data-nama="<?php echo esc($k['nama_kelas']) ?>">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
@@ -380,15 +380,15 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                 <div class="add-peserta-form">
                     <label><i class="bi bi-person-plus-fill text-success me-1"></i> Tambah Peserta ke Kelas</label>
                     <form id="formTambahPeserta" method="POST">
-                        <?= csrf_field() ?>
+                        <?php echo csrf_field() ?>
                         <input type="hidden" name="id_kelas" id="addPesertaIdKelas">
                         <div class="input-group">
                             <select class="form-select" name="id_users" id="selectPeserta" required>
                                 <option value="" disabled selected>-- Pilih peserta --</option>
-                                <?php if (!empty($semua_peserta)): ?>
+                                <?php if (! empty($semua_peserta)): ?>
                                     <?php foreach ($semua_peserta as $p): ?>
-                                        <option value="<?= $p['id_users'] ?>">
-                                            <?= esc($p['nama_users']) ?> — <?= esc($p['email_users']) ?>
+                                        <option value="<?php echo $p['id_users'] ?>">
+                                            <?php echo esc($p['nama_users']) ?> — <?php echo esc($p['email_users']) ?>
                                         </option>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -422,8 +422,8 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body px-4 pt-3 pb-4">
-                <form action="<?= base_url('dashboard/pengajar/kelas/store') ?>" method="POST">
-                    <?= csrf_field() ?>
+                <form action="<?php echo base_url('dashboard/pengajar/kelas/store') ?>" method="POST">
+                    <?php echo csrf_field() ?>
 
                     <!-- Program -->
                     <div class="mb-3">
@@ -433,42 +433,20 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                         <select name="id_program" class="form-select" required>
                             <option value="">-- Pilih Program --</option>
                             <?php foreach ($programList as $p): ?>
-                                <option value="<?= $p['id_program'] ?>">
-                                    <?= esc($p['nama_program']) ?>
+                                <option value="<?php echo $p['id_program'] ?>">
+                                    <?php echo esc($p['nama_program']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <!-- Tipe Kelas -->
+                    <!-- Field Harga -->
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">
-                            Tipe Kelas <span class="text-danger">*</span>
+                            Harga
                         </label>
-                        <div class="tipe-radio-group">
-                            <label class="tipe-radio-label">
-                                <input type="radio" name="tipe_kelas" value="gratis"
-                                       id="addTipeGratis" checked
-                                       onchange="toggleBerbayar('Add')">
-                                <i class="bi bi-gift-fill text-success"></i> Gratis
-                            </label>
-                            <label class="tipe-radio-label berbayar">
-                                <input type="radio" name="tipe_kelas" value="berbayar"
-                                       id="addTipeBerbayar"
-                                       onchange="toggleBerbayar('Add')">
-                                <i class="bi bi-tag-fill text-warning"></i> Berbayar
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Field Berbayar (toggle) -->
-                    <div class="field-berbayar" id="fieldBerbayarAdd">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">
-                                Harga <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text fw-semibold">Rp</span>
+                        <div class="input-group">
+                            <span class="input-group-text fw-semibold">Rp</span>
                                 <input type="number" name="harga" id="addHarga"
                                        class="form-control"
                                        placeholder="cth: 150000" min="0" step="500">
@@ -533,7 +511,7 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
             </div>
             <div class="modal-body px-4 pt-3 pb-4">
                 <form id="formEditKelas" method="POST">
-                    <?= csrf_field() ?>
+                    <?php echo csrf_field() ?>
 
                     <!-- Program -->
                     <div class="mb-3">
@@ -543,47 +521,25 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                         <select name="id_program" id="editIdProgram" class="form-select" required>
                             <option value="">-- Pilih Program --</option>
                             <?php foreach ($programList as $p): ?>
-                                <option value="<?= $p['id_program'] ?>">
-                                    <?= esc($p['nama_program']) ?>
+                                <option value="<?php echo $p['id_program'] ?>">
+                                    <?php echo esc($p['nama_program']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <!-- Tipe Kelas -->
+                    <!-- Field Harga -->
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">
-                            Tipe Kelas <span class="text-danger">*</span>
+                            Harga
                         </label>
-                        <div class="tipe-radio-group">
-                            <label class="tipe-radio-label">
-                                <input type="radio" name="tipe_kelas" value="gratis"
-                                       id="editTipeGratis"
-                                       onchange="toggleBerbayar('Edit')">
-                                <i class="bi bi-gift-fill text-success"></i> Gratis
-                            </label>
-                            <label class="tipe-radio-label berbayar">
-                                <input type="radio" name="tipe_kelas" value="berbayar"
-                                       id="editTipeBerbayar"
-                                       onchange="toggleBerbayar('Edit')">
-                                <i class="bi bi-tag-fill text-warning"></i> Berbayar
-                            </label>
+                        <div class="input-group">
+                            <span class="input-group-text fw-semibold">Rp</span>
+                            <input type="number" name="harga" id="editHarga"
+                                   class="form-control"
+                                   placeholder="cth: 150000" min="0" step="500">
                         </div>
                     </div>
-
-                    <!-- Field Berbayar (toggle) -->
-                    <div class="field-berbayar" id="fieldBerbayarEdit">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">
-                                Harga <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text fw-semibold">Rp</span>
-                                <input type="number" name="harga" id="editHarga"
-                                       class="form-control"
-                                       placeholder="cth: 150000" min="0" step="500">
-                            </div>
-                        </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold small">
                                 Link Pembayaran (Lynk.id) <span class="text-danger">*</span>
@@ -643,7 +599,7 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                     di dalamnya akan dihapus permanen.
                 </p>
                 <form id="formHapusKelas" method="POST">
-                    <?= csrf_field() ?>
+                    <?php echo csrf_field() ?>
                     <div class="d-flex gap-2 justify-content-center">
                         <button type="button" class="btn btn-light px-3" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-danger px-3 fw-semibold">Ya, Hapus</button>
@@ -671,7 +627,7 @@ $icons  = ['bi-mortarboard-fill', 'bi-cpu-fill', 'bi-lightning-fill', 'bi-gear-f
                     <strong id="kickNamaPeserta"></strong> akan dikeluarkan dari kelas ini.
                 </p>
                 <form id="formKickPeserta" method="POST">
-                    <?= csrf_field() ?>
+                    <?php echo csrf_field() ?>
                     <div class="d-flex gap-2 justify-content-center">
                         <button type="button" class="btn btn-light px-3" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-warning px-3 fw-semibold">Ya, Keluarkan</button>
@@ -702,7 +658,7 @@ function toggleBerbayar(suffix) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    const BASE = '<?= base_url('dashboard/pengajar') ?>';
+    const BASE = '<?php echo base_url('dashboard/pengajar') ?>';
 
     // ── Filter gabungan: search + program ──
     function applyFilter() {
@@ -924,4 +880,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<?= $this->endSection() ?>
+<?php echo $this->endSection() ?>

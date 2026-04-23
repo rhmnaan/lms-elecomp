@@ -50,7 +50,9 @@ class Program extends BaseController
     {
         $db = \Config\Database::connect();
 
-        // Ambil ID kelas yang sudah diakses dari kelas_peserta
+        // ===============================
+        // Ambil kelas yang sudah dimiliki user
+        // ===============================
         $kelasPesertaIds = $db->table('kelas_peserta')
             ->select('id_kelas')
             ->where('id_users', $this->idUsers)
@@ -58,7 +60,9 @@ class Program extends BaseController
             ->get()
             ->getResultArray();
 
-        // Ambil ID kelas dari voucher_claim
+        // ===============================
+        // Ambil kelas dari voucher yang sudah di-claim
+        // ===============================
         $voucherClaimIds = $db->table('voucher_claim vc')
             ->select('v.id_kelas')
             ->join('voucher v', 'v.id_voucher = vc.id_voucher')
@@ -72,24 +76,31 @@ class Program extends BaseController
             array_column($voucherClaimIds, 'id_kelas')
         ));
 
+        // ===============================
         // Ambil kelas yang belum diakses
+        // ===============================
         $query = $db->table('kelas k')
             ->select('
                 k.id_kelas,
                 k.nama_kelas,
                 k.deskripsi_kelas,
-                k.tipe_kelas,
                 k.harga,
                 k.lynk_url,
                 COUNT(DISTINCT m.id_modul) AS total_modul,
-                COUNT(DISTINCT ma.id_materi) AS total_materi
+                COUNT(DISTINCT ma.id_materi) AS total_materi,
+                COUNT(DISTINCT v.id_voucher) AS voucher_count
             ')
             ->join('modul m', 'm.id_kelas = k.id_kelas AND m.deleted_at IS NULL', 'left')
             ->join('materi ma', 'ma.id_modul = m.id_modul AND ma.deleted_at IS NULL', 'left')
+            ->join('voucher v', 'v.id_kelas = k.id_kelas
+                AND v.is_active = 1
+                AND v.deleted_at IS NULL
+                AND v.tanggal_berakhir >= CURDATE()
+                AND v.kuota > 0', 'left')
             ->where('k.id_program', $id_program)
             ->where('k.deleted_at IS NULL');
 
-        if (!empty($excludeIds)) {
+        if (! empty($excludeIds)) {
             $query->whereNotIn('k.id_kelas', $excludeIds);
         }
 
@@ -97,45 +108,6 @@ class Program extends BaseController
             ->groupBy('k.id_kelas')
             ->get()
             ->getResultArray();
-
-        // ===============================
-        // Ambil info voucher (kelas gratis)
-        // ===============================
-        foreach ($kelas_list as &$k) {
-            if ($k['tipe_kelas'] === 'gratis') {
-                $voucher = $db->table('voucher')
-                    ->select('id_voucher, tanggal_berakhir, kuota')
-                    ->where('id_kelas', $k['id_kelas'])
-                    ->where('is_active', 1)
-                    ->where('deleted_at IS NULL')
-                    ->where('tanggal_mulai <=', date('Y-m-d H:i:s'))
-                    ->where('tanggal_berakhir >=', date('Y-m-d H:i:s'))
-                    ->get()
-                    ->getFirstRow('array');
-
-                if ($voucher) {
-                    // Cek apakah user sudah claim
-                    $alreadyClaimed = $voucherClaimModel->where('id_voucher', $voucher['id_voucher'])
-                        ->where('id_users', $this->idUsers)
-                        ->first() !== null;
-
-                    // Cek kuota
-                    $totalClaim = $voucherClaimModel->where('id_voucher', $voucher['id_voucher'])
-                        ->countAllResults();
-
-                    if (! $alreadyClaimed && $totalClaim < $voucher['kuota']) {
-                        $k['voucher'] = $voucher;
-                    } else {
-                        $k['voucher'] = null;
-                    }
-                } else {
-                    $k['voucher'] = null;
-                }
-            } else {
-                $k['voucher'] = null;
-            }
-        }
-        unset($k);
 
         return view('Dashboard/Peserta/kelas', [
             'kelas_list'  => $kelas_list,

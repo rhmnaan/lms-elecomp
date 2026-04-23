@@ -517,4 +517,13 @@ class VideoStream extends BaseController
             return false;
         }
     }
+
+    private function pkcs7Pad(string $data, int $blockSize): string
+    {
+        $padLen = $blockSize - (strlen($data) % $blockSize);
+        if ($padLen === 0) {
+            $padLen = $blockSize;
+        }
+        return $data . str_repeat(chr($padLen), $padLen);
+    }
 }

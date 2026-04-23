@@ -1,25 +1,6 @@
-# Disable directory browsing
-Options -Indexes
-
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /
-
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.php/$1 [L]
+<IfModule authz_core_module>
+	Require all denied
 </IfModule>
-
-# Allow external POST to webhook/lynk
-<IfModule mod_authz_core.c>
-    <LocationMatch "^/webhook/lynk">
-        Require all granted
-    </LocationMatch>
-</IfModule>
-
-<IfModule mod_security.c>
-    SecRuleEngine Off
-</IfModule>
-<IfModule mod_security2.c>
-    SecRuleEngine Off
+<IfModule !authz_core_module>
+	Deny from all
 </IfModule>
