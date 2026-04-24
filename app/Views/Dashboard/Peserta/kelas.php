@@ -604,11 +604,11 @@
                     <?php if ($hasVoucher): ?>
                     <button class="btn-voucher open-voucher-modal" data-kelas-id="<?php echo $k['id_kelas'] ?>"
                         data-nama-kelas="<?php echo esc($k['nama_kelas']) ?>">
-                        <i class="bi bi-ticket-perforated"></i> Voucher
+                        <i class="bi bi-ticket-perforated"></i>  Gunakan Voucher
                     </button>
                     <?php else: ?>
                     <button class="btn-voucher" disabled title="Voucher tidak tersedia">
-                        <i class="bi bi-ticket-perforated"></i> Voucher
+                        <i class="bi bi-ticket-perforated"></i> GunakanVoucher
                     </button>
                     <?php endif; ?>
 

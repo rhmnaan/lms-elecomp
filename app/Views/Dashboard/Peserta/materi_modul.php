@@ -228,13 +228,21 @@ if ($isYouTube) {
                 </div>
                 <?php else: ?>
                 <div class="file-preview">
-                    <div class="file-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
-                    <div class="file-info">
-                        <h4><?= esc($currentMateri['judul_materi']) ?></h4>
-                        <p>Klik tombol di bawah untuk membaca materi PDF.</p>
-                    </div>
-                    <button class="btn-view-pdf" onclick="openPDFModal()">Baca Materi</button>
-                </div>
+    <div class="file-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+    <div class="file-info">
+        <h4><?= esc($currentMateri['judul_materi']) ?></h4>
+        <p>Klik tombol di bawah untuk membaca materi PDF.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+        <button class="btn-view-pdf" onclick="openPDFModal()">Baca Materi</button>
+        <a href="<?= base_url($currentMateri['file_materi']) ?>" 
+   download="<?= esc(preg_replace('/[^a-zA-Z0-9_\-]/', '_', $currentMateri['judul_materi'])) . '.' . pathinfo($currentMateri['file_materi'], PATHINFO_EXTENSION) ?>"
+   class="btn-view-pdf" 
+   style="background:#16a34a;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+    <i class="bi bi-download"></i> Download
+</a>
+    </div>
+</div>
                 <?php endif; ?>
 
                 <!-- MODAL PDF FULLSCREEN -->

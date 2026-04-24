@@ -708,102 +708,114 @@ class DashboardPengajar extends BaseController
     }
 
     public function materiStore()
-    {
-        if ($r = $this->guardPengajar()) {
-            return $r;
-        }
-
-        $rules = [
-            'id_modul'     => 'required|is_natural_no_zero',
-            'judul_materi' => 'required|min_length[3]|max_length[200]',
-        ];
-
-        if (! $this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-
-        $idModul = (int) $this->request->getPost('id_modul');
-        if (! $this->isMyModul($idModul)) {
-            return redirect()->back()->with('error', 'Modul tidak valid.');
-        }
-
-        $filePath = null;
-        $filePdf  = $this->request->getFile('file_materi');
-        if ($filePdf && $filePdf->isValid() && ! $filePdf->hasMoved()) {
-            if ($filePdf->getExtension() !== 'pdf') {
-                return redirect()->back()->withInput()->with('error', 'File harus berformat PDF.');
-            }
-            if ($filePdf->getSize() > 10 * 1024 * 1024) {
-                return redirect()->back()->withInput()->with('error', 'Ukuran file PDF maksimal 10 MB.');
-            }
-            $newName = $filePdf->getRandomName();
-            $filePdf->move(FCPATH . 'uploads/materi', $newName);
-            $filePath = 'uploads/materi/' . $newName;
-        }
-
-        (new MateriModel())->insert([
-            'id_modul'         => $idModul,
-            'judul_materi'     => $this->request->getPost('judul_materi'),
-            'pre_test'         => $this->buildQuizJsonFor('pre_test'),
-            'file_materi'      => $filePath,
-            'video_url_materi' => $this->request->getPost('video_url_materi') ?: null,
-            'post_test'        => $this->buildQuizJsonFor('post_test'),
-        ]);
-
-        return redirect()->to('/dashboard/pengajar/materi')->with('success', 'Materi berhasil ditambahkan.');
+{
+    if ($r = $this->guardPengajar()) {
+        return $r;
     }
 
-    public function materiUpdate(int $id)
-    {
-        if ($r = $this->guardPengajar()) {
-            return $r;
-        }
+    $rules = [
+        'id_modul'     => 'required|is_natural_no_zero',
+        'judul_materi' => 'required|min_length[3]|max_length[200]',
+    ];
 
-        $materiModel = new MateriModel();
-        $materi      = $materiModel->find($id);
-
-        if (! $materi || ! $this->isMyModul($materi['id_modul'])) {
-            return redirect()->to('/dashboard/pengajar/materi')->with('error', 'Materi tidak ditemukan.');
-        }
-
-        $rules = [
-            'judul_materi' => 'required|min_length[3]|max_length[200]',
-        ];
-
-        if (! $this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-
-        $filePath = $materi['file_materi'];
-        $filePdf  = $this->request->getFile('file_materi');
-        if ($filePdf && $filePdf->isValid() && ! $filePdf->hasMoved()) {
-            if ($filePdf->getExtension() !== 'pdf') {
-                return redirect()->back()->withInput()->with('error', 'File harus berformat PDF.');
-            }
-            if ($filePdf->getSize() > 10 * 1024 * 1024) {
-                return redirect()->back()->withInput()->with('error', 'Ukuran file PDF maksimal 10 MB.');
-            }
-            if ($materi['file_materi'] && file_exists(FCPATH . $materi['file_materi'])) {
-                @unlink(FCPATH . $materi['file_materi']);
-            }
-            $newName = $filePdf->getRandomName();
-            $filePdf->move(FCPATH . 'uploads/materi', $newName);
-            $filePath = 'uploads/materi/' . $newName;
-        }
-
-        $preTestJson  = $this->buildQuizJsonFor('pre_test');
-        $postTestJson = $this->buildQuizJsonFor('post_test');
-
-        $materiModel->update($id, [
-            'judul_materi'     => $this->request->getPost('judul_materi'),
-            'pre_test'         => $preTestJson ?? $materi['pre_test'],
-            'file_materi'      => $filePath,
-            'video_url_materi' => $this->request->getPost('video_url_materi') ?: null,
-            'post_test'        => $postTestJson ?? $materi['post_test'],
-        ]);
-
-        return redirect()->to('/dashboard/pengajar/materi')->with('success', 'Materi berhasil diperbarui.');
+    if (! $this->validate($rules)) {
+        return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
     }
+
+    $idModul = (int) $this->request->getPost('id_modul');
+    if (! $this->isMyModul($idModul)) {
+        return redirect()->back()->with('error', 'Modul tidak valid.');
+    }
+
+    $filePath = null;
+    $fileDoc  = $this->request->getFile('file_materi');
+    if ($fileDoc && $fileDoc->isValid() && ! $fileDoc->hasMoved()) {
+        $allowedExt  = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+        $ext         = strtolower($fileDoc->getExtension());
+
+        if (! in_array($ext, $allowedExt)) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Format file tidak didukung. Gunakan PDF, Word, Excel, atau PowerPoint.');
+        }
+        if ($fileDoc->getSize() > 20 * 1024 * 1024) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Ukuran file maksimal 20 MB.');
+        }
+        $newName = $fileDoc->getRandomName();
+        $fileDoc->move(FCPATH . 'uploads/materi', $newName);
+        $filePath = 'uploads/materi/' . $newName;
+    }
+
+    (new MateriModel())->insert([
+        'id_modul'         => $idModul,
+        'judul_materi'     => $this->request->getPost('judul_materi'),
+        'pre_test'         => $this->buildQuizJsonFor('pre_test'),
+        'file_materi'      => $filePath,
+        'video_url_materi' => $this->request->getPost('video_url_materi') ?: null,
+        'post_test'        => $this->buildQuizJsonFor('post_test'),
+    ]);
+
+    return redirect()->to('/dashboard/pengajar/materi')->with('success', 'Materi berhasil ditambahkan.');
+}
+
+   public function materiUpdate(int $id)
+{
+    if ($r = $this->guardPengajar()) {
+        return $r;
+    }
+
+    $materiModel = new MateriModel();
+    $materi      = $materiModel->find($id);
+
+    if (! $materi || ! $this->isMyModul($materi['id_modul'])) {
+        return redirect()->to('/dashboard/pengajar/materi')->with('error', 'Materi tidak ditemukan.');
+    }
+
+    $rules = [
+        'judul_materi' => 'required|min_length[3]|max_length[200]',
+    ];
+
+    if (! $this->validate($rules)) {
+        return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+    }
+
+    $filePath    = $materi['file_materi'];
+    $fileDoc     = $this->request->getFile('file_materi');
+    $allowedExt  = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+
+    if ($fileDoc && $fileDoc->isValid() && ! $fileDoc->hasMoved()) {
+        $ext = strtolower($fileDoc->getExtension());
+
+        if (! in_array($ext, $allowedExt)) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Format file tidak didukung. Gunakan PDF, Word, Excel, atau PowerPoint.');
+        }
+        if ($fileDoc->getSize() > 20 * 1024 * 1024) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Ukuran file maksimal 20 MB.');
+        }
+        // Hapus file lama
+        if ($materi['file_materi'] && file_exists(FCPATH . $materi['file_materi'])) {
+            @unlink(FCPATH . $materi['file_materi']);
+        }
+        $newName  = $fileDoc->getRandomName();
+        $fileDoc->move(FCPATH . 'uploads/materi', $newName);
+        $filePath = 'uploads/materi/' . $newName;
+    }
+
+    $preTestJson  = $this->buildQuizJsonFor('pre_test');
+    $postTestJson = $this->buildQuizJsonFor('post_test');
+
+    $materiModel->update($id, [
+        'judul_materi'     => $this->request->getPost('judul_materi'),
+        'pre_test'         => $preTestJson ?? $materi['pre_test'],
+        'file_materi'      => $filePath,
+        'video_url_materi' => $this->request->getPost('video_url_materi') ?: null,
+        'post_test'        => $postTestJson ?? $materi['post_test'],
+    ]);
+
+    return redirect()->to('/dashboard/pengajar/materi')->with('success', 'Materi berhasil diperbarui.');
+}
 
     public function materiDelete(int $id)
     {
