@@ -71,8 +71,7 @@ class KelasPeserta extends BaseController
             ->select('kelas.*, voucher.id_voucher, voucher.tanggal_berakhir, voucher.kuota')
             ->join('voucher', 'voucher.id_kelas = kelas.id_kelas', 'left')
             ->where('kelas.id_program', $id_program)
-            ->where('kelas.tipe_kelas', 'gratis') // hanya kelas gratis yang bisa diklaim dengan voucher
-            ->where('voucher.status', 'aktif')
+            ->where('voucher.is_active', 1)
             ->where('voucher.deleted_at IS NULL')
             ->where('voucher.tanggal_berakhir >= CURDATE()')
             ->where('voucher.kuota > 0');
@@ -125,7 +124,7 @@ class KelasPeserta extends BaseController
     public function kelasSaya()
     {
         $id_users = session('id_users');
-        $db = \Config\Database::connect();
+        $db       = \Config\Database::connect();
 
         $kelas = $db->table('kelas_peserta kp')
             ->select('
