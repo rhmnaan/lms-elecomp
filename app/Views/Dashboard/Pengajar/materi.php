@@ -234,9 +234,24 @@ $errors = session()->getFlashdata('errors');
     }
 
     .mbadge-pdf {
-        background: #fff1f2;
-        color: #e11d48;
-    }
+    background: #fff1f2;
+    color: #e11d48;
+}
+
+.mbadge-word {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.mbadge-excel {
+    background: #f0fdf4;
+    color: #059669;
+}
+
+.mbadge-ppt {
+    background: #fff7ed;
+    color: #ea580c;
+}
 
     .mbadge-video {
         background: #fef3c7;
@@ -861,9 +876,23 @@ $errors = session()->getFlashdata('errors');
                                                     (<?= count($preArr) ?>)</span>
                                             <?php endif; ?>
                                             <?php if (!empty($mt['file_materi'])): ?>
-                                                <span class="mbadge mbadge-pdf"><i class="bi bi-file-earmark-pdf-fill"></i>
-                                                    PDF</span>
-                                            <?php endif; ?>
+    <?php
+        $ext = strtolower(pathinfo($mt['file_materi'], PATHINFO_EXTENSION));
+        $badgeMap = [
+            'pdf'  => ['mbadge-pdf',   'bi-file-earmark-pdf-fill',   'PDF'],
+            'doc'  => ['mbadge-word',  'bi-file-earmark-word-fill',  'Word'],
+            'docx' => ['mbadge-word',  'bi-file-earmark-word-fill',  'Word'],
+            'xls'  => ['mbadge-excel', 'bi-file-earmark-excel-fill', 'Excel'],
+            'xlsx' => ['mbadge-excel', 'bi-file-earmark-excel-fill', 'Excel'],
+            'ppt'  => ['mbadge-ppt',   'bi-file-earmark-ppt-fill',   'PPT'],
+            'pptx' => ['mbadge-ppt',   'bi-file-earmark-ppt-fill',   'PPT'],
+        ];
+        [$bc, $ic, $lb] = $badgeMap[$ext] ?? ['mbadge-pdf', 'bi-file-earmark-fill', strtoupper($ext)];
+    ?>
+    <span class="mbadge <?= $bc ?>">
+        <i class="bi <?= $ic ?>"></i> <?= $lb ?>
+    </span>
+<?php endif; ?>
                                             <?php if (!empty($mt['video_url_materi'])): ?>
                                                 <span class="mbadge mbadge-video">
                                                     <i
@@ -997,9 +1026,9 @@ $errors = session()->getFlashdata('errors');
 
                     <!-- Alert validasi PDF/Video -->
                     <div id="alertPdfVideoTambah" class="mp-alert-warn" style="display:none;">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        Wajib mengisi salah satu: <strong>upload PDF</strong> atau <strong>pilih Video</strong>.
-                    </div>
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    Wajib mengisi salah satu: <strong>upload Dokumen</strong> (PDF/Word/Excel/PPT) atau <strong>pilih Video</strong>.
+</div>
 
                     <!-- TABS -->
                     <div class="mtab-nav" id="tabNavTambah">
@@ -1007,8 +1036,8 @@ $errors = session()->getFlashdata('errors');
                             <i class="bi bi-list-check"></i><span> Pre Test</span>
                         </button>
                         <button type="button" class="mtab-btn" data-tab="tab-pdf-tambah">
-                            <i class="bi bi-file-earmark-pdf"></i><span> PDF</span>
-                        </button>
+    <i class="bi bi-file-earmark-arrow-up"></i><span> Dokumen</span>
+</button>
                         <button type="button" class="mtab-btn" data-tab="tab-video-tambah">
                             <i class="bi bi-play-circle"></i><span> Video</span>
                         </button>
@@ -1037,21 +1066,34 @@ $errors = session()->getFlashdata('errors');
                         </div>
                     </div>
 
-                    <!-- TAB: PDF -->
-                    <div class="mtab-pane" id="tab-pdf-tambah">
-                        <label class="form-label fw-semibold small">
-                            Upload File PDF <span class="text-danger">*</span>
-                            <span class="text-muted fw-normal">(wajib jika tidak ada video)</span>
-                        </label>
-                        <div class="upload-zone" id="dropZoneTambah"
-                            onclick="document.getElementById('filePdfTambah').click()">
-                            <input type="file" id="filePdfTambah" name="file_materi" accept=".pdf">
-                            <i class="bi bi-cloud-arrow-up"></i>
-                            <p class="mb-1"><strong>Klik untuk upload</strong> atau drag &amp; drop</p>
-                            <p style="font-size:11px;">Format: PDF · Maks. 10 MB</p>
-                            <p class="file-name" id="fileNameTambah" style="display:none;"></p>
-                        </div>
-                    </div>
+                   <!-- TAB: Dokumen -->
+<div class="mtab-pane" id="tab-pdf-tambah">
+    <label class="form-label fw-semibold small">
+        Upload Dokumen <span class="text-danger">*</span>
+        <span class="text-muted fw-normal">(wajib jika tidak ada video)</span>
+    </label>
+
+    <!-- Info format yang didukung -->
+    <div class="d-flex gap-2 flex-wrap mb-3">
+        <span class="mbadge mbadge-pdf"><i class="bi bi-file-earmark-pdf-fill"></i> PDF</span>
+        <span class="mbadge mbadge-word"><i class="bi bi-file-earmark-word-fill"></i> Word</span>
+        <span class="mbadge mbadge-excel"><i class="bi bi-file-earmark-excel-fill"></i> Excel</span>
+        <span class="mbadge mbadge-ppt"><i class="bi bi-file-earmark-ppt-fill"></i> PowerPoint</span>
+    </div>
+
+    <div class="upload-zone" id="dropZoneTambah"
+        onclick="document.getElementById('filePdfTambah').click()">
+        <input type="file" id="filePdfTambah" name="file_materi"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+        <i class="bi bi-cloud-arrow-up" id="uploadIconTambah"></i>
+        <p class="mb-1"><strong>Klik untuk upload</strong> atau drag &amp; drop</p>
+        <p style="font-size:11px;">PDF · Word · Excel · PowerPoint · Maks. 20 MB</p>
+        <p class="file-name" id="fileNameTambah" style="display:none;"></p>
+    </div>
+
+    <!-- Preview tipe file setelah dipilih -->
+    <div id="fileTypeBadgeTambah" style="display:none; margin-top:8px;"></div>
+</div>
 
                     <!-- TAB: Video (Video Lokal Terenkripsi) -->
                     <div class="mtab-pane" id="tab-video-tambah">
@@ -1190,9 +1232,9 @@ $errors = session()->getFlashdata('errors');
 
                     <!-- Alert validasi PDF/Video Edit -->
                     <div id="alertPdfVideoEdit" class="mp-alert-warn" style="display:none;">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        Wajib mengisi salah satu: <strong>upload PDF</strong> atau <strong>pilih Video</strong>.
-                    </div>
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    Wajib mengisi salah satu: <strong>upload Dokumen</strong> (PDF/Word/Excel/PPT) atau <strong>pilih Video</strong>.
+</div>
 
                     <!-- TABS Edit -->
                     <div class="mtab-nav" id="tabNavEdit">
@@ -1200,8 +1242,8 @@ $errors = session()->getFlashdata('errors');
                             <i class="bi bi-list-check"></i><span> Pre Test</span>
                         </button>
                         <button type="button" class="mtab-btn" data-tab="tab-pdf-edit">
-                            <i class="bi bi-file-earmark-pdf"></i><span> PDF</span>
-                        </button>
+    <i class="bi bi-file-earmark-arrow-up"></i><span> Dokumen</span>
+</button>
                         <button type="button" class="mtab-btn" data-tab="tab-video-edit">
                             <i class="bi bi-play-circle"></i><span> Video</span>
                         </button>
@@ -1230,28 +1272,40 @@ $errors = session()->getFlashdata('errors');
                         </div>
                     </div>
 
-                    <!-- TAB: PDF Edit -->
-                    <div class="mtab-pane" id="tab-pdf-edit">
-                        <label class="form-label fw-semibold small">
-                            Upload File PDF <span class="text-danger">*</span>
-                            <span class="text-muted fw-normal">(wajib jika tidak ada video)</span>
-                        </label>
-                        <div id="currentFileEdit" style="display:none;margin-bottom:8px;">
-                            <span class="current-file-badge">
-                                <i class="bi bi-file-earmark-pdf-fill"></i>
-                                <span id="currentFileName"></span>
-                            </span>
-                            <small class="text-muted ms-2">— upload baru untuk mengganti</small>
-                        </div>
-                        <div class="upload-zone" id="dropZoneEdit"
-                            onclick="document.getElementById('filePdfEdit').click()">
-                            <input type="file" id="filePdfEdit" name="file_materi" accept=".pdf">
-                            <i class="bi bi-cloud-arrow-up"></i>
-                            <p class="mb-1"><strong>Klik untuk upload</strong> atau drag &amp; drop</p>
-                            <p style="font-size:11px;">Format: PDF · Maks. 10 MB</p>
-                            <p class="file-name" id="fileNameEdit" style="display:none;"></p>
-                        </div>
-                    </div>
+                    <!-- TAB: Dokumen Edit -->
+<div class="mtab-pane" id="tab-pdf-edit">
+    <label class="form-label fw-semibold small">
+        Upload Dokumen <span class="text-danger">*</span>
+        <span class="text-muted fw-normal">(wajib jika tidak ada video)</span>
+    </label>
+
+    <div class="d-flex gap-2 flex-wrap mb-3">
+        <span class="mbadge mbadge-pdf"><i class="bi bi-file-earmark-pdf-fill"></i> PDF</span>
+        <span class="mbadge mbadge-word"><i class="bi bi-file-earmark-word-fill"></i> Word</span>
+        <span class="mbadge mbadge-excel"><i class="bi bi-file-earmark-excel-fill"></i> Excel</span>
+        <span class="mbadge mbadge-ppt"><i class="bi bi-file-earmark-ppt-fill"></i> PowerPoint</span>
+    </div>
+
+    <div id="currentFileEdit" style="display:none;margin-bottom:8px;">
+        <span class="current-file-badge">
+            <i class="bi bi-file-earmark-fill"></i>
+            <span id="currentFileName"></span>
+        </span>
+        <small class="text-muted ms-2">— upload baru untuk mengganti</small>
+    </div>
+
+    <div class="upload-zone" id="dropZoneEdit"
+        onclick="document.getElementById('filePdfEdit').click()">
+        <input type="file" id="filePdfEdit" name="file_materi"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+        <i class="bi bi-cloud-arrow-up"></i>
+        <p class="mb-1"><strong>Klik untuk upload</strong> atau drag &amp; drop</p>
+        <p style="font-size:11px;">PDF · Word · Excel · PowerPoint · Maks. 20 MB</p>
+        <p class="file-name" id="fileNameEdit" style="display:none;"></p>
+    </div>
+
+    <div id="fileTypeBadgeEdit" style="display:none; margin-top:8px;"></div>
+</div>
 
                     <!-- TAB: Video Edit (Video Lokal Terenkripsi) -->
                     <div class="mtab-pane" id="tab-video-edit">
@@ -1649,6 +1703,54 @@ $errors = session()->getFlashdata('errors');
         }
         initDropZone('dropZoneTambah', 'filePdfTambah', 'fileNameTambah');
         initDropZone('dropZoneEdit', 'filePdfEdit', 'fileNameEdit');
+
+        /* ══════════════════════════════════════
+   DETEKSI TIPE FILE — tampilkan badge
+══════════════════════════════════════ */
+function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const map = {
+        pdf:  { icon: 'bi-file-earmark-pdf-fill',   cls: 'mbadge-pdf',   label: 'PDF' },
+        doc:  { icon: 'bi-file-earmark-word-fill',   cls: 'mbadge-word',  label: 'Word' },
+        docx: { icon: 'bi-file-earmark-word-fill',   cls: 'mbadge-word',  label: 'Word' },
+        xls:  { icon: 'bi-file-earmark-excel-fill',  cls: 'mbadge-excel', label: 'Excel' },
+        xlsx: { icon: 'bi-file-earmark-excel-fill',  cls: 'mbadge-excel', label: 'Excel' },
+        ppt:  { icon: 'bi-file-earmark-ppt-fill',    cls: 'mbadge-ppt',   label: 'PowerPoint' },
+        pptx: { icon: 'bi-file-earmark-ppt-fill',    cls: 'mbadge-ppt',   label: 'PowerPoint' },
+    };
+    return map[ext] ?? { icon: 'bi-file-earmark-fill', cls: 'mbadge-pdf', label: ext.toUpperCase() };
+}
+
+function showFileTypeBadge(badgeId, filename, sizeByte) {
+    const el = document.getElementById(badgeId);
+    if (!el) return;
+    const info = getFileIcon(filename);
+    const sizeMB = (sizeByte / 1048576).toFixed(2);
+    el.innerHTML = `
+        <span class="mbadge ${info.cls}">
+            <i class="bi ${info.icon}"></i> ${info.label}
+        </span>
+        <span style="font-size:11px;color:#6b7280;margin-left:6px;">
+            ${esc(filename)} · ${sizeMB} MB
+        </span>`;
+    el.style.display = 'block';
+}
+
+// Bind ke input file Tambah
+document.getElementById('filePdfTambah').addEventListener('change', function () {
+    if (this.files[0]) {
+        showFileTypeBadge('fileTypeBadgeTambah', this.files[0].name, this.files[0].size);
+        document.getElementById('alertPdfVideoTambah').style.display = 'none';
+    }
+});
+
+// Bind ke input file Edit
+document.getElementById('filePdfEdit').addEventListener('change', function () {
+    if (this.files[0]) {
+        showFileTypeBadge('fileTypeBadgeEdit', this.files[0].name, this.files[0].size);
+        document.getElementById('alertPdfVideoEdit').style.display = 'none';
+    }
+});
 
         /* ══════════════════════════════════════
            VIDEO LOKAL — LOAD OPTIONS
