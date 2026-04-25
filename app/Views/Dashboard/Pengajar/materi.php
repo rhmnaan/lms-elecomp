@@ -876,9 +876,23 @@ $errors = session()->getFlashdata('errors');
                                                     (<?= count($preArr) ?>)</span>
                                             <?php endif; ?>
                                             <?php if (!empty($mt['file_materi'])): ?>
-                                                <span class="mbadge mbadge-pdf"><i class="bi bi-file-earmark-pdf-fill"></i>
-                                                    PDF</span>
-                                            <?php endif; ?>
+    <?php
+        $ext = strtolower(pathinfo($mt['file_materi'], PATHINFO_EXTENSION));
+        $badgeMap = [
+            'pdf'  => ['mbadge-pdf',   'bi-file-earmark-pdf-fill',   'PDF'],
+            'doc'  => ['mbadge-word',  'bi-file-earmark-word-fill',  'Word'],
+            'docx' => ['mbadge-word',  'bi-file-earmark-word-fill',  'Word'],
+            'xls'  => ['mbadge-excel', 'bi-file-earmark-excel-fill', 'Excel'],
+            'xlsx' => ['mbadge-excel', 'bi-file-earmark-excel-fill', 'Excel'],
+            'ppt'  => ['mbadge-ppt',   'bi-file-earmark-ppt-fill',   'PPT'],
+            'pptx' => ['mbadge-ppt',   'bi-file-earmark-ppt-fill',   'PPT'],
+        ];
+        [$bc, $ic, $lb] = $badgeMap[$ext] ?? ['mbadge-pdf', 'bi-file-earmark-fill', strtoupper($ext)];
+    ?>
+    <span class="mbadge <?= $bc ?>">
+        <i class="bi <?= $ic ?>"></i> <?= $lb ?>
+    </span>
+<?php endif; ?>
                                             <?php if (!empty($mt['video_url_materi'])): ?>
                                                 <span class="mbadge mbadge-video">
                                                     <i
@@ -1012,9 +1026,9 @@ $errors = session()->getFlashdata('errors');
 
                     <!-- Alert validasi PDF/Video -->
                     <div id="alertPdfVideoTambah" class="mp-alert-warn" style="display:none;">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        Wajib mengisi salah satu: <strong>upload PDF</strong> atau <strong>pilih Video</strong>.
-                    </div>
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    Wajib mengisi salah satu: <strong>upload Dokumen</strong> (PDF/Word/Excel/PPT) atau <strong>pilih Video</strong>.
+</div>
 
                     <!-- TABS -->
                     <div class="mtab-nav" id="tabNavTambah">
@@ -1218,9 +1232,9 @@ $errors = session()->getFlashdata('errors');
 
                     <!-- Alert validasi PDF/Video Edit -->
                     <div id="alertPdfVideoEdit" class="mp-alert-warn" style="display:none;">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        Wajib mengisi salah satu: <strong>upload PDF</strong> atau <strong>pilih Video</strong>.
-                    </div>
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    Wajib mengisi salah satu: <strong>upload Dokumen</strong> (PDF/Word/Excel/PPT) atau <strong>pilih Video</strong>.
+</div>
 
                     <!-- TABS Edit -->
                     <div class="mtab-nav" id="tabNavEdit">
