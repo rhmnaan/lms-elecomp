@@ -51,6 +51,21 @@ if ($isYouTube) {
     );
     $embedId = $matches[1] ?? null;
 }
+
+// Helper: file type map (dipakai berulang)
+$fileTypeMap = [
+    'pdf'  => ['bi-file-earmark-pdf-fill',   'PDF',   'pdf'],
+    'doc'  => ['bi-file-earmark-word-fill',  'Word',  'word'],
+    'docx' => ['bi-file-earmark-word-fill',  'Word',  'word'],
+    'xls'  => ['bi-file-earmark-excel-fill', 'Excel', 'excel'],
+    'xlsx' => ['bi-file-earmark-excel-fill', 'Excel', 'excel'],
+    'ppt'  => ['bi-file-earmark-ppt-fill',   'PPT',   'ppt'],
+    'pptx' => ['bi-file-earmark-ppt-fill',   'PPT',   'ppt'],
+];
+
+$currentExt   = $hasFile ? strtolower(pathinfo($currentMateri['file_materi'], PATHINFO_EXTENSION)) : '';
+$currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoupper($currentExt), 'file'];
+[$currentFileIcon, $currentFileLabel, $currentFileCls] = $currentFileInfo;
 ?>
 
 <div class="materi-modul-container">
@@ -67,15 +82,20 @@ if ($isYouTube) {
                 $hasV = !empty($m['video_url_materi']);
                 $hasF = !empty($m['file_materi']);
                 $isLoc = $hasV && str_starts_with($m['video_url_materi'], 'vid_');
+
                 if ($hasV && $hasF) {
                     $tipeIcon  = '<i class="bi bi-collection-play-fill"></i>';
-                    $tipeLabel = 'Video & PDF';
+                    $tipeLabel = 'Video & Dokumen';
                 } elseif ($hasV) {
-                    $tipeIcon  = $isLoc ? '<i class="bi bi-shield-lock-fill"></i>' : '<i class="bi bi-play-circle-fill"></i>';
+                    $tipeIcon  = $isLoc
+                        ? '<i class="bi bi-shield-lock-fill"></i>'
+                        : '<i class="bi bi-play-circle-fill"></i>';
                     $tipeLabel = $isLoc ? 'Video Lokal' : 'Video';
                 } elseif ($hasF) {
-                    $tipeIcon  = '<i class="bi bi-file-earmark-pdf-fill"></i>';
-                    $tipeLabel = 'PDF';
+                    $sExt = strtolower(pathinfo($m['file_materi'], PATHINFO_EXTENSION));
+                    [$sFi, $sFl] = $fileTypeMap[$sExt] ?? ['bi-file-earmark-fill', strtoupper($sExt)];
+                    $tipeIcon  = '<i class="bi ' . $sFi . '"></i>';
+                    $tipeLabel = $sFl;
                 } else {
                     $tipeIcon  = '<i class="bi bi-file-text-fill"></i>';
                     $tipeLabel = 'Artikel';
@@ -120,12 +140,24 @@ if ($isYouTube) {
                         <?= $isLocalVideo ? 'Video Lokal' : 'Video' ?>
                     </span>
                     <?php endif; ?>
-                    <?php if ($hasFile): ?><span class="tipe-badge pdf"><i class="bi bi-file-earmark-pdf-fill"></i>
-                        PDF</span><?php endif; ?>
-                    <?php if ($hasIsi):  ?><span class="tipe-badge artikel"><i class="bi bi-file-text-fill"></i>
-                        Artikel</span><?php endif; ?>
-                    <?php if ($hasQuiz): ?><span class="tipe-badge quiz"><i class="bi bi-patch-question-fill"></i>
-                        Quiz</span><?php endif; ?>
+
+                    <?php if ($hasFile): ?>
+                    <span class="tipe-badge <?= $currentFileCls ?>">
+                        <i class="bi <?= $currentFileIcon ?>"></i> <?= $currentFileLabel ?>
+                    </span>
+                    <?php endif; ?>
+
+                    <?php if ($hasIsi): ?>
+                    <span class="tipe-badge artikel">
+                        <i class="bi bi-file-text-fill"></i> Artikel
+                    </span>
+                    <?php endif; ?>
+
+                    <?php if ($hasQuiz): ?>
+                    <span class="tipe-badge quiz">
+                        <i class="bi bi-patch-question-fill"></i> Quiz
+                    </span>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -155,11 +187,10 @@ if ($isYouTube) {
                         <p>Kerjakan pre test untuk mengetahui pemahaman awal kamu sebelum memulai materi.</p>
                     </div>
                     <a href="<?= base_url('dashboard/peserta/pretest/' . $currentMateri['id_materi']) .
-                                            '?redirect=' . urlencode(
-                                                base_url('dashboard/peserta/materi-modul/' . $modul['id_modul']) .
-                                                    '?materi=' . $currentMateri['id_materi']
-                                            )
-                                        ?>" class="btn-pretest">
+                                '?redirect=' . urlencode(
+                                    base_url('dashboard/peserta/materi-modul/' . $modul['id_modul']) .
+                                    '?materi=' . $currentMateri['id_materi']
+                                ) ?>" class="btn-pretest">
                         <i class="bi bi-play-fill"></i> Mulai Pre Test
                     </a>
                 </div>
@@ -183,7 +214,8 @@ if ($isYouTube) {
                 <!-- ▶️ VIDEO LOKAL -->
                 <div class="video-container mb-4" style="border-radius:12px;overflow:hidden;">
                     <video id="localVideo" controls preload="metadata"
-                        style="width:100%;max-width:100%;background:#000;" controlsList="nodownload noplaybackrate"
+                        style="width:100%;max-width:100%;background:#000;"
+                        controlsList="nodownload noplaybackrate"
                         disablePictureInPicture>
                         <source src="<?= base_url('video/stream/' . esc($currentMateri['video_url_materi'])) ?>"
                             type="video/mp4">
@@ -211,33 +243,74 @@ if ($isYouTube) {
             </div>
             <?php endif; ?>
 
-            <!-- 2. FILE PDF -->
+            <!-- 2. FILE DOKUMEN -->
             <?php if ($hasFile): ?>
             <div class="content-section">
+
                 <?php if (!$has_pretest): ?>
+                <!-- DOKUMEN TERKUNCI -->
                 <div class="file-preview locked">
                     <div class="file-icon locked">
-                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        <i class="bi <?= $currentFileIcon ?>"></i>
                         <div class="lock-overlay"><i class="bi bi-lock-fill"></i></div>
                     </div>
                     <div class="file-info">
                         <h4><?= esc($currentMateri['judul_materi']) ?></h4>
-                        <p>Materi PDF terkunci. Selesaikan Pre Test terlebih dahulu untuk membuka materi.</p>
+                        <p>Materi <?= $currentFileLabel ?> terkunci. Selesaikan Pre Test terlebih dahulu untuk membuka materi.</p>
                     </div>
                     <span class="btn-view-pdf disabled">Terkunci</span>
                 </div>
+
                 <?php else: ?>
+                <!-- DOKUMEN TERBUKA -->
                 <div class="file-preview">
-                    <div class="file-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                    <div class="file-icon">
+                        <i class="bi <?= $currentFileIcon ?>"></i>
+                    </div>
                     <div class="file-info">
                         <h4><?= esc($currentMateri['judul_materi']) ?></h4>
-                        <p>Klik tombol di bawah untuk membaca materi PDF.</p>
+                        <p>Klik tombol di bawah untuk membaca materi <?= $currentFileLabel ?>.</p>
                     </div>
-                    <button class="btn-view-pdf" onclick="openPDFModal()">Baca Materi</button>
+                    <div style="display:flex;gap:8px;flex-shrink:0;">
+                        <?php if ($currentExt === 'pdf'): ?>
+                        <button class="btn-view-pdf" onclick="openPDFModal()">
+                            <i class="bi bi-book"></i> Baca Materi
+                        </button>
+                        <?php else: ?>
+<button class="btn-view-pdf"
+    onclick="openDocViewer('<?= base_url($currentMateri['file_materi']) ?>')"
+    style="display:inline-flex;align-items:center;gap:6px;">
+    <i class="bi bi-box-arrow-up-right"></i> Buka <?= $currentFileLabel ?>
+</button>
+<?php endif; ?>
+
+<!-- Modal Doc Viewer (SheetJS untuk Excel, Google Viewer untuk lainnya) -->
+<div id="docViewerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;width:90%;max-width:1100px;height:88vh;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e5e7eb;">
+            <span style="font-weight:700;font-size:14px;"><?= esc($currentMateri['judul_materi']) ?></span>
+            <button onclick="closeDocViewer()" style="background:#fee2e2;color:#ef4444;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;">✕</button>
+        </div>
+        <!-- Konten dinamis: iframe atau tabel Excel -->
+        <div id="docViewerBody" style="flex:1;overflow:auto;width:100%;"></div>
+        <div id="docViewerLoading" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,.8);align-items:center;justify-content:center;font-size:14px;color:#6b7280;">
+            ⏳ Memuat dokumen...
+        </div>
+    </div>
+</div>
+
+                        <a href="<?= base_url($currentMateri['file_materi']) ?>"
+                           download="<?= esc(preg_replace('/[^a-zA-Z0-9_\-]/', '_', $currentMateri['judul_materi'])) . '.' . $currentExt ?>"
+                           class="btn-view-pdf"
+                           style="background:#16a34a;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                    </div>
                 </div>
                 <?php endif; ?>
 
-                <!-- MODAL PDF FULLSCREEN -->
+                <!-- MODAL PDF FULLSCREEN (hanya untuk PDF) -->
+                <?php if ($currentExt === 'pdf'): ?>
                 <div id="pdfModal" class="pdf-modal" style="display:none;">
                     <div class="pdf-modal-content">
                         <div class="pdf-modal-header">
@@ -255,8 +328,7 @@ if ($isYouTube) {
                         <div id="pdfContainer" class="pdf-container">
                             <div id="pdfViewer" style="overflow-y:auto;height:100%;padding:20px;">
                                 <p>Browser Anda tidak mendukung PDF.
-                                    <a href="<?= base_url($currentMateri['file_materi']) ?>" target="_blank">Download
-                                        PDF</a>
+                                    <a href="<?= base_url($currentMateri['file_materi']) ?>" target="_blank">Download PDF</a>
                                 </p>
                             </div>
                         </div>
@@ -266,6 +338,8 @@ if ($isYouTube) {
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
+
             </div>
             <?php endif; ?>
 
@@ -295,19 +369,18 @@ if ($isYouTube) {
                 </div>
 
                 <?php if ($has_posttest):
-                        $posttestPassed = !empty($nilai_post['nilai']) && $nilai_post['nilai'] >= 70;
-                        $cardBg      = $posttestPassed ? '#ecfdf5' : '#fee2e2';
-                        $borderColor = $posttestPassed ? '#86efac' : '#fca5a5';
-                        $textColor   = $posttestPassed ? '#065f46' : '#991b1b';
-                        $statusLabel = $posttestPassed ? 'Lulus Post Test' : 'Belum Lulus Post Test';
-                    ?>
+                    $posttestPassed = !empty($nilai_post['nilai']) && $nilai_post['nilai'] >= 70;
+                    $cardBg      = $posttestPassed ? '#ecfdf5' : '#fee2e2';
+                    $borderColor = $posttestPassed ? '#86efac' : '#fca5a5';
+                    $textColor   = $posttestPassed ? '#065f46' : '#991b1b';
+                    $statusLabel = $posttestPassed ? 'Lulus Post Test' : 'Belum Lulus Post Test';
+                ?>
                 <div class="posttest-card"
                     style="background:<?= $cardBg ?>;border-color:<?= $borderColor ?>;display:flex;align-items:center;justify-content:space-between;">
                     <div class="posttest-info" style="max-width:calc(100% - 180px);">
                         <h4><?= $statusLabel ?></h4>
                         <p>Nilai terakhir post test kamu.</p>
-                        <strong style="font-size:18px;color:<?= $textColor ?>;">Nilai:
-                            <?= esc($nilai_post['nilai']) ?></strong>
+                        <strong style="font-size:18px;color:<?= $textColor ?>;">Nilai: <?= esc($nilai_post['nilai']) ?></strong>
                     </div>
                     <?php if (!$posttestPassed): ?>
                     <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] . '?redirect=' . urlencode(current_url())) ?>"
@@ -315,8 +388,7 @@ if ($isYouTube) {
                         Mulai ulang Post Test
                     </a>
                     <?php else: ?>
-                    <span
-                        style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;background:#d1fae5;color:#065f46;font-weight:700;">
+                    <span style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;background:#d1fae5;color:#065f46;font-weight:700;">
                         <i class="bi bi-check-circle-fill"></i> Lulus
                     </span>
                     <?php endif; ?>
@@ -363,7 +435,7 @@ if ($isYouTube) {
                         <p>Kerjakan test setelah menyelesaikan semua materi.</p>
                     </div>
                     <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] .
-                                    '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
+                            '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
                         Mulai Post Test
                     </a>
                 </div>
@@ -376,7 +448,7 @@ if ($isYouTube) {
                         <p>Kerjakan test setelah menyelesaikan semua materi.</p>
                     </div>
                     <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] .
-                                    '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
+                            '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
                         Mulai Post Test
                     </a>
                 </div>
@@ -426,9 +498,9 @@ if ($isYouTube) {
 </div>
 
 <script>
-const pdfUrl = <?= !empty($currentMateri['file_materi'])
-                        ? '"' . base_url($currentMateri['file_materi']) . '"'
-                        : 'null' ?>;
+const pdfUrl = <?= ($hasFile && $currentExt === 'pdf' && !empty($currentMateri['file_materi']))
+    ? '"' . base_url($currentMateri['file_materi']) . '"'
+    : 'null' ?>;
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -439,20 +511,21 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 
 <script>
 /* ── CONFIG ── */
-const MATERI_SELESAI = <?= $materi_selesai ? 'true' : 'false' ?>;
+const MATERI_SELESAI     = <?= $materi_selesai ? 'true' : 'false' ?>;
 const MATERI_PUNYA_VIDEO = <?= $hasVideo ? 'true' : 'false' ?>;
-const MATERI_PUNYA_FILE = <?= $hasFile  ? 'true' : 'false' ?>;
-const IS_LOCAL_VIDEO = <?= $isLocalVideo ? 'true' : 'false' ?>;
-const SOAL_DATA = <?= json_encode($quizSoal, JSON_UNESCAPED_UNICODE) ?>;
-const TOTAL_SOAL = SOAL_DATA.length;
-const CSRF_TOKEN = '<?= csrf_hash() ?>';
-const CSRF_NAME = '<?= csrf_token() ?>';
-const SAVE_URL = '<?= base_url('dashboard/peserta/quiz/simpan-materi') ?>';
-const BASE_URL_JS = '<?= base_url() ?>';
+const MATERI_PUNYA_FILE  = <?= $hasFile  ? 'true' : 'false' ?>;
+const IS_LOCAL_VIDEO     = <?= $isLocalVideo ? 'true' : 'false' ?>;
+const FILE_EXT           = '<?= $currentExt ?>';
+const SOAL_DATA          = <?= json_encode($quizSoal, JSON_UNESCAPED_UNICODE) ?>;
+const TOTAL_SOAL         = SOAL_DATA.length;
+const CSRF_TOKEN         = '<?= csrf_hash() ?>';
+const CSRF_NAME          = '<?= csrf_token() ?>';
+const SAVE_URL           = '<?= base_url('dashboard/peserta/quiz/simpan-materi') ?>';
+const BASE_URL_JS        = '<?= base_url() ?>';
 
 /* ── STATE ── */
-window.videoSelesai = false;
-window.pdfSelesai = false;
+window.videoSelesai     = false;
+window.pdfSelesai       = false;
 window.progressTerkirim = false;
 
 /* ════════════════════════════════════════════════════════
@@ -464,20 +537,22 @@ function loadMateri(idMateri) {
 }
 
 /* ══════════════════════════════════════
-   STATE
+   INIT: VIDEO & NON-PDF FILE SELESAI
 ══════════════════════════════════════ */
-window.videoSelesai = false;
-window.pdfSelesai = false;
-window.progressTerkirim = false;
-
 document.addEventListener('DOMContentLoaded', () => {
+    // Video lokal
     const video = document.getElementById('localVideo');
-    if (!video) return;
+    if (video) {
+        video.addEventListener('ended', () => {
+            window.videoSelesai = true;
+            kirimProgressMateri();
+        });
+    }
 
-    video.addEventListener('ended', () => {
-        window.videoSelesai = true;
-        kirimProgressMateri();
-    });
+    // Untuk file non-PDF (Word/Excel/PPT): langsung tandai selesai saat dibuka
+    if (MATERI_PUNYA_FILE && FILE_EXT !== 'pdf') {
+        window.pdfSelesai = true;
+    }
 });
 
 /* ════════════════════════════════════════════════════════
@@ -491,9 +566,7 @@ function onYouTubeIframeAPIReady() {
         height: '390',
         width: '640',
         videoId: '<?= $embedId ?>',
-        events: {
-            'onStateChange': onPlayerStateChange
-        }
+        events: { 'onStateChange': onPlayerStateChange }
     });
 }
 
@@ -504,7 +577,6 @@ function onPlayerStateChange(event) {
     }
 }
 <?php else: ?>
-
 function onYouTubeIframeAPIReady() {}
 <?php endif; ?>
 
@@ -513,7 +585,7 @@ function onYouTubeIframeAPIReady() {}
 ════════════════════════════════════════════════════════ */
 function checkAllMateriCompleted() {
     if (MATERI_PUNYA_VIDEO && !window.videoSelesai) return false;
-    if (MATERI_PUNYA_FILE && !window.pdfSelesai) return false;
+    if (MATERI_PUNYA_FILE  && !window.pdfSelesai)   return false;
     return true;
 }
 
@@ -531,26 +603,22 @@ function kirimProgressMateri() {
     fd.append('id_materi', idMateri);
 
     fetch(BASE_URL_JS + 'dashboard/peserta/materi/selesai', {
-            method: 'POST',
-            body: fd,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                showSuccessNotification();
-                unlockPosttest();
-                setTimeout(() => location.reload(), 1500);
-            } else {
-                window.progressTerkirim = false;
-                showErrorNotification(res.error || 'Gagal menyimpan progress');
-            }
-        })
-        .catch(() => {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            showSuccessNotification();
+            unlockPosttest();
+            setTimeout(() => location.reload(), 1500);
+        } else {
             window.progressTerkirim = false;
-        });
+            showErrorNotification(res.error || 'Gagal menyimpan progress');
+        }
+    })
+    .catch(() => { window.progressTerkirim = false; });
 }
 
 /* ════════════════════════════════════════════════════════
@@ -559,10 +627,10 @@ function kirimProgressMateri() {
 function showSuccessNotification() {
     const n = document.createElement('div');
     n.innerHTML = `<div style="position:fixed;top:20px;right:20px;background:#10b981;color:#fff;
-            padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);
-            z-index:10000;font-family:system-ui,sans-serif;">
-            <strong>✓ Sukses!</strong> Materi selesai. Posttest sekarang tersedia.
-        </div>`;
+        padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);
+        z-index:10000;font-family:system-ui,sans-serif;">
+        <strong>✓ Sukses!</strong> Materi selesai. Posttest sekarang tersedia.
+    </div>`;
     document.body.appendChild(n);
     setTimeout(() => n.remove(), 3000);
 }
@@ -570,44 +638,44 @@ function showSuccessNotification() {
 function showErrorNotification(msg) {
     const n = document.createElement('div');
     n.innerHTML = `<div style="position:fixed;top:20px;right:20px;background:#ef4444;color:#fff;
-            padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);
-            z-index:10000;font-family:system-ui,sans-serif;">
-            <strong>✗ Error!</strong> ${msg}
-        </div>`;
+        padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);
+        z-index:10000;font-family:system-ui,sans-serif;">
+        <strong>✗ Error!</strong> ${msg}
+    </div>`;
     document.body.appendChild(n);
     setTimeout(() => n.remove(), 5000);
 }
 
 function unlockPosttest() {
-    const locked = document.getElementById('posttestLocked');
+    const locked   = document.getElementById('posttestLocked');
     const unlocked = document.getElementById('posttestUnlocked');
     if (locked) {
-        locked.style.opacity = '0';
+        locked.style.opacity      = '0';
         locked.style.pointerEvents = 'none';
-        locked.style.height = '0';
-        locked.style.overflow = 'hidden';
+        locked.style.height        = '0';
+        locked.style.overflow      = 'hidden';
     }
     if (unlocked) {
-        unlocked.style.display = 'block';
-        unlocked.style.opacity = '1';
-        unlocked.style.height = 'auto';
+        unlocked.style.display      = 'block';
+        unlocked.style.opacity      = '1';
+        unlocked.style.height       = 'auto';
         unlocked.style.pointerEvents = 'auto';
     }
 }
 
 function updateProgressBar(percent) {
     const fill = document.getElementById('pdfProgressFill');
-    const txt = document.getElementById('pdfProgressText');
-    if (fill) fill.style.width = percent + '%';
-    if (txt) txt.textContent = Math.round(percent) + '%';
+    const txt  = document.getElementById('pdfProgressText');
+    if (fill) fill.style.width   = percent + '%';
+    if (txt)  txt.textContent    = Math.round(percent) + '%';
 }
 
 /* ════════════════════════════════════════════════════════
-   PDF MODAL & PROGRESS
+   PDF MODAL & PROGRESS (hanya aktif untuk file PDF)
 ════════════════════════════════════════════════════════ */
 function openPDFModal() {
     <?php if (!$has_pretest): ?>
-    alert('Anda harus menyelesaikan Pre Test terlebih dahulu untuk membuka materi PDF.');
+    alert('Anda harus menyelesaikan Pre Test terlebih dahulu untuk membuka materi.');
     return;
     <?php endif; ?>
     const modal = document.getElementById('pdfModal');
@@ -651,15 +719,13 @@ function hidePDFProgressUI() {
 }
 
 /* ── PDF.js render ── */
-let pdfDoc = null,
-    totalPages = 0,
-    highestPageSeen = 0;
+let pdfDoc = null, totalPages = 0, highestPageSeen = 0;
 
 if (pdfUrl) {
     pdfjsLib.getDocument(pdfUrl).promise
         .then(pdf => {
-            pdfDoc = pdf;
-            totalPages = pdf.numPages;
+            pdfDoc      = pdf;
+            totalPages  = pdf.numPages;
             renderAllPages();
         })
         .catch(err => console.error('Gagal memuat PDF:', err));
@@ -674,26 +740,21 @@ function renderAllPages() {
 
 function renderPage(pageNum, container) {
     pdfDoc.getPage(pageNum).then(page => {
-        const vp = page.getViewport({
-            scale: 1.2
-        });
+        const vp     = page.getViewport({ scale: 1.2 });
         const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.height = vp.height;
-        canvas.width = vp.width;
+        const ctx    = canvas.getContext('2d');
+        canvas.height       = vp.height;
+        canvas.width        = vp.width;
         canvas.dataset.page = pageNum;
         canvas.style.cssText = 'display:block;margin:0 auto 20px;';
         container.appendChild(canvas);
-        page.render({
-            canvasContext: ctx,
-            viewport: vp
-        });
+        page.render({ canvasContext: ctx, viewport: vp });
     });
 }
 
 function detectPageProgress() {
     if (MATERI_SELESAI) return;
-    const viewer = document.getElementById('pdfViewer');
+    const viewer  = document.getElementById('pdfViewer');
     const canvases = viewer.querySelectorAll('canvas');
     canvases.forEach(canvas => {
         const rect = canvas.getBoundingClientRect();
@@ -720,18 +781,127 @@ function selesaiBacaPDF() {
     window.pdfSelesai = true;
     kirimProgressMateri();
 }
+function openDocViewer(fileUrl) {
+    const ext = fileUrl.split('.').pop().toLowerCase();
+    const body = document.getElementById('docViewerBody');
+    const modal = document.getElementById('docViewerModal');
+    const loading = document.getElementById('docViewerLoading');
+
+    body.innerHTML = '';
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    if (ext === 'xls' || ext === 'xlsx') {
+        // Render Excel pakai SheetJS
+        loading.style.display = 'flex';
+        fetch(fileUrl)
+            .then(r => r.arrayBuffer())
+            .then(data => {
+                const wb = XLSX.read(data, { type: 'array' });
+                let html = '<div style="padding:16px;">';
+
+                // Tab sheet selector jika lebih dari 1 sheet
+                if (wb.SheetNames.length > 1) {
+                    html += '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">';
+                    wb.SheetNames.forEach((name, i) => {
+                        html += `<button onclick="switchSheet(${i})"
+                            id="tab-${i}"
+                            style="padding:6px 14px;border-radius:8px;border:1px solid #e5e7eb;
+                            background:${i===0?'#2563eb':'#f9fafb'};
+                            color:${i===0?'#fff':'#374151'};cursor:pointer;font-size:13px;">
+                            ${name}
+                        </button>`;
+                    });
+                    html += '</div>';
+                }
+                html += '</div>';
+
+                body.innerHTML = html;
+
+                // Simpan workbook untuk switching sheet
+                window._xlsxWb = wb;
+                renderSheet(0);
+                loading.style.display = 'none';
+            })
+            .catch(() => {
+                loading.style.display = 'none';
+                body.innerHTML = '<p style="padding:24px;color:#ef4444;">Gagal memuat file Excel.</p>';
+            });
+
+    } else {
+        // Word/PPT: fallback download saja karena localhost tidak bisa pakai Google Viewer
+        body.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:#6b7280;">
+                <i class="bi bi-file-earmark-fill" style="font-size:64px;color:#d1d5db;"></i>
+                <p style="font-size:15px;font-weight:600;color:#374151;">Pratinjau tidak tersedia untuk tipe file ini</p>
+                <small>Silakan download file untuk membukanya.</small>
+                <a href="${fileUrl}" download style="padding:10px 20px;background:#2563eb;color:#fff;border-radius:10px;text-decoration:none;font-size:14px;">
+                    ⬇ Download File
+                </a>
+            </div>`;
+    }
+}
+
+function renderSheet(index) {
+    const wb = window._xlsxWb;
+    if (!wb) return;
+    const ws = wb.Sheets[wb.SheetNames[index]];
+    const htmlTable = XLSX.utils.sheet_to_html(ws, { editable: false });
+
+    // Update tab aktif
+    wb.SheetNames.forEach((_, i) => {
+        const tab = document.getElementById('tab-' + i);
+        if (tab) {
+            tab.style.background = i === index ? '#2563eb' : '#f9fafb';
+            tab.style.color      = i === index ? '#fff'    : '#374151';
+        }
+    });
+
+    // Inject tabel
+    let tableContainer = document.getElementById('xlsxTableContainer');
+    if (!tableContainer) {
+        tableContainer = document.createElement('div');
+        tableContainer.id = 'xlsxTableContainer';
+        tableContainer.style.cssText = 'padding:0 16px 16px;overflow:auto;';
+        document.getElementById('docViewerBody').appendChild(tableContainer);
+    }
+
+    tableContainer.innerHTML = `
+        <style>
+            #xlsxTableContainer table { border-collapse:collapse; font-size:13px; min-width:100%; }
+            #xlsxTableContainer td, #xlsxTableContainer th {
+                border:1px solid #e5e7eb; padding:6px 10px; white-space:nowrap;
+            }
+            #xlsxTableContainer tr:nth-child(even) { background:#f9fafb; }
+            #xlsxTableContainer tr:first-child td, #xlsxTableContainer tr:first-child th {
+                background:#dbeafe; font-weight:600;
+            }
+        </style>
+        ${htmlTable}`;
+}
+
+function switchSheet(index) {
+    renderSheet(index);
+}
+
+function closeDocViewer() {
+    document.getElementById('docViewerModal').style.display = 'none';
+    document.getElementById('docViewerBody').innerHTML = '';
+    document.body.style.overflow = 'auto';
+    window._xlsxWb = null;
+}
 
 /* ── Realtime lock status update ── */
 setInterval(() => {
     if (!MATERI_PUNYA_VIDEO || !MATERI_PUNYA_FILE) return;
     const msgEl = document.getElementById('lockStatusMessage');
     if (!msgEl) return;
-    const vs = window.videoSelesai ? '✓ Video selesai' : '○ Tonton video sampai selesai';
-    const fs = window.pdfSelesai ? '✓ PDF selesai' : '○ Scroll PDF sampai akhir';
+    const vs = window.videoSelesai ? '✓ Video selesai'  : '○ Tonton video sampai selesai';
+    const fs = window.pdfSelesai   ? '✓ Dokumen selesai' : '○ Buka/scroll dokumen sampai selesai';
     msgEl.innerHTML = vs + '<br>' + fs;
 }, 500);
 </script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
 <?= $this->endSection() ?>

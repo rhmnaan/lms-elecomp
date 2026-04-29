@@ -306,20 +306,48 @@ class DashboardPeserta extends BaseController
     //  MODUL
     // =========================================================
     public function modul()
-    {
-        $focusKelas = $this->request->getGet('kelas');
-        $kelas_list = $this->kelasPesertaModel->getKelasByPeserta($this->idUsers);
+{
+    $focusKelas = $this->request->getGet('kelas');
+    $kelas_list = $this->kelasPesertaModel->getKelasByPeserta($this->idUsers);
+    $db         = \Config\Database::connect();
 
-        foreach ($kelas_list as &$k) {
-            $k['modul_list'] = $this->modulModel->getWithProgress($k['id_kelas'], $this->idUsers);
+    foreach ($kelas_list as &$k) {
+        $k['modul_list'] = $this->modulModel->getWithProgress($k['id_kelas'], $this->idUsers);
+
+        // Hitung jumlah file per tipe untuk setiap modul
+        foreach ($k['modul_list'] as &$m) {
+            $materi_list = $db->table('materi')
+                ->select('file_materi, video_url_materi')
+                ->where('id_modul', $m['id_modul'])
+                ->where('deleted_at IS NULL')
+                ->get()->getResultArray();
+
+            $count = ['pdf' => 0, 'word' => 0, 'excel' => 0, 'ppt' => 0, 'video' => 0];
+
+            foreach ($materi_list as $mt) {
+                if (!empty($mt['video_url_materi'])) {
+                    $count['video']++;
+                }
+                if (!empty($mt['file_materi'])) {
+                    $ext = strtolower(pathinfo($mt['file_materi'], PATHINFO_EXTENSION));
+                    if ($ext === 'pdf')                        $count['pdf']++;
+                    elseif (in_array($ext, ['doc','docx']))   $count['word']++;
+                    elseif (in_array($ext, ['xls','xlsx']))   $count['excel']++;
+                    elseif (in_array($ext, ['ppt','pptx']))   $count['ppt']++;
+                }
+            }
+
+            $m['file_count'] = $count;
         }
-        unset($k);
-
-        return view('Dashboard/Peserta/modul', [
-            'kelas_list'  => $kelas_list,
-            'focus_kelas' => $focusKelas,
-        ]);
+        unset($m);
     }
+    unset($k);
+
+    return view('Dashboard/Peserta/modul', [
+        'kelas_list'  => $kelas_list,
+        'focus_kelas' => $focusKelas,
+    ]);
+}
 
     // =========================================================
     //  MATERI LIST

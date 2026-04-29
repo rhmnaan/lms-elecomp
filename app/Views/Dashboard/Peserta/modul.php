@@ -216,6 +216,32 @@
     background: #dbeafe;
     color: #1e3a8a;
 }
+/* ── FILE TYPE BADGES ── */
+.mc-file-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.mc-file-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.mc-file-badge.pdf   { background: #fff1f2; color: #e11d48; }
+.mc-file-badge.word  { background: #eff6ff; color: #2563eb; }
+.mc-file-badge.excel { background: #f0fdf4; color: #059669; }
+.mc-file-badge.ppt   { background: #fff7ed; color: #ea580c; }
+.mc-file-badge.video { background: #fefce8; color: #ca8a04; }
 </style>
 <?= $this->endSection() ?>
 
@@ -301,14 +327,48 @@ if ($focusKelas && !empty($tampilList)) {
                 <div class="mc-title"><?= esc($m['judul_modul']) ?></div>
             </div>
             <div class="mc-body">
-                <div class="mc-progress-row">
-                    <span><?= $m['total_materi'] ?> materi</span>
-                    <span><?= $m['persen'] ?>%</span>
-                </div>
-                <div class="mc-bar">
-                    <div class="mc-bar-fill" style="width:<?= $m['persen'] ?>%"></div>
-                </div>
-            </div>
+    <div class="mc-progress-row">
+        <span><?= $m['total_materi'] ?> materi</span>
+        <span><?= $m['persen'] ?>%</span>
+    </div>
+    <div class="mc-bar">
+        <div class="mc-bar-fill" style="width:<?= $m['persen'] ?>%"></div>
+    </div>
+
+    <?php
+        $fc = $m['file_count'] ?? [];
+        $adaBadge = !empty(array_filter($fc));
+    ?>
+    <?php if ($adaBadge): ?>
+    <div class="mc-file-badges">
+        <?php if (!empty($fc['pdf'])): ?>
+            <span class="mc-file-badge pdf">
+                <i class="bi bi-file-earmark-pdf-fill"></i> PDF <?= $fc['pdf'] ?>
+            </span>
+        <?php endif; ?>
+        <?php if (!empty($fc['word'])): ?>
+            <span class="mc-file-badge word">
+                <i class="bi bi-file-earmark-word-fill"></i> Word <?= $fc['word'] ?>
+            </span>
+        <?php endif; ?>
+        <?php if (!empty($fc['excel'])): ?>
+            <span class="mc-file-badge excel">
+                <i class="bi bi-file-earmark-excel-fill"></i> Excel <?= $fc['excel'] ?>
+            </span>
+        <?php endif; ?>
+        <?php if (!empty($fc['ppt'])): ?>
+            <span class="mc-file-badge ppt">
+                <i class="bi bi-file-earmark-ppt-fill"></i> PPT <?= $fc['ppt'] ?>
+            </span>
+        <?php endif; ?>
+        <?php if (!empty($fc['video'])): ?>
+            <span class="mc-file-badge video">
+                <i class="bi bi-play-circle-fill"></i> Video <?= $fc['video'] ?>
+            </span>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+</div>
             <div class="mc-footer">
                 <span class="mc-badge <?= $badgeCls ?>"><?= $badgeTxt ?></span>
                 <a href="<?= base_url('dashboard/peserta/materi-modul/' . $m['id_modul']) ?>" class="btn-lihat-materi">
