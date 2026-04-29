@@ -107,6 +107,19 @@ class KelasPeserta extends BaseController
                 ->with('error', 'Kelas ini terkunci. Silakan klaim voucher terlebih dahulu.');
         }
 
+        // 🔐 CEK AKSES KELAS (izin masuk)
+        $kelasPeserta = $this->pesertaKelasModel
+            ->where('id_users', $id_users)
+            ->where('id_kelas', $id_kelas)
+            ->where('status', 'aktif')
+            ->first();
+
+        if (! $kelasPeserta) {
+            return redirect()
+                ->to('dashboard/peserta/kelas-saya')
+                ->with('error', 'Akses kelas ini telah berakhir');
+        }
+        
         $data['kelas'] = $this->kelasModel->find($id_kelas);
 
         if (! $data['kelas']) {
@@ -123,26 +136,44 @@ class KelasPeserta extends BaseController
      */
     public function kelasSaya()
     {
+        helper('text');
+
         $id_users = session('id_users');
         $db       = \Config\Database::connect();
+        $db->table('kelas_peserta')
+        ->where('tanggal_berakhir IS NOT NULL')
+        ->where('tanggal_berakhir < NOW()')
+        ->where('status', 'aktif')
+        ->update([
+            'status'     => 'expired',
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
 
         $kelas = $db->table('kelas_peserta kp')
-            ->select('
-                k.id_kelas,
-                k.nama_kelas,
-                k.deskripsi_kelas,
-                k.id_program,
-                k.id_users as id_pengajar,
-                p.nama_program,
-                u.nama_users as nama_pengajar
-            ')
-            ->join('kelas k', 'k.id_kelas = kp.id_kelas')
-            ->join('program p', 'p.id_program = k.id_program', 'left')
-            ->join('users u', 'u.id_users = k.id_users', 'left')
-            ->where('kp.id_users', $id_users)
-            ->where('kp.deleted_at IS NULL')
-            ->get()
-            ->getResultArray();
+        ->select('
+            kp.id_kelas_peserta,
+            kp.tanggal_daftar_kelas_peserta,
+            kp.tanggal_berakhir,
+            kp.status,
+
+            k.id_kelas,
+            k.nama_kelas,
+            k.deskripsi_kelas,
+            k.gambar_kelas,
+            k.id_program,
+            k.id_users as id_pengajar,
+
+            p.nama_program,
+            u.nama_users as nama_pengajar
+        ')
+        ->join('kelas k', 'k.id_kelas = kp.id_kelas')
+        ->join('program p', 'p.id_program = k.id_program', 'left')
+        ->join('users u', 'u.id_users = k.id_users', 'left')
+        ->where('kp.id_users', $id_users)
+        ->where('kp.deleted_at IS NULL')
+        ->where('kp.status', 'aktif')
+        ->get()
+        ->getResultArray();
 
         // Debug: log jumlah kelas
         log_message('debug', 'User ' . $id_users . ' has ' . count($kelas) . ' kelas in kelas-saya');
@@ -150,6 +181,24 @@ class KelasPeserta extends BaseController
         // Hitung progress & kelompokkan per program
         $grouped = [];
         foreach ($kelas as &$k) {
+
+            if (! empty($k['tanggal_berakhir'])) {
+                $now   = new \DateTime();
+                $akhir = new \DateTime($k['tanggal_berakhir']);
+
+                if ($akhir < $now) {
+                    $k['sisa_hari']    = 0;
+                    $k['status_akses'] = 'expired';
+                } else {
+                    $diff = $now->diff($akhir);
+                    $k['sisa_hari']    = (int) $diff->days;
+                    $k['status_akses'] = 'aktif';
+                }
+            } else {
+                $k['sisa_hari']    = null; // akses selamanya
+                $k['status_akses'] = 'aktif';
+            }
+
             $total_materi = $db->table('materi ma')
                 ->join('modul m', 'm.id_modul = ma.id_modul')
                 ->where('m.id_kelas', $k['id_kelas'])

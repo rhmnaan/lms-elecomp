@@ -8,290 +8,303 @@
 
 <?php echo $this->section('styles') ?>
 <style>
+/* ============================================================
+   KELAS GRID
+   ============================================================ */
 .kelas-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
 }
 
+/* ============================================================
+   CARD
+   ============================================================ */
 .kelas-card {
     background: #fff;
-    border-radius: 18px;
+    border-radius: 14px;
+    border: 1px solid #f0f0f0;
     overflow: hidden;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, .06);
-    transition: transform .2s, box-shadow .2s;
+    transition: transform .18s, box-shadow .18s, border-color .18s;
 }
 
 .kelas-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .11);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+    border-color: #e0e0e0;
 }
 
+/* ============================================================
+   BANNER
+   ============================================================ */
 .kc-banner {
-    padding: 22px 22px 18px;
     position: relative;
-    overflow: hidden;
-    min-height: 120px;
+    height: 128px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-}
-
-.kc-banner::before {
-    content: '';
-    position: absolute;
-    right: -20px;
-    top: -20px;
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, .10);
-}
-
-.kc-banner::after {
-    content: '';
-    position: absolute;
-    right: 55px;
-    bottom: -30px;
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, .06);
+    padding: 12px 14px;
+    overflow: hidden;
 }
 
 .banner-blue {
-    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    background: #185FA5;
 }
 
 .banner-green {
-    background: linear-gradient(135deg, #065f46, #10b981);
+    background: #0F6E56;
 }
 
 .banner-orange {
-    background: linear-gradient(135deg, #92400e, #f59e0b);
+    background: #854F0B;
 }
 
 .banner-purple {
-    background: linear-gradient(135deg, #4c1d95, #8b5cf6);
+    background: #534AB7;
 }
 
+/* Banner dengan gambar */
+.kc-banner.has-image {
+    background-size: cover;
+    background-position: center;
+}
+
+.kc-banner.has-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, .72) 0%, rgba(0, 0, 0, .18) 60%, transparent 100%);
+    z-index: 1;
+}
+
+/* Badge durasi */
+.badge-duration {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .48);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+}
+
+.badge-duration i {
+    font-size: 11px;
+}
+
+/* Icon */
 .kc-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, .2);
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .18);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 16px;
     color: #fff;
-    margin-bottom: 10px;
+    margin-bottom: 7px;
     position: relative;
-    z-index: 1;
+    z-index: 2;
 }
 
+/* Nama kelas */
 .kc-nama {
-    font-size: 15px;
-    font-weight: 800;
+    font-size: 13.5px;
+    font-weight: 600;
     color: #fff;
-    font-family: 'DM Sans', sans-serif;
+    line-height: 1.35;
     position: relative;
-    z-index: 1;
-    line-height: 1.3;
+    z-index: 2;
 }
 
+/* ============================================================
+   BODY
+   ============================================================ */
 .kc-body {
-    padding: 16px 20px 0;
+    padding: 12px 14px 0;
 }
 
-.kc-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    border-top: 1px solid #f3f4f6;
-}
-
-.kc-meta {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.kc-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
+/* Deskripsi — hanya tampil jika ada */
+.kc-desc {
     font-size: 12px;
     color: #6b7280;
-    font-weight: 500;
+    line-height: 1.6;
+    margin-bottom: 10px;
+
+    /* CLAMP */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+
+    /* INI KUNCI KONSISTENSI */
+    min-height: 38px;
 }
 
-.kc-meta-item i {
-    font-size: 12px;
-    color: #9ca3af;
-}
-
-/* ===============================
-       PRICE BOX
-    ================================ */
+/* ============================================================
+   PRICE BOX
+   ============================================================ */
 .price-box {
-    padding: 14px 16px;
     background: #f9fafb;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #f0f0f0;
+    border-radius: 10px;
+    padding: 11px 12px;
 }
 
 .price-label {
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 10px;
+    font-weight: 600;
     color: #9ca3af;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: .5px;
     margin-bottom: 2px;
 }
 
 .price-value {
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 16px;
+    font-weight: 700;
     color: #111827;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
-/* ===============================
-       ACTION BUTTONS
-    ================================ */
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
 .btn-actions {
     display: flex;
-    gap: 8px;
-}
-
-.btn-beli {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     gap: 6px;
-    padding: 9px 12px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #3b82f6, #1e40af);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: all .2s;
 }
 
-.btn-beli:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, .35);
-    color: #fff;
-    text-decoration: none;
-}
-
-.btn-beli.disabled,
-.btn-beli[disabled] {
-    background: #d1d5db;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
+.btn-beli,
 .btn-voucher {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 9px 12px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #10b981, #065f46);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-    border: none;
+    gap: 5px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 600;
+    border: 1px solid transparent;
     cursor: pointer;
-    transition: all .2s;
+    text-decoration: none;
+    transition: background .15s, transform .15s;
+}
+
+.btn-beli {
+    background: #185FA5;
+    color: #fff;
+    border-color: #185FA5;
+}
+
+.btn-beli:hover {
+    background: #0C447C;
+    border-color: #0C447C;
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.btn-voucher {
+    background: #0F6E56;
+    color: #fff;
+    border-color: #0F6E56;
 }
 
 .btn-voucher:hover {
+    background: #085041;
+    border-color: #085041;
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(16, 185, 129, .35);
 }
 
-.btn-voucher:disabled {
-    background: #d1d5db;
+/* Disabled — konsisten untuk keduanya */
+.btn-beli[disabled],
+.btn-voucher[disabled] {
+    background: #f3f4f6;
+    color: #9ca3af;
+    border-color: #e5e7eb;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
-/* ===============================
-       EMPTY STATE
-    ================================ */
+/* ============================================================
+   FOOTER META
+   ============================================================ */
+.kc-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 14px;
+    border-top: 1px solid #f3f4f6;
+    margin-top: 10px;
+}
+
+.kc-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.kc-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+.kc-meta-item i {
+    font-size: 11px;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
 .empty-state {
     text-align: center;
-    padding: 70px 20px;
+    padding: 56px 20px;
     background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, .05);
+    border-radius: 14px;
+    border: 1px solid #f0f0f0;
 }
 
 .empty-icon {
-    font-size: 48px;
-    margin-bottom: 14px;
+    font-size: 40px;
     color: #d1d5db;
+    margin-bottom: 12px;
 }
 
 .empty-title {
-    font-size: 16px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
     color: #374151;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .empty-desc {
-    font-size: 13px;
+    font-size: 12.5px;
     color: #9ca3af;
 }
 
-/* ===============================
-       BACK BUTTON
-    ================================ */
-.btn-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    font-size: 12.5px;
-    font-weight: 700;
-    color: #374151;
-    background: #f3f4f6;
-    border-radius: 12px;
-    text-decoration: none;
-    transition: all .2s;
-}
-
-.btn-back i {
-    font-size: 14px;
-}
-
-.btn-back:hover {
-    background: #e5e7eb;
-    transform: translateX(-2px);
-    text-decoration: none;
-}
-
-/* ===============================
-       PAGE HEADER
-    ================================ */
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     gap: 12px;
 }
 
@@ -301,55 +314,30 @@
     gap: 4px;
 }
 
-@media (max-width: 576px) {
-    .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .btn-actions {
-        flex-direction: column;
-    }
-}
-
-/* ===============================
-       CLAIM STATUS
-    ================================ */
-.claim-status {
-    display: flex;
+.btn-back {
+    display: inline-flex;
     align-items: center;
-}
-
-.status-ready {
+    gap: 6px;
+    padding: 6px 14px;
     font-size: 12px;
-    font-weight: 700;
-    padding: 6px 12px;
+    font-weight: 600;
+    color: #374151;
+    background: #f3f4f6;
     border-radius: 8px;
-    background: #f0f9ff;
-    color: #0369a1;
+    text-decoration: none;
+    transition: background .15s, transform .15s;
+    width: fit-content;
 }
 
-.status-success {
-    font-size: 12px;
-    font-weight: 700;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: #f0fdf4;
-    color: #166534;
+.btn-back:hover {
+    background: #e5e7eb;
+    transform: translateX(-2px);
+    text-decoration: none;
 }
 
-.status-error {
-    font-size: 12px;
-    font-weight: 700;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: #fef2f2;
-    color: #dc2626;
-}
-
-/* ===============================
-       MODAL VOUCHER (custom — tidak pakai Bootstrap show/hide)
-    ================================ */
+/* ============================================================
+   MODAL VOUCHER
+   ============================================================ */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -367,17 +355,17 @@
 
 .modal-box {
     background: #fff;
-    border-radius: 20px;
+    border-radius: 16px;
     width: 100%;
-    max-width: 440px;
+    max-width: 420px;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
-    animation: modalIn .2s ease;
+    border: 1px solid #e5e7eb;
+    animation: modalIn .18s ease;
 }
 
 @keyframes modalIn {
     from {
-        transform: scale(.94);
+        transform: scale(.95);
         opacity: 0;
     }
 
@@ -391,82 +379,84 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 22px;
-    background: linear-gradient(135deg, #10b981, #065f46);
+    padding: 14px 18px;
+    background: #0F6E56;
     color: #fff;
 }
 
 .modal-head h5 {
     margin: 0;
-    font-size: 15px;
-    font-weight: 800;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
 }
 
 .modal-close {
-    background: rgba(255, 255, 255, .2);
+    background: rgba(255, 255, 255, .18);
     border: none;
     color: #fff;
-    border-radius: 8px;
-    width: 30px;
-    height: 30px;
+    border-radius: 6px;
+    width: 26px;
+    height: 26px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background .2s;
+    transition: background .15s;
 }
 
 .modal-close:hover {
-    background: rgba(255, 255, 255, .35);
+    background: rgba(255, 255, 255, .3);
 }
 
 .modal-body {
-    padding: 22px;
+    padding: 18px;
 }
 
 .modal-nama-kelas {
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 12.5px;
+    font-weight: 600;
     color: #111827;
-    background: #f3f4f6;
-    padding: 10px 14px;
-    border-radius: 10px;
-    margin-bottom: 16px;
+    background: #f9fafb;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 12px;
 }
 
 .modal-note {
     font-size: 12px;
     color: #6b7280;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     line-height: 1.6;
 }
 
 .modal-input-group {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .modal-input-group label {
     display: block;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11.5px;
+    font-weight: 600;
     color: #374151;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .modal-input-group input {
     width: 100%;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1.5px solid #d1d5db;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
     font-size: 13px;
     outline: none;
-    transition: border-color .2s;
+    transition: border-color .15s;
     box-sizing: border-box;
 }
 
 .modal-input-group input:focus {
-    border-color: #10b981;
+    border-color: #0F6E56;
 }
 
 .modal-hint {
@@ -477,11 +467,11 @@
 
 .modal-alert {
     display: none;
-    padding: 10px 14px;
-    border-radius: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
-    margin-top: 14px;
+    margin-top: 12px;
 }
 
 .modal-alert.success {
@@ -500,30 +490,45 @@
 
 .btn-submit-voucher {
     width: 100%;
-    padding: 11px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #10b981, #065f46);
+    padding: 10px;
+    border-radius: 8px;
+    background: #0F6E56;
     color: #fff;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
     border: none;
     cursor: pointer;
-    margin-top: 16px;
+    margin-top: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    transition: all .2s;
+    gap: 7px;
+    transition: background .15s, transform .15s;
 }
 
 .btn-submit-voucher:hover:not(:disabled) {
+    background: #085041;
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(16, 185, 129, .35);
 }
 
 .btn-submit-voucher:disabled {
-    background: #d1d5db;
+    background: #e5e7eb;
+    color: #9ca3af;
     cursor: not-allowed;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 576px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-actions {
+        flex-direction: column;
+    }
 }
 </style>
 <?php echo $this->endSection() ?>
@@ -564,6 +569,26 @@
 ?>
 
 <div class="kelas-grid">
+
+    <?php
+    function formatDurasi($hari)
+    {
+        if (empty($hari) || $hari <= 0) {
+            return 'Durasi fleksibel';
+        }
+
+        if ($hari % 30 === 0) {
+            return ($hari / 30) . ' Bulan';
+        }
+
+        if ($hari % 7 === 0) {
+            return ($hari / 7) . ' Minggu';
+        }
+
+        return $hari . ' Hari';
+    }
+    
+    ?>
     <?php foreach ($kelas_list as $i => $k):
             $ci = $i % 4;
 
@@ -575,46 +600,73 @@
     ?>
     <div class="kelas-card">
 
-        <!-- BANNER -->
+        <!-- BANNER dengan Gambar atau Warna Default -->
+        <?php if (!empty($k['gambar_kelas'])): ?>
+        <div class="kc-banner has-image"
+            style="background:url('<?php echo base_url('uploads/kelas/' . $k['gambar_kelas']) ?>') center/cover;">
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,.35)"></div>
+
+            <!-- BADGE DURASI -->
+            <div class="badge-duration">
+                <i class="bi bi-stopwatch"></i>
+                <?php echo formatDurasi($k['durasi_hari']) ?>
+            </div>
+
+            <div style="position: relative; z-index: 1;">
+                <div class="kc-nama"><?php echo esc($k['nama_kelas']) ?></div>
+            </div>
+        </div>
+        <?php else: ?>
         <div class="kc-banner <?php echo $banners[$ci] ?>">
             <div class="kc-icon"><i class="bi <?php echo $icons[$ci] ?>"></i></div>
+
+            <div class="badge-duration">
+                <i class="bi bi-stopwatch"></i>
+                <?php echo formatDurasi($k['durasi_hari']) ?>
+            </div>
+
             <div class="kc-nama"><?php echo esc($k['nama_kelas']) ?></div>
         </div>
+        <?php endif; ?>
 
         <!-- BODY -->
         <div class="kc-body">
+            <?php if (!empty($k['deskripsi_kelas'])): ?>
+            <p class="kc-desc">
+                <?php echo !empty($k['deskripsi_kelas']) 
+                ? esc($k['deskripsi_kelas']) 
+                : '&nbsp;'; ?>
+            </p>
+            <?php endif; ?>
+
             <div class="price-box">
                 <div class="price-label">Harga</div>
                 <div class="price-value">Rp <?php echo number_format($k['harga'] ?? 0, 0, ',', '.') ?></div>
 
                 <div class="btn-actions">
-
-                    <!-- TOMBOL 1: BELI KELAS -->
                     <?php if ($hasLynk): ?>
                     <a href="<?php echo esc($k['lynk_url']) ?>" target="_blank" class="btn-beli">
                         <i class="bi bi-cart-plus"></i> Beli Kelas
                     </a>
                     <?php else: ?>
-                    <button class="btn-beli" disabled title="Link pembayaran belum tersedia">
+                    <button class="btn-beli" disabled>
                         <i class="bi bi-cart-plus"></i> Beli Kelas
                     </button>
                     <?php endif; ?>
 
-                    <!-- TOMBOL 2: CLAIM VOUCHER -->
                     <?php if ($hasVoucher): ?>
                     <button class="btn-voucher open-voucher-modal" data-kelas-id="<?php echo $k['id_kelas'] ?>"
                         data-nama-kelas="<?php echo esc($k['nama_kelas']) ?>">
                         <i class="bi bi-ticket-perforated"></i> Voucher
                     </button>
                     <?php else: ?>
-                    <button class="btn-voucher" disabled title="Voucher tidak tersedia">
+                    <button class="btn-voucher" disabled>
                         <i class="bi bi-ticket-perforated"></i> Voucher
                     </button>
                     <?php endif; ?>
-
-                </div><!-- /.btn-actions -->
-            </div><!-- /.price-box -->
-        </div><!-- /.kc-body -->
+                </div>
+            </div>
+        </div>
 
         <!-- FOOTER -->
         <div class="kc-footer">

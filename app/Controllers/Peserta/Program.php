@@ -80,12 +80,14 @@ class Program extends BaseController
         // Ambil kelas yang belum diakses
         // ===============================
         $query = $db->table('kelas k')
-            ->select('
+           ->select('
                 k.id_kelas,
                 k.nama_kelas,
                 k.deskripsi_kelas,
                 k.harga,
                 k.lynk_url,
+                k.durasi_hari,
+                k.gambar_kelas,
                 COUNT(DISTINCT m.id_modul) AS total_modul,
                 COUNT(DISTINCT ma.id_materi) AS total_materi,
                 COUNT(DISTINCT v.id_voucher) AS voucher_count

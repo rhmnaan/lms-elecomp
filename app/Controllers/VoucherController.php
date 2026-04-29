@@ -103,12 +103,22 @@ class VoucherController extends BaseController
             ]);
 
             // b. Daftarkan user ke kelas
+
+            $durasiHari = (int) ($voucher['durasi_hari'] ?? 0);
+
+            $tanggalMulai   = date('Y-m-d H:i:s');
+            $tanggalBerakhir = $durasiHari > 0
+                ? date('Y-m-d H:i:s', strtotime("+{$durasiHari} days"))
+                : null;
+
+                
             $this->kelasPesertaModel->insert([
                 'id_users'                     => $id_users,
                 'id_kelas'                     => $id_kelas,
-                'tanggal_daftar_kelas_peserta' => date('Y-m-d H:i:s'),
+                'tanggal_daftar_kelas_peserta' => $tanggalMulai,
+                'tanggal_berakhir'             => $tanggalBerakhir,
+                'status'                       => 'aktif',
             ]);
-
             // c. Kurangi kuota voucher (nonaktifkan jika habis)
             $this->voucherModel->claimVoucher($voucher['id_voucher']);
 

@@ -15,7 +15,12 @@ class KelasPesertaModel extends Model
     protected $allowedFields = [
         'id_kelas',
         'id_users',
-        'tanggal_daftar_kelas_peserta'
+        'tanggal_daftar_kelas_peserta',
+        'tanggal_berakhir',
+        'status',
+        'created_at',
+        'updated_at',
+        'deleted_at'
     ];
     
     protected $useTimestamps = true;
