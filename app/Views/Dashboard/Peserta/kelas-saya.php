@@ -7,186 +7,341 @@
 <?php echo $this->endSection() ?>
 
 <?php echo $this->section('styles') ?>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
 <style>
-/* ── FILTER TABS ── */
-.filter-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 24px;
+/* ─────────────────────────────────────────
+   ROOT & RESET
+───────────────────────────────────────── */
+.ks-root {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    padding-bottom: 2rem;
 }
 
-.filter-tab {
+/* ─────────────────────────────────────────
+   PAGE HEADER
+───────────────────────────────────────── */
+.ks-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ks-header-left h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+}
+
+.ks-header-left p {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.ks-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.ks-badge i {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* ─────────────────────────────────────────
+   FILTER TABS
+───────────────────────────────────────── */
+.ks-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.25rem;
+}
+
+.ks-tab {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: 6px;
+    padding: 7px 16px;
     border-radius: 99px;
     border: 1.5px solid #e5e7eb;
     background: #fff;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #6b7280;
     cursor: pointer;
-    transition: all .15s;
+    transition: all 0.15s;
     user-select: none;
 }
 
-.filter-tab:hover {
-    border-color: #2d6cdf;
-    color: #2d6cdf;
-}
-
-.filter-tab.active {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
-    color: #fff;
-}
-
-.filter-tab .tab-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 22px;
-    height: 22px;
-    padding: 0 6px;
-    border-radius: 99px;
-    font-size: 11px;
-    font-weight: 700;
-    background: rgba(255, 255, 255, .25);
-    color: inherit;
-}
-
-.filter-tab:not(.active) .tab-count {
-    background: #f3f4f6;
+.ks-tab:hover {
+    border-color: #9ca3af;
     color: #374151;
 }
 
-/* ── KELAS GRID ── */
-.kelas-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+.ks-tab.active {
+    background: #111827;
+    border-color: #111827;
+    color: #fff;
 }
 
+.ks-tab .cnt {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(0, 0, 0, 0.08);
+    color: inherit;
+}
+
+.ks-tab.active .cnt {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ─────────────────────────────────────────
+   INFO ROW
+───────────────────────────────────────── */
+.ks-info {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.ks-info strong {
+    color: #111827;
+    font-weight: 700;
+}
+
+/* ─────────────────────────────────────────
+   KELAS GRID
+───────────────────────────────────────── */
+.ks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+}
+
+/* ─────────────────────────────────────────
+   KELAS CARD
+───────────────────────────────────────── */
 .kelas-card {
     background: #fff;
+    border: 1px solid #f0f0f0;
     border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, .06);
-    transition: transform .2s, box-shadow .2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .kelas-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .11);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.09);
+    border-color: #e5e7eb;
 }
 
+/* ── BANNER ── */
 .kc-banner {
-    padding: 22px 22px 18px;
-    position: relative;
-    overflow: hidden;
-    min-height: 120px;
+    padding: 20px 22px;
+    min-height: 118px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
 }
 
+/* Dark gradient palettes */
+.banner-blue {
+    background: #0F172A;
+}
+
+.banner-teal {
+    background: #064E3B;
+}
+
+.banner-amber {
+    background: #451A03;
+}
+
+.banner-purple {
+    background: #2E1065;
+}
+
+/* Decorative blobs */
 .kc-banner::before {
     content: '';
     position: absolute;
-    right: -20px;
-    top: -20px;
     width: 110px;
     height: 110px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, .10);
+    background: rgba(255, 255, 255, 0.06);
+    right: -28px;
+    top: -28px;
 }
 
 .kc-banner::after {
     content: '';
     position: absolute;
-    right: 55px;
-    bottom: -30px;
-    width: 70px;
-    height: 70px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, .06);
+    background: rgba(255, 255, 255, 0.04);
+    right: 55px;
+    bottom: -22px;
 }
 
-.banner-blue {
-    background: linear-gradient(135deg, #1e40af, #3b82f6);
+/* banner with image override */
+.kc-banner-img {
+    min-height: 160px;
+    background-size: cover;
+    background-position: center;
 }
 
-.banner-green {
-    background: linear-gradient(135deg, #065f46, #10b981);
+.kc-banner-img .kc-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.38);
 }
 
-.banner-orange {
-    background: linear-gradient(135deg, #92400e, #f59e0b);
-}
-
-.banner-purple {
-    background: linear-gradient(135deg, #4c1d95, #8b5cf6);
+/* ── BANNER TOP ROW ── */
+.kc-banner-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
 }
 
 .kc-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, .2);
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 17px;
+}
+
+.icon-blue {
+    background: rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+}
+
+.icon-teal {
+    background: rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+}
+
+.icon-amber {
+    background: rgba(245, 158, 11, 0.25);
+    color: #fcd34d;
+}
+
+.icon-purple {
+    background: rgba(139, 92, 246, 0.25);
+    color: #c4b5fd;
+}
+
+.kc-pct-pill {
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.18);
     color: #fff;
-    margin-bottom: 10px;
+    backdrop-filter: blur(4px);
+}
+
+/* ── BANNER BOTTOM ── */
+.kc-banner-bottom {
     position: relative;
     z-index: 1;
 }
 
 .kc-nama {
-    font-size: 15px;
+    font-size: 14.5px;
     font-weight: 800;
     color: #fff;
-    position: relative;
-    z-index: 1;
     line-height: 1.3;
+    margin-bottom: 3px;
 }
 
 .kc-pengajar {
     font-size: 11.5px;
-    color: rgba(255, 255, 255, .75);
-    margin-top: 3px;
-    position: relative;
-    z-index: 1;
+    color: rgba(255, 255, 255, 0.55);
 }
 
+/* ── STATUS BADGE (selesai) ── */
+.kc-done-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* ── BODY ── */
 .kc-body {
-    padding: 16px 20px 0;
+    padding: 14px 20px 2px;
 }
 
-.kc-progress-head {
+.kc-desc {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.kc-prog-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
-.kc-progress-lbl {
-    font-size: 12px;
-    color: #6b7280;
+.kc-prog-lbl {
+    font-size: 11.5px;
+    color: #9ca3af;
     font-weight: 500;
 }
 
-.kc-progress-pct {
-    font-size: 13px;
+.kc-prog-pct {
+    font-size: 12px;
     font-weight: 800;
-    color: #2d6cdf;
+    color: #374151;
 }
 
 .kc-bar {
-    height: 5px;
+    height: 4px;
     background: #f3f4f6;
     border-radius: 99px;
     overflow: hidden;
@@ -196,182 +351,117 @@
 .kc-bar-fill {
     height: 100%;
     border-radius: 99px;
-    background: linear-gradient(to right, #2d6cdf, #60a5fa);
-    transition: width .7s ease;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.fill-blue {
+    background: linear-gradient(90deg, #3b82f6, #93c5fd);
+}
+
+.fill-teal {
+    background: linear-gradient(90deg, #10b981, #6ee7b7);
+}
+
+.fill-amber {
+    background: linear-gradient(90deg, #f59e0b, #fcd34d);
+}
+
+.fill-purple {
+    background: linear-gradient(90deg, #8b5cf6, #c4b5fd);
+}
+
+/* ── FOOTER ── */
 .kc-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 20px;
-    border-top: 1px solid #f3f4f6;
+    padding: 10px 20px 14px;
+    border-top: 1px solid #f9fafb;
 }
 
 .kc-meta {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .kc-meta-item {
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    color: #6b7280;
+    gap: 4px;
+    font-size: 11.5px;
+    color: #9ca3af;
     font-weight: 500;
 }
 
 .kc-meta-item i {
-    font-size: 12px;
-    color: #9ca3af;
+    font-size: 11px;
 }
 
+/* ── CTA BUTTON ── */
 .btn-lanjut {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
-    padding: 6px 14px;
+    padding: 6px 13px;
     border-radius: 10px;
     text-decoration: none;
-    transition: all .15s;
+    transition: all 0.15s;
+    white-space: nowrap;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.btn-lanjut-blue {
-    background: #eff6ff;
-    color: #2d6cdf;
+.btn-lanjut i {
+    font-size: 10px;
 }
 
-.btn-lanjut-blue:hover {
-    background: #2d6cdf;
-    color: #fff;
+.btn-blue {
+    background: rgba(59, 130, 246, 0.10);
+    color: #2563eb;
 }
 
-.btn-lanjut-green {
-    background: #f0fdf4;
+.btn-teal {
+    background: rgba(16, 185, 129, 0.10);
     color: #059669;
 }
 
-.btn-lanjut-green:hover {
-    background: #059669;
-    color: #fff;
-}
-
-.btn-lanjut-orange {
-    background: #fff7ed;
+.btn-amber {
+    background: rgba(245, 158, 11, 0.10);
     color: #d97706;
 }
 
-.btn-lanjut-orange:hover {
-    background: #d97706;
-    color: #fff;
-}
-
-.btn-lanjut-purple {
-    background: #f5f3ff;
+.btn-purple {
+    background: rgba(139, 92, 246, 0.10);
     color: #7c3aed;
 }
 
-.btn-lanjut-purple:hover {
+.btn-blue:hover {
+    background: #2563eb;
+    color: #fff;
+    text-decoration: none;
+}
+
+.btn-teal:hover {
+    background: #059669;
+    color: #fff;
+    text-decoration: none;
+}
+
+.btn-amber:hover {
+    background: #d97706;
+    color: #fff;
+    text-decoration: none;
+}
+
+.btn-purple:hover {
     background: #7c3aed;
     color: #fff;
-}
-
-/* ── INFO ROW ── */
-.info-row {
-    font-size: 13px;
-    color: #6b7280;
-    margin-bottom: 16px;
-}
-
-.info-row strong {
-    color: #111827;
-}
-
-/* ── EMPTY STATE ── */
-.empty-state {
-    text-align: center;
-    padding: 70px 20px;
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 1px 8px rgba(0, 0, 0, .05);
-}
-
-.empty-icon {
-    font-size: 48px;
-    margin-bottom: 14px;
-    color: #d1d5db;
-}
-
-.empty-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: #374151;
-    margin-bottom: 5px;
-}
-
-.empty-desc {
-    font-size: 13px;
-    color: #9ca3af;
-    margin-bottom: 16px;
-}
-
-.empty-btn {
-    display: inline-block;
-    padding: 10px 22px;
-    background: linear-gradient(135deg, #2d6cdf, #3b82f6);
-    color: #fff;
-    border-radius: 10px;
     text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
-    transition: all .2s;
 }
 
-.empty-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(45, 108, 223, .35);
-    color: #fff;
-}
-
-/* ── PAGE HEADER ── */
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 12px;
-}
-
-.page-header-left h1 {
-    font-size: 24px;
-    font-weight: 800;
-    color: #111827;
-    margin: 0 0 4px;
-}
-
-.page-header-left p {
-    font-size: 13px;
-    color: #6b7280;
-    margin: 0;
-}
-
-.date-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    background: #f3f4f6;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #374151;
-    white-space: nowrap;
-}
-
+/* ── PANEL TOGGLE ── */
 .program-panel {
     display: none;
 }
@@ -380,14 +470,73 @@
     display: block;
 }
 
+/* ─────────────────────────────────────────
+   EMPTY STATE
+───────────────────────────────────────── */
+.empty-state {
+    text-align: center;
+    padding: 72px 24px;
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+.empty-icon {
+    font-size: 44px;
+    color: #d1d5db;
+    margin-bottom: 14px;
+}
+
+.empty-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.empty-desc {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 20px;
+}
+
+.empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    background: #111827;
+    color: #fff;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.empty-btn:hover {
+    background: #1f2937;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(17, 24, 39, 0.25);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
 @media (max-width: 576px) {
-    .page-header {
+    .ks-header {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .page-header-left h1 {
-        font-size: 18px;
+    .ks-header-left h1 {
+        font-size: 20px;
+    }
+
+    .ks-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>
@@ -395,213 +544,307 @@
 
 <?php echo $this->section('content') ?>
 
-<!-- PAGE HEADER -->
-<div class="page-header">
-    <div class="page-header-left">
-        <h1>Kelas Saya</h1>
-        <p>Kelola dan lanjutkan pembelajaran di kelas yang telah kamu claim.</p>
-    </div>
-    <div class="date-badge">
-        <i class="bi bi-mortarboard-fill"></i>
-        <span><?php echo $total_kelas ?> Kelas</span>
-    </div>
-</div>
-
-<?php if (empty($grouped)): ?>
-
-<div class="empty-state">
-    <div class="empty-icon"><i class="bi bi-inbox"></i></div>
-    <div class="empty-title">Belum Ada Kelas</div>
-    <div class="empty-desc">Kamu belum mengklaim kelas apapun. Temukan dan klaim kelas sekarang!</div>
-    <a href="<?php echo base_url('dashboard/peserta/program') ?>" class="empty-btn">
-        <i class="bi bi-search"></i> Temukan Kelas
-    </a>
-</div>
-
-<?php else: ?>
-
 <?php
-    $banners     = ['banner-blue', 'banner-green', 'banner-orange', 'banner-purple'];
-    $icons       = ['bi-lightning-charge-fill', 'bi-cpu-fill', 'bi-tools', 'bi-diagram-3-fill'];
-    $btnCls      = ['btn-lanjut-blue', 'btn-lanjut-green', 'btn-lanjut-orange', 'btn-lanjut-purple'];
-    $globalIndex = 0;
+    /* ── palette maps ── */
+    $banners  = ['banner-blue', 'banner-teal', 'banner-amber', 'banner-purple'];
+    $icons    = ['bi-lightning-charge-fill', 'bi-cpu-fill', 'bi-tools', 'bi-diagram-3-fill'];
+    $iconCls  = ['icon-blue', 'icon-teal', 'icon-amber', 'icon-purple'];
+    $fillCls  = ['fill-blue', 'fill-teal', 'fill-amber', 'fill-purple'];
+    $btnCls   = ['btn-blue', 'btn-teal', 'btn-amber', 'btn-purple'];
 ?>
 
-<!-- FILTER TABS -->
-<div class="filter-tabs">
-    <div class="filter-tab active" onclick="filterProgram('semua', this)">
-        Semua Kelas <span class="tab-count"><?php echo $total_kelas ?></span>
-    </div>
-    <?php foreach ($grouped as $pKey => $program): ?>
-    <div class="filter-tab" onclick="filterProgram('program-<?php echo $pKey ?>', this)">
-        <?php echo esc($program['nama_program']) ?>
-        <span class="tab-count"><?php echo count($program['kelas']) ?></span>
-    </div>
-    <?php endforeach?>
-</div>
+<div class="ks-root">
 
-<!-- INFO ROW -->
-<div class="info-row" id="infoRow">
-    Menampilkan <strong><?php echo $total_kelas ?></strong> kelas
-</div>
+    <!-- ── PAGE HEADER ── -->
+    <div class="ks-header">
+        <div class="ks-header-left">
+            <h1>Kelas Saya</h1>
+            <p>Kelola dan lanjutkan pembelajaran di kelas yang telah kamu claim.</p>
+        </div>
+        <div class="ks-badge">
+            <i class="bi bi-mortarboard-fill"></i>
+            <span><?php echo (int)$total_kelas ?> Kelas</span>
+        </div>
+    </div>
 
-<!-- ══ PANEL SEMUA ══ -->
-<div class="program-panel active" id="panel-semua">
-    <div class="kelas-grid">
-        <?php
+    <?php if (empty($grouped)): ?>
+
+    <!-- ── EMPTY STATE ── -->
+    <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+        <div class="empty-title">Belum Ada Kelas</div>
+        <div class="empty-desc">Kamu belum mengklaim kelas apapun. Temukan dan klaim kelas sekarang!</div>
+        <a href="<?php echo base_url('dashboard/peserta/program') ?>" class="empty-btn">
+            <i class="bi bi-search"></i> Temukan Kelas
+        </a>
+    </div>
+
+    <?php else: ?>
+
+    <!-- ── FILTER TABS ── -->
+    <div class="ks-tabs">
+        <div class="ks-tab active" onclick="filterProgram('semua', this)">
+            Semua Kelas <span class="cnt"><?php echo (int)$total_kelas ?></span>
+        </div>
+        <?php foreach ($grouped as $pKey => $program): ?>
+        <div class="ks-tab" onclick="filterProgram('program-<?php echo $pKey ?>', this)">
+            <?php echo esc($program['nama_program']) ?>
+            <span class="cnt"><?php echo count($program['kelas']) ?></span>
+        </div>
+        <?php endforeach ?>
+    </div>
+
+    <!-- ── INFO ROW ── -->
+    <div class="ks-info" id="infoRow">
+        Menampilkan <strong><?php echo (int)$total_kelas ?></strong> kelas
+    </div>
+
+    <!-- ══════════════════════════════════
+         PANEL: SEMUA KELAS
+    ══════════════════════════════════ -->
+    <div class="program-panel active" id="panel-semua">
+        <div class="ks-grid">
+            <?php
             $gi = 0;
             foreach ($grouped as $program):
                 foreach ($program['kelas'] as $k):
                     $ci  = $gi % 4;
-                    $lbl = $k['persen'] >= 100 ? 'Selesai ✓' : ($k['persen'] > 0 ? 'Lanjutkan' : 'Mulai Belajar');
+                    $pct = (int)$k['persen'];
+                    $lbl = $pct >= 100 ? 'Selesai' : ($pct > 0 ? 'Lanjutkan' : 'Mulai Belajar');
                     $gi++;
         ?>
-        <div class="kelas-card">
-            <?php if (! empty($k['gambar_kelas'])): ?>
-            <div class="kc-banner"
-                style="background: url('<?php echo base_url('uploads/kelas/' . $k['gambar_kelas']) ?>') center/cover; min-height: 160px;">
-                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3);"></div>
-                <div style="position: relative; z-index: 1;">
-                    <div class="kc-nama" style="color: #fff;"><?php echo esc($k['nama_kelas']) ?></div>
-                    <div class="kc-pengajar" style="color: rgba(255,255,255,0.8);">
-                        <?php echo esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
-                </div>
-            </div>
-            <?php else: ?>
-            <div class="kc-banner <?php echo $banners[$ci] ?>">
-                <div class="kc-icon"><i class="bi <?php echo $icons[$ci] ?>"></i></div>
-                <div class="kc-nama"><?php echo esc($k['nama_kelas']) ?></div>
-                <div class="kc-pengajar"><?php echo esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
-            </div>
-            <?php endif; ?>
-            <div class="kc-body">
-                <?php if (! empty($k['deskripsi_kelas'])): ?>
-                <p style="font-size:12px;color:#6b7280;margin-bottom:10px;line-height:1.4">
-                    <?php echo esc(word_limiter($k['deskripsi_kelas'], 18)) ?>
-                </p>
-                <?php endif; ?>
-                <div class="kc-progress-head">
-                    <span class="kc-progress-lbl">Progress Belajar</span>
-                    <span class="kc-progress-pct"><?php echo (int)$k['persen'] ?>%</span>
-                </div>
-                <div class="kc-bar">
-                    <div class="kc-bar-fill" style="width:<?php echo (int)$k['persen'] ?>%"></div>
-                </div>
-            </div>
-            <div class="kc-footer">
-                <div class="kc-meta">
-                    <?php if (isset($k['sisa_hari']) && $k['sisa_hari'] !== null): ?>
-                    <div class="kc-meta-item">
-                        <i class="bi bi-clock-history"></i>
-                        <?php echo $k['sisa_hari'] ?> hari lagi
-                    </div>
-                    <?php else: ?>
-                    <div class="kc-meta-item">
-                        <i class="bi bi-infinity"></i>
-                        Akses selamanya
-                    </div>
-                    <?php endif; ?>
+            <div class="kelas-card">
 
-                    <div class="kc-meta-item"><i class="bi bi-journal-text"></i> <?php echo (int)$k['total_modul'] ?>
-                        Modul</div>
-                    <div class="kc-meta-item"><i class="bi bi-book"></i> <?php echo (int)$k['total_materi'] ?> Materi
+                <?php if (!empty($k['gambar_kelas'])): ?>
+                <!-- Banner: gambar -->
+                <div class="kc-banner kc-banner-img"
+                    style="background-image: url('<?php echo base_url('uploads/kelas/' . esc($k['gambar_kelas'])) ?>')">
+                    <div class="kc-overlay"></div>
+                    <div class="kc-banner-top">
+                        <div></div>
+                        <div class="kc-pct-pill"><?php echo $pct ?>%</div>
+                    </div>
+                    <div class="kc-banner-bottom">
+                        <div class="kc-nama">
+                            <?php echo esc($k['nama_kelas']) ?>
+                            <?php if ($pct >= 100): ?>
+                            <span class="kc-done-badge"><i class="bi bi-check-lg"></i> Selesai</span>
+                            <?php endif ?>
+                        </div>
+                        <div class="kc-pengajar"><?php echo esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
                     </div>
                 </div>
-                <a href="<?php echo base_url('dashboard/peserta/modul?kelas=' . $k['id_kelas']) ?>"
-                    class="btn-lanjut <?php echo $btnCls[$ci] ?>">
-                    <?php echo $lbl ?> <i class="bi bi-chevron-right"></i>
-                </a>
-            </div>
-        </div>
-        <?php endforeach;endforeach?>
-    </div>
-</div>
 
-<!-- ══ PANEL PER PROGRAM ══ -->
-<?php foreach ($grouped as $pKey => $program): ?>
-<div class="program-panel" id="panel-program-<?php echo $pKey ?>">
-    <div class="kelas-grid">
-        <?php foreach ($program['kelas'] as $k):
-                $ci  = $globalIndex % 4;
-                $lbl = $k['persen'] >= 100 ? 'Selesai ✓' : ($k['persen'] > 0 ? 'Lanjutkan' : 'Mulai Belajar');
-                $globalIndex++;
+                <?php else: ?>
+                <!-- Banner: warna -->
+                <div class="kc-banner <?php echo $banners[$ci] ?>">
+                    <div class="kc-banner-top">
+                        <div class="kc-icon <?php echo $iconCls[$ci] ?>">
+                            <i class="bi <?php echo $icons[$ci] ?>"></i>
+                        </div>
+                        <div class="kc-pct-pill"><?php echo $pct ?>%</div>
+                    </div>
+                    <div class="kc-banner-bottom">
+                        <div class="kc-nama">
+                            <?php echo esc($k['nama_kelas']) ?>
+                            <?php if ($pct >= 100): ?>
+                            <span class="kc-done-badge"><i class="bi bi-check-lg"></i> Selesai</span>
+                            <?php endif ?>
+                        </div>
+                        <div class="kc-pengajar"><?php echo esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
+                    </div>
+                </div>
+                <?php endif ?>
+
+                <div class="kc-body">
+                    <?php if (!empty($k['deskripsi_kelas'])): ?>
+                    <p class="kc-desc"><?php echo esc(word_limiter($k['deskripsi_kelas'], 20)) ?></p>
+                    <?php endif ?>
+
+                    <div class="kc-prog-row">
+                        <span class="kc-prog-lbl">Progress belajar</span>
+                        <span class="kc-prog-pct"><?php echo $pct ?>%</span>
+                    </div>
+                    <div class="kc-bar">
+                        <div class="kc-bar-fill <?php echo $fillCls[$ci] ?>" style="width:<?php echo $pct ?>%"></div>
+                    </div>
+                </div>
+
+                <div class="kc-footer">
+                    <div class="kc-meta">
+                        <?php if (isset($k['sisa_hari']) && $k['sisa_hari'] !== null): ?>
+                        <div class="kc-meta-item">
+                            <i class="bi bi-clock-history"></i>
+                            <?php echo (int)$k['sisa_hari'] ?> hari
+                        </div>
+                        <?php else: ?>
+                        <div class="kc-meta-item">
+                            <i class="bi bi-infinity"></i>
+                            Selamanya
+                        </div>
+                        <?php endif ?>
+
+                        <div class="kc-meta-item">
+                            <i class="bi bi-layers"></i>
+                            <?php echo (int)$k['total_modul'] ?> Modul
+                        </div>
+                        <div class="kc-meta-item">
+                            <i class="bi bi-book"></i>
+                            <?php echo (int)$k['total_materi'] ?> Materi
+                        </div>
+                    </div>
+                    <a href="<?php echo base_url('dashboard/peserta/modul?kelas=' . $k['id_kelas']) ?>"
+                        class="btn-lanjut <?php echo $btnCls[$ci] ?>">
+                        <?php echo $lbl ?> <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+
+            </div><!-- /.kelas-card -->
+            <?php endforeach; endforeach ?>
+        </div><!-- /.ks-grid -->
+    </div><!-- /#panel-semua -->
+
+
+    <!-- ══════════════════════════════════
+         PANEL: PER PROGRAM
+    ══════════════════════════════════ -->
+    <?php
+        $globalIndex = 0;
+        foreach ($grouped as $pKey => $program):
+    ?>
+    <div class="program-panel" id="panel-program-<?php echo $pKey ?>">
+        <div class="ks-grid">
+            <?php foreach ($program['kelas'] as $k):
+            $ci  = $globalIndex % 4;
+            $pct = (int)$k['persen'];
+            $lbl = $pct >= 100 ? 'Selesai' : ($pct > 0 ? 'Lanjutkan' : 'Mulai Belajar');
+            $globalIndex++;
         ?>
-        <div class="kelas-card">
-            <?php if (! empty($k['gambar_kelas'])): ?>
-            <div class="kc-banner"
-                style="background: url('<?php echo base_url('uploads/kelas/' . $k['gambar_kelas']) ?>') center/cover; min-height: 160px;">
-                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.3);"></div>
-                <div style="position: relative; z-index: 1;">
-                    <div class="kc-nama" style="color: #fff;"><?php echo esc($k['nama_kelas']) ?></div>
-                    <div class="kc-pengajar" style="color: rgba(255,255,255,0.8);">
-                        <?php echo esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
-                </div>
-            </div>
-            <?php else: ?>
-            <div class="kc-banner <?php echo $banners[$ci] ?>">
-                <div class="kc-icon"><i class="bi <?php echo $icons[$ci] ?>"></i></div>
-                <div class="kc-nama"><?php echo esc($k['nama_kelas']) ?></div>
-                <div class="kc-pengajar"><?php echo esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
-            </div>
-            <?php endif; ?>
-            <div class="kc-body">
-                <div class="kc-progress-head">
-                    <span class="kc-progress-lbl">Progress Belajar</span>
-                    <span class="kc-progress-pct"><?php echo (int)$k['persen'] ?>%</span>
-                </div>
-                <div class="kc-bar">
-                    <div class="kc-bar-fill" style="width:<?php echo (int)$k['persen'] ?>%"></div>
-                </div>
-            </div>
-            <div class="kc-footer">
-                <div class="kc-meta">
-                    <div class="kc-meta-item"><i class="bi bi-journal-text"></i> <?php echo (int)$k['total_modul'] ?>
-                        Modul</div>
-                    <div class="kc-meta-item"><i class="bi bi-book"></i> <?php echo (int)$k['total_materi'] ?> Materi
+            <div class="kelas-card">
+
+                <?php if (!empty($k['gambar_kelas'])): ?>
+                <div class="kc-banner kc-banner-img"
+                    style="background-image: url('<?php echo base_url('uploads/kelas/' . esc($k['gambar_kelas'])) ?>')">
+                    <div class="kc-overlay"></div>
+                    <div class="kc-banner-top">
+                        <div></div>
+                        <div class="kc-pct-pill"><?php echo $pct ?>%</div>
+                    </div>
+                    <div class="kc-banner-bottom">
+                        <div class="kc-nama">
+                            <?php echo esc($k['nama_kelas']) ?>
+                            <?php if ($pct >= 100): ?>
+                            <span class="kc-done-badge"><i class="bi bi-check-lg"></i> Selesai</span>
+                            <?php endif ?>
+                        </div>
+                        <div class="kc-pengajar"><?php echo esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
                     </div>
                 </div>
-                <a href="<?php echo base_url('dashboard/peserta/modul?kelas=' . $k['id_kelas']) ?>"
-                    class="btn-lanjut <?php echo $btnCls[$ci] ?>">
-                    <?php echo $lbl ?> <i class="bi bi-chevron-right"></i>
-                </a>
-            </div>
-        </div>
-        <?php endforeach?>
-    </div>
-</div>
-<?php endforeach?>
 
-<script>
-const programCounts = {
-    'semua': <?php echo $total_kelas ?>,
-    <?php foreach ($grouped as $pKey => $program): ?> 'program-<?php echo $pKey ?>': <?php echo count($program['kelas']) ?>,
-    <?php endforeach?>
-};
+                <?php else: ?>
+                <div class="kc-banner <?php echo $banners[$ci] ?>">
+                    <div class="kc-banner-top">
+                        <div class="kc-icon <?php echo $iconCls[$ci] ?>">
+                            <i class="bi <?php echo $icons[$ci] ?>"></i>
+                        </div>
+                        <div class="kc-pct-pill"><?php echo $pct ?>%</div>
+                    </div>
+                    <div class="kc-banner-bottom">
+                        <div class="kc-nama">
+                            <?php echo esc($k['nama_kelas']) ?>
+                            <?php if ($pct >= 100): ?>
+                            <span class="kc-done-badge"><i class="bi bi-check-lg"></i> Selesai</span>
+                            <?php endif ?>
+                        </div>
+                        <div class="kc-pengajar"><?php echo esc($k['nama_pengajar'] ?? 'Pengajar') ?></div>
+                    </div>
+                </div>
+                <?php endif ?>
 
-const programNames = {
-    'semua': 'Semua Kelas',
-    <?php foreach ($grouped as $pKey => $program): ?> 'program-<?php echo $pKey ?>': '<?php echo esc($program['nama_program']) ?>',
-    <?php endforeach?>
-};
+                <div class="kc-body">
+                    <div class="kc-prog-row">
+                        <span class="kc-prog-lbl">Progress belajar</span>
+                        <span class="kc-prog-pct"><?php echo $pct ?>%</span>
+                    </div>
+                    <div class="kc-bar">
+                        <div class="kc-bar-fill <?php echo $fillCls[$ci] ?>" style="width:<?php echo $pct ?>%"></div>
+                    </div>
+                </div>
 
-function filterProgram(panelId, tabEl) {
-    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-    tabEl.classList.add('active');
+                <div class="kc-footer">
+                    <div class="kc-meta">
+                        <?php if (isset($k['sisa_hari']) && $k['sisa_hari'] !== null): ?>
+                        <div class="kc-meta-item">
+                            <i class="bi bi-clock-history"></i>
+                            <?php echo (int)$k['sisa_hari'] ?> hari
+                        </div>
+                        <?php else: ?>
+                        <div class="kc-meta-item">
+                            <i class="bi bi-infinity"></i>
+                            Selamanya
+                        </div>
+                        <?php endif ?>
 
-    document.querySelectorAll('.program-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + panelId).classList.add('active');
+                        <div class="kc-meta-item">
+                            <i class="bi bi-layers"></i>
+                            <?php echo (int)$k['total_modul'] ?> Modul
+                        </div>
+                        <div class="kc-meta-item">
+                            <i class="bi bi-book"></i>
+                            <?php echo (int)$k['total_materi'] ?> Materi
+                        </div>
+                    </div>
+                    <a href="<?php echo base_url('dashboard/peserta/modul?kelas=' . $k['id_kelas']) ?>"
+                        class="btn-lanjut <?php echo $btnCls[$ci] ?>">
+                        <?php echo $lbl ?> <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
 
-    const count = programCounts[panelId] || 0;
-    const name = programNames[panelId] || '';
-    const label = panelId === 'semua' ?
-        'kelas' :
-        'kelas di program <strong>' + name + '</strong>';
+            </div><!-- /.kelas-card -->
+            <?php endforeach ?>
+        </div><!-- /.ks-grid -->
+    </div><!-- /#panel-program-X -->
+    <?php endforeach ?>
 
-    document.getElementById('infoRow').innerHTML =
-        'Menampilkan <strong>' + count + '</strong> ' + label;
-}
-</script>
+    <!-- ══════════════════════════════════
+         JAVASCRIPT
+    ══════════════════════════════════ -->
+    <script>
+    const programCounts = {
+        'semua': <?php echo (int)$total_kelas ?>,
+        <?php foreach ($grouped as $pKey => $program): ?> 'program-<?php echo $pKey ?>': <?php echo count($program['kelas']) ?>,
+        <?php endforeach ?>
+    };
 
-<?php endif?>
+    const programNames = {
+        'semua': 'Semua Kelas',
+        <?php foreach ($grouped as $pKey => $program): ?> 'program-<?php echo $pKey ?>': '<?php echo esc($program['nama_program']) ?>',
+        <?php endforeach ?>
+    };
+
+    function filterProgram(panelId, tabEl) {
+        /* update tabs */
+        document.querySelectorAll('.ks-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        /* update panels */
+        document.querySelectorAll('.program-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('panel-' + panelId).classList.add('active');
+
+        /* update info row */
+        const count = programCounts[panelId] || 0;
+        const name = programNames[panelId] || '';
+        const label = panelId === 'semua' ?
+            'kelas' :
+            'kelas di program <strong>' + name + '</strong>';
+
+        document.getElementById('infoRow').innerHTML =
+            'Menampilkan <strong>' + count + '</strong> ' + label;
+    }
+    </script>
+
+    <?php endif ?>
+
+</div><!-- /.ks-root -->
 
 <?php echo $this->endSection() ?>
