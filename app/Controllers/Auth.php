@@ -45,7 +45,9 @@ class Auth extends BaseController
         }
 
         // Cek email verified
-        if (!$user['email_verified']) {
+        $emailVerified = array_key_exists('email_verified', $user) ? $user['email_verified'] : null;
+
+        if ($emailVerified === false) {
             return $this->response->setJSON([
                 'status'  => 'unverified',
                 'message' => 'Email belum diverifikasi. Silakan cek inbox email Anda.',
@@ -96,7 +98,7 @@ class Auth extends BaseController
     {
         $email = $this->request->getPost('email');
 
-        if (!$email) {
+        if (! $email) {
             return $this->response->setJSON([
                 'status'  => 'failed',
                 'message' => 'Email tidak ditemukan.',
@@ -104,16 +106,18 @@ class Auth extends BaseController
         }
 
         $usersModel = new Users();
-        $user = $usersModel->where('email_users', $email)->first();
+        $user       = $usersModel->where('email_users', $email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return $this->response->setJSON([
                 'status'  => 'failed',
                 'message' => 'Email tidak terdaftar.',
             ]);
         }
 
-        if ($user['email_verified']) {
+        $emailVerified = array_key_exists('email_verified', $user) ? $user['email_verified'] : null;
+
+        if ($emailVerified === true) {
             return $this->response->setJSON([
                 'status'  => 'failed',
                 'message' => 'Email sudah terverifikasi. Silakan login.',
@@ -131,7 +135,7 @@ class Auth extends BaseController
 
         // Kirim email
         $verificationLink = base_url("register/verify?token={$token}");
-        $emailService = \Config\Services::email();
+        $emailService     = \Config\Services::email();
         $emailService->setTo($email);
         $emailService->setSubject('Verifikasi Email Akun LMS Elecomp');
         $emailService->setMessage(view('emails/verification', [
