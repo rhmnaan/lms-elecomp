@@ -102,22 +102,43 @@ class VoucherController extends BaseController
                 'created_at'    => date('Y-m-d H:i:s'),
             ]);
 
-            // b. Daftarkan user ke kelas
+            // b. Daftarkan user ke kelas (PAKSA ikut durasi voucher)
 
-            $durasiHari = (int) ($voucher['durasi_hari'] ?? 0);
+            // pastikan durasi benar-benar dari voucher
+            $durasiHari = isset($voucher['durasi_hari']) 
+                ? (int) $voucher['durasi_hari'] 
+                : 0;
 
-            $tanggalMulai   = date('Y-m-d H:i:s');
-            $tanggalBerakhir = $durasiHari > 0
-                ? date('Y-m-d H:i:s', strtotime("+{$durasiHari} days"))
-                : null;
+            $tanggalMulai = date('Y-m-d H:i:s');
 
-                
-            $this->kelasPesertaModel->insert([
+            // hitung tanggal berakhir sesuai voucher
+            $tanggalBerakhir = null;
+            if ($durasiHari > 0) {
+                $tanggalBerakhir = date(
+                    'Y-m-d H:i:s',
+                    strtotime($tanggalMulai . " +{$durasiHari} days")
+                );
+            }
+
+            log_message('debug', 'Voucher durasi_hari = ' . $durasiHari);
+            log_message('debug', 'Tanggal mulai = ' . $tanggalMulai);
+            log_message('debug', 'Tanggal berakhir = ' . ($tanggalBerakhir ?? 'NULL'));
+
+            // 1️⃣ INSERT dulu (hindari trigger / default)
+            $idKelasPeserta = $this->kelasPesertaModel->insert([
                 'id_users'                     => $id_users,
                 'id_kelas'                     => $id_kelas,
                 'tanggal_daftar_kelas_peserta' => $tanggalMulai,
-                'tanggal_berakhir'             => $tanggalBerakhir,
                 'status'                       => 'aktif',
+            ]);
+
+            if (!$idKelasPeserta) {
+                throw new \Exception('Gagal insert kelas_peserta');
+            }
+
+            // 2️⃣ UPDATE paksa tanggal_berakhir (override apapun)
+            $this->kelasPesertaModel->update($idKelasPeserta, [
+                'tanggal_berakhir' => $tanggalBerakhir,
             ]);
             // c. Kurangi kuota voucher (nonaktifkan jika habis)
             $this->voucherModel->claimVoucher($voucher['id_voucher']);

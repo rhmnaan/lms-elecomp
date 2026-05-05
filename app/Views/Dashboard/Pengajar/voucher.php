@@ -8,6 +8,7 @@
     font-size: 12px;
     transition: all .2s;
 }
+
 .btn-copy.copied {
     background: #d1fae5;
     border-color: #059669;
@@ -20,33 +21,33 @@
         <h4 class="fw-bold mb-1">Manajemen Voucher</h4>
         <p class="text-muted mb-0">Kelola voucher akses kelas untuk peserta.</p>
     </div>
-    <button class="btn btn-primary d-flex align-items-center gap-2"
-            data-bs-toggle="modal" data-bs-target="#modalTambahVoucher">
+    <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal"
+        data-bs-target="#modalTambahVoucher">
         <i class="bi bi-plus-lg"></i> Tambah Voucher
     </button>
 </div>
 
 <?php if (session()->getFlashdata('success')): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('success') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <?= session()->getFlashdata('success') ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
 <?php endif; ?>
 <?php if (session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('error') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <?= session()->getFlashdata('error') ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
 <?php endif; ?>
 <?php if (session()->getFlashdata('errors')): ?>
-    <div class="alert alert-danger alert-dismissible fade show">
-        <ul class="mb-0">
-            <?php foreach (session()->getFlashdata('errors') as $err): ?>
-                <li><?= esc($err) ?></li>
-            <?php endforeach; ?>
-        </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+<div class="alert alert-danger alert-dismissible fade show">
+    <ul class="mb-0">
+        <?php foreach (session()->getFlashdata('errors') as $err): ?>
+        <li><?= esc($err) ?></li>
+        <?php endforeach; ?>
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
 <?php endif; ?>
 
 <!-- ─── Tabel Voucher ─────────────────────────────────────────── -->
@@ -61,20 +62,21 @@
                         <th>Nama Voucher</th>
                         <th>Kelas</th>
                         <th>Berlaku</th>
+                        <th>Durasi</th>
                         <th>Kuota</th>
                         <th>Klaim</th>
                         <th>Status</th>
-                        <th>Aksi</th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                <?php if (empty($vouchers)): ?>
+                    <?php if (empty($vouchers)): ?>
                     <tr>
                         <td colspan="9" class="text-center py-4 text-muted">
                             Belum ada voucher. Klik <strong>+ Tambah Voucher</strong> untuk memulai.
                         </td>
                     </tr>
-                <?php else: ?>
+                    <?php else: ?>
                     <?php foreach ($vouchers as $i => $v): ?>
                     <?php
                         $now     = date('Y-m-d H:i:s');
@@ -83,65 +85,87 @@
                     ?>
                     <tr>
                         <td class="text-muted small"><?= $i + 1 ?></td>
+
+                        <!-- Kode -->
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-secondary font-monospace fs-6" id="kode-<?= $v['id_voucher'] ?>">
+                                <span class="badge bg-secondary font-monospace">
                                     <?= esc($v['kode_voucher']) ?>
                                 </span>
-                                <button class="btn btn-sm btn-outline-secondary btn-copy d-flex align-items-center gap-1"
-        data-kode="<?= esc($v['kode_voucher']) ?>"
-        data-id="<?= $v['id_voucher'] ?>"
-        title="Salin kode">
-    <i class="bi bi-copy" id="icon-<?= $v['id_voucher'] ?>"></i>
-    <span id="label-<?= $v['id_voucher'] ?>" style="font-size:11px;">Salin</span>
-</button>
+                                <button class="btn btn-sm btn-outline-secondary btn-copy"
+                                    data-kode="<?= esc($v['kode_voucher']) ?>" data-id="<?= $v['id_voucher'] ?>">
+                                    <i class="bi bi-copy"></i>
+                                </button>
                             </div>
                         </td>
+
+                        <!-- Nama -->
                         <td>
                             <div class="fw-semibold"><?= esc($v['nama_voucher']) ?></div>
                             <?php if ($v['deskripsi']): ?>
-                                <small class="text-muted"><?= esc(mb_strimwidth($v['deskripsi'], 0, 50, '…')) ?></small>
+                            <small class="text-muted d-block">
+                                <?= esc(mb_strimwidth($v['deskripsi'], 0, 50, '…')) ?>
+                            </small>
                             <?php endif; ?>
                         </td>
+
+                        <!-- Kelas -->
                         <td><?= esc($v['nama_kelas']) ?></td>
+
+                        <!-- Berlaku -->
                         <td class="small">
-                            <?= date('d M Y', strtotime($v['tanggal_mulai'])) ?> –
+                            <?= date('d M Y', strtotime($v['tanggal_mulai'])) ?> <br>
+                            <span class="text-muted">s/d</span><br>
                             <?= date('d M Y', strtotime($v['tanggal_berakhir'])) ?>
                             <?php if ($expired): ?>
-                                <br><span class="badge bg-secondary">Kadaluarsa</span>
+                            <span class="badge bg-secondary d-block mt-1">Kadaluarsa</span>
                             <?php endif; ?>
                         </td>
-                        <td><?= $v['kuota'] !== null ? $v['kuota'] : '∞' ?></td>
-                        <td><?= (int)$v['total_klaim'] ?></td>
-                        <td>
-                            <div class="form-check form-switch mb-0">
+
+                        <!-- ✅ Durasi (FIX) -->
+                        <td class="text-center">
+                            <?php if ($v['durasi_hari']): ?>
+                            <span class="badge bg-info">
+                                <?= $v['durasi_hari'] ?> hari
+                            </span>
+                            <?php else: ?>
+                            <span class="text-muted">—</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <!-- Kuota -->
+                        <td class="text-center">
+                            <?= $v['kuota'] !== null ? $v['kuota'] : '∞' ?>
+                        </td>
+
+                        <!-- Klaim -->
+                        <td class="text-center"><?= (int)$v['total_klaim'] ?></td>
+
+                        <!-- Status -->
+                        <td class="text-center">
+                            <div class="form-check form-switch d-flex justify-content-center">
                                 <input class="form-check-input toggle-active" type="checkbox"
-                                       data-id="<?= $v['id_voucher'] ?>"
-                                       <?= $v['is_active'] ? 'checked' : '' ?>
-                                       <?= $expired ? 'disabled' : '' ?>>
+                                    data-id="<?= $v['id_voucher'] ?>" <?= $v['is_active'] ? 'checked' : '' ?>
+                                    <?= $expired ? 'disabled' : '' ?>>
                             </div>
                         </td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary me-1 btn-edit"
-                                    data-id="<?= $v['id_voucher'] ?>"
-                                    data-nama="<?= esc($v['nama_voucher']) ?>"
-                                    data-deskripsi="<?= esc($v['deskripsi']) ?>"
-                                    data-mulai="<?= $v['tanggal_mulai'] ?>"
-                                    data-berakhir="<?= $v['tanggal_berakhir'] ?>"
-                                    data-kuota="<?= $v['kuota'] ?>"
-                                    title="Edit">
+
+                        <!-- Aksi -->
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary btn-edit" data-id="<?= $v['id_voucher'] ?>"
+                                data-nama="<?= esc($v['nama_voucher']) ?>" data-deskripsi="<?= esc($v['deskripsi']) ?>"
+                                data-mulai="<?= $v['tanggal_mulai'] ?>" data-berakhir="<?= $v['tanggal_berakhir'] ?>"
+                                data-kuota="<?= $v['kuota'] ?>" data-durasi="<?= $v['durasi_hari'] ?>">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger btn-delete"
-                                    data-id="<?= $v['id_voucher'] ?>"
-                                    data-nama="<?= esc($v['nama_voucher']) ?>"
-                                    title="Hapus">
+                            <button class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= $v['id_voucher'] ?>"
+                                data-nama="<?= esc($v['nama_voucher']) ?>">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
                     </tr>
                     <?php endforeach; ?>
-                <?php endif; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -166,9 +190,9 @@
                             <select id="selectProgram" class="form-select">
                                 <option value="">-- Pilih Program --</option>
                                 <?php foreach ($programList as $p): ?>
-                                    <option value="<?= $p['id_program'] ?>">
-                                        <?= esc($p['nama_program']) ?>
-                                    </option>
+                                <option value="<?= $p['id_program'] ?>">
+                                    <?= esc($p['nama_program']) ?>
+                                </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -185,47 +209,63 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Kode Voucher <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Kode Voucher <span
+                                    class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="text" name="kode_voucher" class="form-control text-uppercase"
-                                       placeholder="Cth: BELAJAR2026" value="<?= old('kode_voucher') ?>"
-                                       style="text-transform:uppercase" required>
-                                <button type="button" class="btn btn-outline-secondary" id="btnGenKode" title="Generate otomatis">
+                                    placeholder="Cth: BELAJAR2026" value="<?= old('kode_voucher') ?>"
+                                    style="text-transform:uppercase" required>
+                                <button type="button" class="btn btn-outline-secondary" id="btnGenKode"
+                                    title="Generate otomatis">
                                     <i class="bi bi-shuffle"></i>
                                 </button>
                             </div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Nama Voucher <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Nama Voucher <span
+                                    class="text-danger">*</span></label>
                             <input type="text" name="nama_voucher" class="form-control"
-                                   placeholder="Cth: Voucher Gratis Semester 1"
-                                   value="<?= old('nama_voucher') ?>" required>
+                                placeholder="Cth: Voucher Gratis Semester 1" value="<?= old('nama_voucher') ?>"
+                                required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Kuota</label>
-                            <input type="number" name="kuota" class="form-control"
-                                   placeholder="Kosong = tak terbatas" min="1"
-                                   value="<?= old('kuota') ?>">
+                            <input type="number" name="kuota" class="form-control" placeholder="Kosong = tak terbatas"
+                                min="1" value="<?= old('kuota') ?>">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tanggal Mulai <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Tanggal Mulai <span
+                                    class="text-danger">*</span></label>
                             <input type="date" name="tanggal_mulai" class="form-control"
-                                   value="<?= old('tanggal_mulai', date('Y-m-d')) ?>" required>
+                                value="<?= old('tanggal_mulai', date('Y-m-d')) ?>" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tanggal Berakhir <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">
+                                Durasi Voucher (Hari)
+                                <span class="text-muted">(opsional)</span>
+                            </label>
+                            <input type="number" name="durasi_hari" id="durasiHari" class="form-control"
+                                placeholder="Contoh: 30" min="1">
+                            <small class="text-muted">
+                                Jika diisi, tanggal berakhir akan dihitung otomatis
+                            </small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tanggal Berakhir <span
+                                    class="text-danger">*</span></label>
                             <input type="date" name="tanggal_berakhir" class="form-control"
-                                   value="<?= old('tanggal_berakhir') ?>" required>
+                                value="<?= old('tanggal_berakhir') ?>" required>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label fw-semibold">Deskripsi</label>
                             <textarea name="deskripsi" class="form-control" rows="2"
-                                      placeholder="Opsional..."><?= old('deskripsi') ?></textarea>
+                                placeholder="Opsional..."><?= old('deskripsi') ?></textarea>
                         </div>
                     </div>
                 </div>
@@ -253,22 +293,31 @@
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Nama Voucher <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Nama Voucher <span
+                                    class="text-danger">*</span></label>
                             <input type="text" name="nama_voucher" id="editNama" class="form-control" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Kuota</label>
-                            <input type="number" name="kuota" id="editKuota" class="form-control" placeholder="Tak terbatas" min="1">
+                            <input type="number" name="kuota" id="editKuota" class="form-control"
+                                placeholder="Tak terbatas" min="1">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tanggal Mulai <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Tanggal Mulai <span
+                                    class="text-danger">*</span></label>
                             <input type="date" name="tanggal_mulai" id="editMulai" class="form-control" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tanggal Berakhir <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Durasi Voucher (Hari)</label>
+                            <input type="number" name="durasi_hari" id="editDurasi" class="form-control" min="1">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tanggal Berakhir <span
+                                    class="text-danger">*</span></label>
                             <input type="date" name="tanggal_berakhir" id="editBerakhir" class="form-control" required>
                         </div>
 
@@ -313,13 +362,13 @@
 
 <script>
 // ── Filter Kelas by Program ────────────────────────────────────────────
-document.getElementById('selectProgram')?.addEventListener('change', function () {
+document.getElementById('selectProgram')?.addEventListener('change', function() {
     const idProgram = this.value;
-    const selKelas  = document.getElementById('selectKelas');
-    const loading   = document.getElementById('loadingKelas');
+    const selKelas = document.getElementById('selectKelas');
+    const loading = document.getElementById('loadingKelas');
 
     selKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
-    selKelas.disabled  = true;
+    selKelas.disabled = true;
 
     if (!idProgram) return;
 
@@ -332,7 +381,7 @@ document.getElementById('selectProgram')?.addEventListener('change', function ()
             if (data.success && data.kelas.length > 0) {
                 data.kelas.forEach(k => {
                     const opt = document.createElement('option');
-                    opt.value       = k.id_kelas;
+                    opt.value = k.id_kelas;
                     opt.textContent = k.nama_kelas;
                     selKelas.appendChild(opt);
                 });
@@ -348,7 +397,7 @@ document.getElementById('selectProgram')?.addEventListener('change', function ()
 });
 
 // ── Generate kode voucher acak ─────────────────────────────────────────
-document.getElementById('btnGenKode')?.addEventListener('click', function () {
+document.getElementById('btnGenKode')?.addEventListener('click', function() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
     for (let i = 0; i < 8; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -357,63 +406,75 @@ document.getElementById('btnGenKode')?.addEventListener('click', function () {
 
 // ── Modal Edit ────────────────────────────────────────────────────────
 document.querySelectorAll('.btn-edit').forEach(btn => {
-    btn.addEventListener('click', function () {
+    btn.addEventListener('click', function() {
         const id = this.dataset.id;
-        document.getElementById('formEdit').action     = `<?= base_url('dashboard/pengajar/voucher/update') ?>/${id}`;
-        document.getElementById('editNama').value      = this.dataset.nama;
+        document.getElementById('formEdit').action =
+            `<?= base_url('dashboard/pengajar/voucher/update') ?>/${id}`;
+        document.getElementById('editNama').value = this.dataset.nama;
         document.getElementById('editDeskripsi').value = this.dataset.deskripsi || '';
-        document.getElementById('editMulai').value     = this.dataset.mulai ? this.dataset.mulai.substring(0, 10) : '';
-        document.getElementById('editBerakhir').value  = this.dataset.berakhir ? this.dataset.berakhir.substring(0, 10) : '';
-        document.getElementById('editKuota').value     = this.dataset.kuota || '';
+        document.getElementById('editDurasi').value = this.dataset.durasi || '';
+        document.getElementById('editMulai').value = this.dataset.mulai ? this.dataset.mulai.substring(
+            0, 10) : '';
+        document.getElementById('editBerakhir').value = this.dataset.berakhir ? this.dataset.berakhir
+            .substring(0, 10) : '';
+        document.getElementById('editKuota').value = this.dataset.kuota || '';
         new bootstrap.Modal(document.getElementById('modalEditVoucher')).show();
     });
 });
 
 // ── Modal Hapus ───────────────────────────────────────────────────────
 document.querySelectorAll('.btn-delete').forEach(btn => {
-    btn.addEventListener('click', function () {
+    btn.addEventListener('click', function() {
         document.getElementById('hapusNama').textContent = this.dataset.nama;
-        document.getElementById('formHapus').action = `<?= base_url('dashboard/pengajar/voucher/delete') ?>/${this.dataset.id}`;
+        document.getElementById('formHapus').action =
+            `<?= base_url('dashboard/pengajar/voucher/delete') ?>/${this.dataset.id}`;
         new bootstrap.Modal(document.getElementById('modalHapus')).show();
     });
 });
 
 // ── Toggle Aktif / Nonaktif ───────────────────────────────────────────
 document.querySelectorAll('.toggle-active').forEach(toggle => {
-    toggle.addEventListener('change', function () {
+    toggle.addEventListener('change', function() {
         const id = this.dataset.id;
         const el = this;
         fetch(`<?= base_url('dashboard/pengajar/voucher/toggle') ?>/${id}`, {
-            method: 'POST',
-            headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
-            body: JSON.stringify({<?= csrf_token() ?>: '<?= csrf_hash() ?>'})
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    <?= csrf_token() ?>: '<?= csrf_hash() ?>'
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) {
+                    el.checked = !el.checked;
+                    alert(data.message);
+                }
+            })
+            .catch(() => {
                 el.checked = !el.checked;
-                alert(data.message);
-            }
-        })
-        .catch(() => { el.checked = !el.checked; });
+            });
     });
 });
 
 // ── Salin Kode Voucher ────────────────────────────────────────────────
 document.querySelectorAll('.btn-copy').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const kode  = this.dataset.kode;
-        const id    = this.dataset.id;
-        const icon  = document.getElementById('icon-' + id);
+    btn.addEventListener('click', function() {
+        const kode = this.dataset.kode;
+        const id = this.dataset.id;
+        const icon = document.getElementById('icon-' + id);
         const label = document.getElementById('label-' + id);
 
         const doSalin = () => {
-            icon.className  = 'bi bi-check-lg';
+            icon.className = 'bi bi-check-lg';
             label.textContent = 'Tersalin!';
             this.classList.add('copied');
 
             setTimeout(() => {
-                icon.className    = 'bi bi-copy';
+                icon.className = 'bi bi-copy';
                 label.textContent = 'Salin';
                 this.classList.remove('copied');
             }, 2000);
@@ -430,6 +491,27 @@ document.querySelectorAll('.btn-copy').forEach(btn => {
         });
     });
 });
+</script>
+
+<script>
+const durasiInput = document.getElementById('durasiHari');
+const mulaiInput = document.querySelector('input[name="tanggal_mulai"]');
+const akhirInput = document.querySelector('input[name="tanggal_berakhir"]');
+
+durasiInput?.addEventListener('input', hitungTanggalAkhir);
+mulaiInput?.addEventListener('change', hitungTanggalAkhir);
+
+function hitungTanggalAkhir() {
+    const durasi = parseInt(durasiInput.value);
+    const mulai = mulaiInput.value;
+
+    if (!durasi || !mulai) return;
+
+    const date = new Date(mulai);
+    date.setDate(date.getDate() + durasi);
+
+    akhirInput.value = date.toISOString().slice(0, 10);
+}
 </script>
 
 <?= $this->endSection() ?>

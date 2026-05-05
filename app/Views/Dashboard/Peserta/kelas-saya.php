@@ -794,10 +794,19 @@
                             <?php echo (int)$k['total_materi'] ?> Materi
                         </div>
                     </div>
-                    <a href="<?php echo base_url('dashboard/peserta/modul?kelas=' . $k['id_kelas']) ?>"
-                        class="btn-lanjut <?php echo $btnCls[$ci] ?>">
-                        <?php echo $lbl ?> <i class="bi bi-chevron-right"></i>
-                    </a>
+                    <div style="display:flex; gap:6px;">
+                        <!-- Tombol Tugas -->
+                        <a href="<?= base_url('dashboard/peserta/tugas/' . $k['id_kelas']) ?>"
+                            class="btn-lanjut btn-purple">
+                            <i class="bi bi-clipboard-check"></i> Tugas
+                        </a>
+
+                        <!-- Tombol Modul -->
+                        <a href="<?= base_url('dashboard/peserta/modul?kelas=' . $k['id_kelas']) ?>"
+                            class="btn-lanjut <?= $btnCls[$ci] ?>">
+                            <?= $lbl ?> <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
                 </div>
 
             </div><!-- /.kelas-card -->

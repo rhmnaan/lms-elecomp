@@ -1014,6 +1014,7 @@ class DashboardPengajar extends BaseController
             'nama_voucher'     => 'required|min_length[3]|max_length[100]',
             'tanggal_mulai'    => 'required|valid_date[Y-m-d]',
             'tanggal_berakhir' => 'required|valid_date[Y-m-d]',
+            'durasi_hari' => 'permit_empty|is_natural_no_zero',
             'kuota'            => 'permit_empty|is_natural',
             'deskripsi'        => 'permit_empty|max_length[500]',
         ];
@@ -1030,13 +1031,26 @@ class DashboardPengajar extends BaseController
 
         $kuota = $this->request->getPost('kuota');
 
+        $mulai  = $this->request->getPost('tanggal_mulai');
+        $durasi = $this->request->getPost('durasi_hari');
+
+        $tanggalBerakhir = $this->request->getPost('tanggal_berakhir');
+
+        if ($durasi) {
+            $tanggalBerakhir = date(
+                'Y-m-d',
+                strtotime("+{$durasi} days", strtotime($mulai))
+            );
+        }
+
         (new VoucherModel())->insert([
             'id_kelas'         => $idKelas,
             'kode_voucher'     => strtoupper(trim($this->request->getPost('kode_voucher'))),
             'nama_voucher'     => $this->request->getPost('nama_voucher'),
             'deskripsi'        => $this->request->getPost('deskripsi'),
-            'tanggal_mulai'    => $this->request->getPost('tanggal_mulai'),
-            'tanggal_berakhir' => $this->request->getPost('tanggal_berakhir'),
+            'tanggal_mulai'    => $mulai,
+            'tanggal_berakhir' => $tanggalBerakhir, 
+            'durasi_hari'      => $durasi ?: null, 
             'kuota'            => $kuota !== '' ? (int) $kuota : null,
             'is_active'        => 1,
             'created_at'       => date('Y-m-d H:i:s'),
@@ -1057,10 +1071,23 @@ class DashboardPengajar extends BaseController
             return redirect()->back()->with('error', 'Voucher tidak ditemukan.');
         }
 
+        $mulai  = $this->request->getPost('tanggal_mulai');
+        $durasi = $this->request->getPost('durasi_hari');
+
+        $tanggalBerakhir = $this->request->getPost('tanggal_berakhir');
+
+        if ($durasi) {
+            $tanggalBerakhir = date(
+                'Y-m-d',
+                strtotime("+{$durasi} days", strtotime($mulai))
+            );
+        }
+
         $rules = [
             'nama_voucher'     => 'required|min_length[3]|max_length[100]',
             'tanggal_mulai'    => 'required|valid_date[Y-m-d]',
             'tanggal_berakhir' => 'required|valid_date[Y-m-d]',
+            'durasi_hari'      => 'permit_empty|is_natural_no_zero',
             'kuota'            => 'permit_empty|is_natural',
             'deskripsi'        => 'permit_empty|max_length[500]',
         ];
@@ -1075,8 +1102,9 @@ class DashboardPengajar extends BaseController
         (new VoucherModel())->update($id, [
             'nama_voucher'     => $this->request->getPost('nama_voucher'),
             'deskripsi'        => $this->request->getPost('deskripsi'),
-            'tanggal_mulai'    => $this->request->getPost('tanggal_mulai'),
-            'tanggal_berakhir' => $this->request->getPost('tanggal_berakhir'),
+            'tanggal_mulai'    => $mulai,
+            'tanggal_berakhir' => $tanggalBerakhir, // 🔥
+            'durasi_hari'      => $durasi ?: null,  // 🔥
             'kuota'            => $kuota !== '' ? (int) $kuota : null,
             'updated_at'       => date('Y-m-d H:i:s'),
         ]);

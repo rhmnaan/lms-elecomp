@@ -74,6 +74,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('kelas/program', 'Peserta\KelasPeserta::program');
         $routes->get('kelas/program/(:num)', 'Peserta\KelasPeserta::kelasByProgram/$1');
 
+        // tugas
+        $routes->get('tugas/(:num)', 'Peserta\Tugas::index/$1');
+
         // =========================
         // DETAIL & VOUCHER
         // =========================

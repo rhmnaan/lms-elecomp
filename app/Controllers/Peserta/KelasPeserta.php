@@ -183,15 +183,15 @@ class KelasPeserta extends BaseController
         foreach ($kelas as &$k) {
 
             if (! empty($k['tanggal_berakhir'])) {
-                $now   = new \DateTime();
-                $akhir = new \DateTime($k['tanggal_berakhir']);
+                $now   = new \DateTime(date('Y-m-d')); // hari ini, tanpa jam
+                $akhir = new \DateTime(date('Y-m-d', strtotime($k['tanggal_berakhir'])));
 
                 if ($akhir < $now) {
                     $k['sisa_hari']    = 0;
                     $k['status_akses'] = 'expired';
                 } else {
                     $diff = $now->diff($akhir);
-                    $k['sisa_hari']    = (int) $diff->days;
+                    $k['sisa_hari'] = max((int) $diff->days, 0);
                     $k['status_akses'] = 'aktif';
                 }
             } else {

@@ -232,122 +232,51 @@ class DashboardPeserta extends BaseController
     }
 
     // =========================================================
-    //  KELAS SAYA (SEMUA KELAS YANG SUDAH DI-CLAIM)
-    // =========================================================
-    public function kelasSaya()
-    {
-        $db = \Config\Database::connect();
-
-        $kelas_list = $db->table('kelas k')
-            ->select('
-                k.id_kelas,
-                k.nama_kelas,
-                k.deskripsi_kelas,
-                p.id_program,
-                p.nama_program,
-                u.nama_users AS nama_pengajar,
-                COUNT(DISTINCT m.id_modul) AS total_modul,
-                COUNT(DISTINCT ma.id_materi) AS total_materi
-            ')
-            ->join('program p', 'p.id_program = k.id_program', 'left')
-            ->join('users u', 'u.id_users = k.id_users', 'left')
-            ->join('modul m', 'm.id_kelas = k.id_kelas AND m.deleted_at IS NULL', 'left')
-            ->join('materi ma', 'ma.id_modul = m.id_modul AND ma.deleted_at IS NULL', 'left')
-            ->join(
-                'kelas_peserta kp',
-                'kp.id_kelas = k.id_kelas
-                AND kp.id_users = ' . (int) $this->idUsers . '
-                AND kp.deleted_at IS NULL',
-                'inner'
-            )
-            ->where('k.deleted_at IS NULL')
-            ->groupBy('k.id_kelas')
-            ->get()
-            ->getResultArray();
-
-        // Hitung progress & kelompokkan per program
-        $grouped = [];
-        foreach ($kelas_list as &$k) {
-            $total = $db->table('materi ma')
-                ->join('modul m', 'm.id_modul = ma.id_modul')
-                ->where('m.id_kelas', $k['id_kelas'])
-                ->where('ma.deleted_at IS NULL')
-                ->where('m.deleted_at IS NULL')
-                ->countAllResults();
-
-            $selesai = $db->table('user_materi_progress ump')
-                ->join('materi ma', 'ma.id_materi = ump.id_materi')
-                ->join('modul m', 'm.id_modul = ma.id_modul')
-                ->where('m.id_kelas', $k['id_kelas'])
-                ->where('ump.id_users', $this->idUsers)
-                ->where('ump.is_completed', 1)
-                ->countAllResults();
-
-            $k['persen'] = $total > 0 ? round(($selesai / $total) * 100) : 0;
-
-            $programKey = $k['id_program'] ?? 0;
-            if (! isset($grouped[$programKey])) {
-                $grouped[$programKey] = [
-                    'nama_program' => $k['nama_program'] ?? 'Tanpa Program',
-                    'kelas'        => [],
-                ];
-            }
-            $grouped[$programKey]['kelas'][] = $k;
-        }
-        unset($k);
-
-        return view('Dashboard/Peserta/kelas-saya', [
-            'grouped'     => $grouped,
-            'total_kelas' => count($kelas_list),
-        ]);
-    }
-
-    // =========================================================
     //  MODUL
     // =========================================================
     public function modul()
-{
-    $focusKelas = $this->request->getGet('kelas');
-    $kelas_list = $this->kelasPesertaModel->getKelasByPeserta($this->idUsers);
-    $db         = \Config\Database::connect();
+    {
+        $focusKelas = $this->request->getGet('kelas');
+        $kelas_list = $this->kelasPesertaModel->getKelasByPeserta($this->idUsers);
+        $db         = \Config\Database::connect();
 
-    foreach ($kelas_list as &$k) {
-        $k['modul_list'] = $this->modulModel->getWithProgress($k['id_kelas'], $this->idUsers);
+        foreach ($kelas_list as &$k) {
+            $k['modul_list'] = $this->modulModel->getWithProgress($k['id_kelas'], $this->idUsers);
 
-        // Hitung jumlah file per tipe untuk setiap modul
-        foreach ($k['modul_list'] as &$m) {
-            $materi_list = $db->table('materi')
-                ->select('file_materi, video_url_materi')
-                ->where('id_modul', $m['id_modul'])
-                ->where('deleted_at IS NULL')
-                ->get()->getResultArray();
+            // Hitung jumlah file per tipe untuk setiap modul
+            foreach ($k['modul_list'] as &$m) {
+                $materi_list = $db->table('materi')
+                    ->select('file_materi, video_url_materi')
+                    ->where('id_modul', $m['id_modul'])
+                    ->where('deleted_at IS NULL')
+                    ->get()->getResultArray();
 
-            $count = ['pdf' => 0, 'word' => 0, 'excel' => 0, 'ppt' => 0, 'video' => 0];
+                $count = ['pdf' => 0, 'word' => 0, 'excel' => 0, 'ppt' => 0, 'video' => 0];
 
-            foreach ($materi_list as $mt) {
-                if (!empty($mt['video_url_materi'])) {
-                    $count['video']++;
+                foreach ($materi_list as $mt) {
+                    if (!empty($mt['video_url_materi'])) {
+                        $count['video']++;
+                    }
+                    if (!empty($mt['file_materi'])) {
+                        $ext = strtolower(pathinfo($mt['file_materi'], PATHINFO_EXTENSION));
+                        if ($ext === 'pdf')                        $count['pdf']++;
+                        elseif (in_array($ext, ['doc','docx']))   $count['word']++;
+                        elseif (in_array($ext, ['xls','xlsx']))   $count['excel']++;
+                        elseif (in_array($ext, ['ppt','pptx']))   $count['ppt']++;
+                    }
                 }
-                if (!empty($mt['file_materi'])) {
-                    $ext = strtolower(pathinfo($mt['file_materi'], PATHINFO_EXTENSION));
-                    if ($ext === 'pdf')                        $count['pdf']++;
-                    elseif (in_array($ext, ['doc','docx']))   $count['word']++;
-                    elseif (in_array($ext, ['xls','xlsx']))   $count['excel']++;
-                    elseif (in_array($ext, ['ppt','pptx']))   $count['ppt']++;
-                }
+
+                $m['file_count'] = $count;
             }
-
-            $m['file_count'] = $count;
+            unset($m);
         }
-        unset($m);
-    }
-    unset($k);
+        unset($k);
 
-    return view('Dashboard/Peserta/modul', [
-        'kelas_list'  => $kelas_list,
-        'focus_kelas' => $focusKelas,
-    ]);
-}
+        return view('Dashboard/Peserta/modul', [
+            'kelas_list'  => $kelas_list,
+            'focus_kelas' => $focusKelas,
+        ]);
+    }
 
     // =========================================================
     //  MATERI LIST
