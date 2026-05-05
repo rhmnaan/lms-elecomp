@@ -103,6 +103,14 @@
                             </a>
                         </li>
 
+                        <!-- TUGAS -->
+                        <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/tugas')) ? 'class="sub-active"' : '' ?>>
+                            <a href="<?= base_url('dashboard/pengajar/tugas') ?>">
+                                <i class="bi bi-pencil-square"></i>
+                                Tugas
+                            </a>
+                        </li>
+
                         <!-- MATERI -->
                         <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/materi')) ? 'class="sub-active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/materi-list') ?>">

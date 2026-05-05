@@ -64,6 +64,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('quiz/submit/(:num)', 'DashboardPeserta::submitQuiz/$1');
         $routes->post('quiz/simpan-materi', 'DashboardPeserta::simpanHasilQuizMateri');
         $routes->post('materi/selesai', 'DashboardPeserta::selesaiMateri');
+        $routes->post('tugas/submit', 'DashboardPeserta::submitTugas');
+        $routes->get('kelas/tugas/(:num)', 'DashboardPeserta::kelasTugas/$1');
+        $routes->get('kelas-tugas', 'DashboardPeserta::kelasTugas');
+        $routes->get('tugas-riwayat/(:num)', 'DashboardPeserta::tugasRiwayat/$1');
 
         // =====================
         // KELAS SAYA
@@ -144,6 +148,11 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('modul/store', 'DashboardPengajar::modulStore');
         $routes->post('modul/update/(:num)', 'DashboardPengajar::modulUpdate/$1');
         $routes->post('modul/delete/(:num)', 'DashboardPengajar::modulDelete/$1');
+
+        // Tugas
+        $routes->get('tugas', 'DashboardPengajar::tugas');
+        $routes->post('tugas/store', 'DashboardPengajar::tugasStore');
+        $routes->post('tugas/delete/(:num)', 'DashboardPengajar::tugasDelete/$1');
 
         // Materi
         $routes->get('materi', 'DashboardPengajar::materi');

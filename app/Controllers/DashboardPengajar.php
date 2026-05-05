@@ -5,6 +5,7 @@ use App\Controllers\BaseController;
 use App\Models\KelasModel;
 use App\Models\MateriModel;
 use App\Models\ModulModel;
+use App\Models\TugasModel;
 use App\Models\VoucherModel;
 
 class DashboardPengajar extends BaseController
@@ -638,9 +639,107 @@ class DashboardPengajar extends BaseController
         return redirect()->to('/dashboard/pengajar/modul')->with('success', 'Modul berhasil dihapus.');
     }
 
+    public function tugas()
+    {
+        if ($r = $this->guardPengajar()) {
+            return $r;
+        }
+
+        $db     = \Config\Database::connect();
+        $uid    = $this->myId();
+
+        $kelasList = (new KelasModel())
+            ->where('id_users', $uid)
+            ->where('deleted_at IS NULL')
+            ->findAll();
+
+        $modulList = $db->table('modul m')
+            ->select('m.id_modul, m.judul_modul, m.id_kelas')
+            ->join('kelas k', 'k.id_kelas = m.id_kelas')
+            ->where('k.id_users', $uid)
+            ->where('m.deleted_at IS NULL')
+            ->orderBy('m.id_kelas, m.urutan_modul')
+            ->get()->getResultArray();
+
+        $tugasList = $db->table('tugas t')
+            ->select('t.*, k.nama_kelas, m.judul_modul')
+            ->join('kelas k', 'k.id_kelas = t.id_kelas')
+            ->join('modul m', 'm.id_modul = t.id_modul', 'left')
+            ->where('k.id_users', $uid)
+            ->where('t.deleted_at IS NULL')
+            ->orderBy('t.created_at', 'DESC')
+            ->get()->getResultArray();
+
+        return view('Dashboard/Pengajar/tugas', [
+            'kelas' => $kelasList,
+            'modul' => $modulList,
+            'tugas' => $tugasList,
+        ]);
+    }
+
+    public function tugasStore()
+    {
+        if ($r = $this->guardPengajar()) {
+            return $r;
+        }
+
+        $rules = [
+            'id_kelas'        => 'required|is_natural_no_zero',
+            'judul_tugas'     => 'required|min_length[3]|max_length[200]',
+            'deskripsi_tugas' => 'required|min_length[10]',
+            'deadline_hari'   => 'permit_empty|is_natural',
+        ];
+
+        if (! $this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $idKelas = (int) $this->request->getPost('id_kelas');
+        if (! $this->isMyKelas(new KelasModel(), $idKelas)) {
+            return redirect()->back()->with('error', 'Kelas tidak valid.');
+        }
+
+        $idModul = $this->request->getPost('id_modul') ? (int) $this->request->getPost('id_modul') : null;
+        if ($idModul && ! $this->isMyModul($idModul)) {
+            return redirect()->back()->with('error', 'Modul tidak valid.');
+        }
+
+        $taskData = [
+            'id_kelas'          => $idKelas,
+            'id_modul'          => $idModul,
+            'judul_tugas'       => $this->request->getPost('judul_tugas'),
+            'deskripsi_tugas'   => $this->request->getPost('deskripsi_tugas'),
+            'deadline_hari'     => $this->request->getPost('deadline_hari') ?: null,
+            'is_wajib_posttest' => $this->request->getPost('is_wajib_posttest') ? 1 : 0,
+            'created_by'        => $this->myId(),
+            'created_at'        => date('Y-m-d H:i:s'),
+        ];
+
+        (new TugasModel())->insert($taskData);
+
+        return redirect()->to('/dashboard/pengajar/tugas')->with('success', 'Tugas berhasil ditambahkan.');
+    }
+
+    public function tugasDelete(int $id)
+    {
+        if ($r = $this->guardPengajar()) {
+            return $r;
+        }
+
+        $tugasModel = new TugasModel();
+        $tugas      = $tugasModel->find($id);
+
+        if (! $tugas || ! $this->isMyKelas(new KelasModel(), $tugas['id_kelas'])) {
+            return redirect()->to('/dashboard/pengajar/tugas')->with('error', 'Tugas tidak ditemukan.');
+        }
+
+        $tugasModel->update($id, ['deleted_at' => date('Y-m-d H:i:s')]);
+        return redirect()->to('/dashboard/pengajar/tugas')->with('success', 'Tugas berhasil dihapus.');
+    }
+
     // ══════════════════════════════════════════════════════════════════════
     //  MATERI
-    // ══════════════════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════
     private function getMateriFilterData(int $uid): array
     {
         $db = \Config\Database::connect();
