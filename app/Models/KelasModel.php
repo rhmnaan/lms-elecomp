@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use CodeIgniter\Model;
@@ -49,7 +50,7 @@ class KelasModel extends Model
         'id_program'  => 'required|numeric',
         'nama_kelas'  => 'required|min_length[3]|max_length[100]',
         'id_users'    => 'required|numeric',
-        'durasi_hari' => 'permit_empty|numeric', 
+        'durasi_hari' => 'permit_empty|numeric',
     ];
 
     /* =========================
@@ -144,5 +145,53 @@ class KelasModel extends Model
             ->where('kelas.id_kelas', $id_kelas)
             ->where('kelas.deleted_at', null)
             ->first();
+    }
+
+    public function getKelasSaya($id_users)
+    {
+        return $this->select('
+            kelas.*,
+            program.nama_program,
+            users.nama_users AS nama_pengajar,
+
+            COUNT(DISTINCT modul.id_modul) AS total_modul,
+            COUNT(DISTINCT materi.id_materi) AS total_materi,
+            COUNT(DISTINCT tugas.id_tugas) AS tugas_count
+        ')
+            ->join('program', 'program.id_program = kelas.id_program')
+            ->join('users', 'users.id_users = kelas.id_users', 'left')
+
+            // modul
+            ->join(
+                'modul',
+                'modul.id_kelas = kelas.id_kelas AND modul.deleted_at IS NULL',
+                'left'
+            )
+
+            // materi
+            ->join(
+                'materi',
+                'materi.id_modul = modul.id_modul AND materi.deleted_at IS NULL',
+                'left'
+            )
+
+            // ✅ tugas
+            ->join(
+                'tugas',
+                'tugas.id_kelas = kelas.id_kelas AND tugas.deleted_at IS NULL',
+                'left'
+            )
+
+            // ambil hanya kelas yang diikuti user
+            ->join(
+                'kelas_user',
+                'kelas_user.id_kelas = kelas.id_kelas',
+                'inner'
+            )
+            ->where('kelas_user.id_users', $id_users)
+
+            ->where('kelas.deleted_at', null)
+            ->groupBy('kelas.id_kelas')
+            ->findAll();
     }
 }

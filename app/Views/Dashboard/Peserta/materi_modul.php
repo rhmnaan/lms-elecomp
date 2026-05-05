@@ -76,6 +76,14 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
             <h3><?= esc($modul['judul_modul']) ?></h3>
             <p><?= count($materi_list) ?> materi &bull; Modul <?= $modul['urutan_modul'] ?? 1 ?></p>
         </div>
+        <?php if (! empty($has_pending_tugas)): ?>
+        <div class="materi-alert">
+            <div class="materi-alert-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+            <div>
+                <strong>Perhatian:</strong> Anda harus mengerjakan tugas terlebih dahulu sebelum membuka materi selanjutnya.
+            </div>
+        </div>
+        <?php endif; ?>
         <ul class="materi-list">
             <?php foreach ($materi_list as $index => $m):
                 $isActive = ($currentMateri && $m['id_materi'] == $currentMateri['id_materi']);
@@ -900,6 +908,26 @@ setInterval(() => {
     const fs = window.pdfSelesai   ? '✓ Dokumen selesai' : '○ Buka/scroll dokumen sampai selesai';
     msgEl.innerHTML = vs + '<br>' + fs;
 }, 500);
+
+(function () {
+    const answerTypeRadios = document.querySelectorAll('.tugas-answer-type');
+    answerTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            const form = this.closest('form');
+            if (!form) return;
+
+            const fileInput = form.querySelector('.tugas-input-file');
+            const textInput = form.querySelector('.tugas-input-text');
+            if (this.value === 'file') {
+                if (fileInput) fileInput.style.display = '';
+                if (textInput) textInput.style.display = 'none';
+            } else {
+                if (fileInput) fileInput.style.display = 'none';
+                if (textInput) textInput.style.display = '';
+            }
+        });
+    });
+})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
