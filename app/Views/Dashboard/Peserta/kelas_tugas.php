@@ -5,7 +5,8 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('styles') ?>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap"
+    rel="stylesheet">
 <style>
 /* ─── RESET & ROOT ─── */
 .tj-root {
@@ -153,9 +154,17 @@
     letter-spacing: -0.5px;
 }
 
-.tj-sum-val.blue  { color: #2563eb; }
-.tj-sum-val.amber { color: #d97706; }
-.tj-sum-val.red   { color: #dc2626; }
+.tj-sum-val.blue {
+    color: #2563eb;
+}
+
+.tj-sum-val.amber {
+    color: #d97706;
+}
+
+.tj-sum-val.red {
+    color: #dc2626;
+}
 
 .tj-sum-sub {
     font-size: 11.5px;
@@ -198,7 +207,10 @@
     gap: 14px;
 }
 
-.tj-card-head-left { flex: 1; min-width: 0; }
+.tj-card-head-left {
+    flex: 1;
+    min-width: 0;
+}
 
 .tj-task-num {
     font-size: 11px;
@@ -210,7 +222,9 @@
     gap: 5px;
 }
 
-.tj-task-num i { font-size: 11px; }
+.tj-task-num i {
+    font-size: 11px;
+}
 
 .tj-task-title {
     font-size: 14.5px;
@@ -244,9 +258,23 @@
     flex-shrink: 0;
 }
 
-.badge-sent    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.badge-open    { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-.badge-expired { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.badge-sent {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.badge-open {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-expired {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
 
 /* ── DIVIDER ── */
 .tj-divider {
@@ -274,7 +302,11 @@
     min-width: 0;
 }
 
-.tj-meta-item { display: flex; flex-direction: column; gap: 4px; }
+.tj-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
 
 .tj-meta-label {
     font-size: 10.5px;
@@ -293,7 +325,10 @@
     gap: 5px;
 }
 
-.tj-meta-val i { font-size: 12px; color: #9ca3af; }
+.tj-meta-val i {
+    font-size: 12px;
+    color: #9ca3af;
+}
 
 .pill {
     display: inline-flex;
@@ -305,8 +340,17 @@
     font-weight: 700;
 }
 
-.pill-warn    { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
-.pill-neutral { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+.pill-warn {
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fde68a;
+}
+
+.pill-neutral {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
 
 /* Pemisah vertikal antara meta kiri dan tombol kerjakan */
 .tj-meta-sep {
@@ -341,8 +385,13 @@
     gap: 5px;
 }
 
-.tj-footer-note.danger  { color: #dc2626; }
-.tj-footer-note.success { color: #16a34a; }
+.tj-footer-note.danger {
+    color: #dc2626;
+}
+
+.tj-footer-note.success {
+    color: #16a34a;
+}
 
 .btn-action {
     display: inline-flex;
@@ -562,7 +611,11 @@
     gap: 5px;
 }
 
-.tj-history-list { display: flex; flex-direction: column; gap: 7px; }
+.tj-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
 
 .tj-history-item {
     display: flex;
@@ -623,21 +676,64 @@
     border: 1px solid #f0f0f0;
 }
 
-.tj-empty-icon { font-size: 42px; color: #d1d5db; margin-bottom: 14px; }
-.tj-empty-title { font-size: 16px; font-weight: 800; color: #374151; margin-bottom: 6px; }
-.tj-empty-desc  { font-size: 13px; color: #9ca3af; }
+.tj-empty-icon {
+    font-size: 42px;
+    color: #d1d5db;
+    margin-bottom: 14px;
+}
+
+.tj-empty-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.tj-empty-desc {
+    font-size: 13px;
+    color: #9ca3af;
+}
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 576px) {
-    .tj-header        { flex-direction: column; }
-    .tj-header-actions { width: 100%; }
-    .tj-header-actions a { flex: 1; justify-content: center; }
-    .tj-summary       { grid-template-columns: 1fr 1fr; }
-    .tj-summary .tj-sum-card:last-child { grid-column: span 2; }
-    .tj-card-head     { flex-direction: column; }
-    .tj-card-meta     { flex-direction: column; gap: 12px; }
-    .tj-meta-sep      { display: none; }
-    .tj-card-footer   { flex-direction: column; align-items: flex-start; }
+    .tj-header {
+        flex-direction: column;
+    }
+
+    .tj-header-actions {
+        width: 100%;
+    }
+
+    .tj-header-actions a {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .tj-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .tj-summary .tj-sum-card:last-child {
+        grid-column: span 2;
+    }
+
+    .tj-card-head {
+        flex-direction: column;
+    }
+
+    .tj-card-meta {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .tj-meta-sep {
+        display: none;
+    }
+
+    .tj-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 </style>
 <?= $this->endSection() ?>
@@ -653,7 +749,7 @@
             <p>Daftar tugas untuk kelas <strong><?= esc($kelas['nama_kelas']) ?></strong></p>
         </div>
         <div class="tj-header-actions">
-            <a href="<?= base_url('dashboard/peserta/kelas-saya') ?>" class="btn-back">
+            <a href="<?= base_url('dashboard/peserta/kelas') ?>" class="btn-back">
                 <i class="bi bi-arrow-left"></i> Kembali
             </a>
             <a href="<?= base_url('dashboard/peserta/modul?kelas=' . $kelas['id_kelas']) ?>" class="btn-modul">
@@ -807,24 +903,23 @@
                 <!-- Kanan: tombol kerjakan / kerjakan ulang -->
                 <div class="tj-meta-action">
                     <?php if ($task['is_expired']): ?>
-                        <button class="btn-action btn-action-muted" disabled>
-                            <i class="bi bi-slash-circle"></i> Tidak Tersedia
-                        </button>
+                    <button class="btn-action btn-action-muted" disabled>
+                        <i class="bi bi-slash-circle"></i> Tidak Tersedia
+                    </button>
                     <?php elseif (!$task['can_submit']): ?>
-                        <button class="btn-action btn-action-muted" disabled>
-                            <i class="bi bi-lock"></i>
-                            <?= $task['has_submission'] ? 'Kerjakan Ulang' : 'Kerjakan Tugas' ?>
-                        </button>
+                    <button class="btn-action btn-action-muted" disabled>
+                        <i class="bi bi-lock"></i>
+                        <?= $task['has_submission'] ? 'Kerjakan Ulang' : 'Kerjakan Tugas' ?>
+                    </button>
                     <?php else: ?>
-                        <button type="button"
-                            class="btn-action btn-action-primary btn-open-tugas-modal"
-                            data-task-id="<?= $task['id_tugas'] ?>"
-                            data-task-title="<?= esc($task['judul_tugas'], 'attr') ?>"
-                            data-task-desc="<?= esc($task['deskripsi_tugas'] ?? '', 'attr') ?>"
-                            data-task-has-submission="<?= $task['has_submission'] ? '1' : '0' ?>">
-                            <i class="bi bi-pencil-square"></i>
-                            <?= $task['has_submission'] ? 'Kerjakan Ulang' : 'Kerjakan Tugas' ?>
-                        </button>
+                    <button type="button" class="btn-action btn-action-primary btn-open-tugas-modal"
+                        data-task-id="<?= $task['id_tugas'] ?>"
+                        data-task-title="<?= esc($task['judul_tugas'], 'attr') ?>"
+                        data-task-desc="<?= esc($task['deskripsi_tugas'] ?? '', 'attr') ?>"
+                        data-task-has-submission="<?= $task['has_submission'] ? '1' : '0' ?>">
+                        <i class="bi bi-pencil-square"></i>
+                        <?= $task['has_submission'] ? 'Kerjakan Ulang' : 'Kerjakan Tugas' ?>
+                    </button>
                     <?php endif ?>
                 </div>
 
@@ -833,29 +928,29 @@
             <!-- FOOTER: status kiri + tombol riwayat kanan -->
             <div class="tj-card-footer">
                 <?php if ($task['is_expired']): ?>
-                    <span class="tj-footer-note danger">
-                        <i class="bi bi-x-circle"></i>
-                        Periode pengumpulan telah berakhir
-                    </span>
+                <span class="tj-footer-note danger">
+                    <i class="bi bi-x-circle"></i>
+                    Periode pengumpulan telah berakhir
+                </span>
                 <?php elseif ($task['has_submission']): ?>
-                    <span class="tj-footer-note success">
-                        <i class="bi bi-check-circle"></i>
-                        Tugas sudah dikumpulkan
-                    </span>
+                <span class="tj-footer-note success">
+                    <i class="bi bi-check-circle"></i>
+                    Tugas sudah dikumpulkan
+                </span>
                 <?php elseif ($task['is_wajib_posttest'] && !$task['can_submit']): ?>
-                    <span class="tj-footer-note">
-                        <i class="bi bi-info-circle"></i>
-                        Selesaikan posttest modul terlebih dahulu
-                    </span>
+                <span class="tj-footer-note">
+                    <i class="bi bi-info-circle"></i>
+                    Selesaikan posttest modul terlebih dahulu
+                </span>
                 <?php else: ?>
-                    <span class="tj-footer-note">
-                        <i class="bi bi-send"></i>
-                        Belum ada pengumpulan
-                    </span>
+                <span class="tj-footer-note">
+                    <i class="bi bi-send"></i>
+                    Belum ada pengumpulan
+                </span>
                 <?php endif ?>
 
                 <a href="<?= base_url('dashboard/peserta/tugas-riwayat/' . $task['id_tugas']) ?>"
-                   class="btn-action btn-action-outline">
+                    class="btn-action btn-action-outline">
                     <i class="bi bi-clock-history"></i> Riwayat Pengumpulan
                 </a>
             </div>
@@ -878,7 +973,8 @@
             </div>
             <button type="button" id="tugasModalClose" class="tugas-modal-close" aria-label="Tutup modal">×</button>
         </div>
-        <form id="tugasModalForm" action="<?= base_url('dashboard/peserta/tugas/submit') ?>" method="POST" enctype="multipart/form-data">
+        <form id="tugasModalForm" action="<?= base_url('dashboard/peserta/tugas/submit') ?>" method="POST"
+            enctype="multipart/form-data">
             <?= csrf_field() ?>
             <input type="hidden" name="id_tugas" id="modalTugasId">
             <div class="tugas-modal-body">
@@ -902,17 +998,20 @@
                         <span>Pilih file atau seret ke sini</span>
                         <div class="tugas-file-name" id="tugasFileName">Tidak ada file dipilih</div>
                     </div>
-                    <input type="file" name="jawaban_file" id="jawabanFile" class="tugas-form-input" accept=".pdf,.doc,.docx,.txt" style="display:none;">
+                    <input type="file" name="jawaban_file" id="jawabanFile" class="tugas-form-input"
+                        accept=".pdf,.doc,.docx,.txt" style="display:none;">
                 </div>
 
                 <div class="tugas-form-group" id="tugasTextGroup" style="display:none;">
                     <label for="jawaban_text">Jawaban Teks</label>
-                    <textarea name="jawaban_text" id="jawabanText" class="tugas-form-textarea" placeholder="Tuliskan jawaban tugas di sini..."></textarea>
+                    <textarea name="jawaban_text" id="jawabanText" class="tugas-form-textarea"
+                        placeholder="Tuliskan jawaban tugas di sini..."></textarea>
                 </div>
 
                 <div class="tugas-form-group">
                     <label for="catatan_jawaban">Catatan</label>
-                    <textarea name="catatan_jawaban" id="catatanJawaban" class="tugas-form-textarea" placeholder="Opsional: tambahkan catatan atau keterangan"></textarea>
+                    <textarea name="catatan_jawaban" id="catatanJawaban" class="tugas-form-textarea"
+                        placeholder="Opsional: tambahkan catatan atau keterangan"></textarea>
                 </div>
 
                 <div class="tugas-btn-group">
@@ -925,60 +1024,61 @@
 </div>
 
 <script>
-    const tugasModalOverlay = document.getElementById('tugasModalOverlay');
-    const tugasModalClose = document.getElementById('tugasModalClose');
-    const tugasModalCancel = document.getElementById('tugasModalCancel');
-    const tugasModalTitle = document.getElementById('tugasModalTitle');
-    const tugasModalDesc = document.getElementById('tugasModalDesc');
-    const tugasModalForm = document.getElementById('tugasModalForm');
-    const modalTugasId = document.getElementById('modalTugasId');
-    const jawabanFile = document.getElementById('jawabanFile');
-    const tugasFileCard = document.getElementById('tugasFileCard');
-    const tugasFileName = document.getElementById('tugasFileName');
-    const tugasTextGroup = document.getElementById('tugasTextGroup');
+const tugasModalOverlay = document.getElementById('tugasModalOverlay');
+const tugasModalClose = document.getElementById('tugasModalClose');
+const tugasModalCancel = document.getElementById('tugasModalCancel');
+const tugasModalTitle = document.getElementById('tugasModalTitle');
+const tugasModalDesc = document.getElementById('tugasModalDesc');
+const tugasModalForm = document.getElementById('tugasModalForm');
+const modalTugasId = document.getElementById('modalTugasId');
+const jawabanFile = document.getElementById('jawabanFile');
+const tugasFileCard = document.getElementById('tugasFileCard');
+const tugasFileName = document.getElementById('tugasFileName');
+const tugasTextGroup = document.getElementById('tugasTextGroup');
 
-    document.querySelectorAll('.btn-open-tugas-modal').forEach(button => {
-        button.addEventListener('click', () => {
-            const taskId = button.dataset.taskId;
-            const taskTitle = button.dataset.taskTitle || 'Kerjakan Tugas';
-            const taskDesc = button.dataset.taskDesc || 'Lengkapi jawaban tugas di bawah ini.';
+document.querySelectorAll('.btn-open-tugas-modal').forEach(button => {
+    button.addEventListener('click', () => {
+        const taskId = button.dataset.taskId;
+        const taskTitle = button.dataset.taskTitle || 'Kerjakan Tugas';
+        const taskDesc = button.dataset.taskDesc || 'Lengkapi jawaban tugas di bawah ini.';
 
-            tugasModalTitle.innerText = taskTitle;
-            tugasModalDesc.innerText = taskDesc;
-            modalTugasId.value = taskId;
-            tugasModalOverlay.classList.add('active');
-        });
+        tugasModalTitle.innerText = taskTitle;
+        tugasModalDesc.innerText = taskDesc;
+        modalTugasId.value = taskId;
+        tugasModalOverlay.classList.add('active');
     });
+});
 
-    function closeTugasModal() {
-        tugasModalOverlay.classList.remove('active');
+function closeTugasModal() {
+    tugasModalOverlay.classList.remove('active');
+}
+
+tugasModalClose.addEventListener('click', closeTugasModal);
+tugasModalCancel.addEventListener('click', closeTugasModal);
+tugasModalOverlay.addEventListener('click', (event) => {
+    if (event.target === tugasModalOverlay) {
+        closeTugasModal();
     }
+});
 
-    tugasModalClose.addEventListener('click', closeTugasModal);
-    tugasModalCancel.addEventListener('click', closeTugasModal);
-    tugasModalOverlay.addEventListener('click', (event) => {
-        if (event.target === tugasModalOverlay) {
-            closeTugasModal();
+document.querySelectorAll('input[name="tipe_jawaban"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+        if (radio.value === 'file' && radio.checked) {
+            tugasFileGroup.style.display = 'block';
+            tugasTextGroup.style.display = 'none';
+        }
+        if (radio.value === 'text' && radio.checked) {
+            tugasFileGroup.style.display = 'none';
+            tugasTextGroup.style.display = 'block';
         }
     });
+});
 
-    document.querySelectorAll('input[name="tipe_jawaban"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            if (radio.value === 'file' && radio.checked) {
-                tugasFileGroup.style.display = 'block';
-                tugasTextGroup.style.display = 'none';
-            }
-            if (radio.value === 'text' && radio.checked) {
-                tugasFileGroup.style.display = 'none';
-                tugasTextGroup.style.display = 'block';
-            }
-        });
-    });
-
-    tugasFileCard.addEventListener('click', () => jawabanFile.click());
-    jawabanFile.addEventListener('change', () => {
-        tugasFileName.textContent = jawabanFile.files.length > 0 ? jawabanFile.files[0].name : 'Tidak ada file dipilih';
-    });
+tugasFileCard.addEventListener('click', () => jawabanFile.click());
+jawabanFile.addEventListener('change', () => {
+    tugasFileName.textContent = jawabanFile.files.length > 0 ? jawabanFile.files[0].name :
+        'Tidak ada file dipilih';
+});
 </script>
 
 <?= $this->endSection() ?>

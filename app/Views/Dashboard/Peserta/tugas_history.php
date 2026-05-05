@@ -5,7 +5,8 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('styles') ?>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
 <style>
 /* ─── ROOT ─── */
 .rh-root {
@@ -209,9 +210,20 @@
     z-index: 1;
 }
 
-.rh-dot.dot-success { background: #16a34a; box-shadow: 0 0 0 1.5px #bbf7d0; }
-.rh-dot.dot-pending { background: #d97706; box-shadow: 0 0 0 1.5px #fde68a; }
-.rh-dot.dot-rejected { background: #dc2626; box-shadow: 0 0 0 1.5px #fecaca; }
+.rh-dot.dot-success {
+    background: #16a34a;
+    box-shadow: 0 0 0 1.5px #bbf7d0;
+}
+
+.rh-dot.dot-pending {
+    background: #d97706;
+    box-shadow: 0 0 0 1.5px #fde68a;
+}
+
+.rh-dot.dot-rejected {
+    background: #dc2626;
+    box-shadow: 0 0 0 1.5px #fecaca;
+}
 
 /* ─── CARD ─── */
 .rh-card {
@@ -246,7 +258,10 @@
     gap: 6px;
 }
 
-.rh-card-date i { font-size: 13px; color: #9ca3af; }
+.rh-card-date i {
+    font-size: 13px;
+    color: #9ca3af;
+}
 
 .rh-card-tipe {
     font-size: 12px;
@@ -270,10 +285,29 @@
     flex-shrink: 0;
 }
 
-.badge-terkirim  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-.badge-pending   { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
-.badge-ditolak   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-.badge-default   { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+.badge-terkirim {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-pending {
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fde68a;
+}
+
+.badge-ditolak {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.badge-default {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
 
 /* ── DIVIDER ── */
 .rh-divider {
@@ -323,7 +357,10 @@
     gap: 5px;
 }
 
-.rh-meta-val i { font-size: 12px; color: #9ca3af; }
+.rh-meta-val i {
+    font-size: 12px;
+    color: #9ca3af;
+}
 
 /* Tombol lihat file */
 .btn-file {
@@ -405,20 +442,61 @@
     border: 1px solid #f0f0f0;
 }
 
-.rh-empty-icon { font-size: 42px; color: #d1d5db; margin-bottom: 14px; }
-.rh-empty-title { font-size: 16px; font-weight: 800; color: #374151; margin-bottom: 6px; }
-.rh-empty-desc  { font-size: 13px; color: #9ca3af; line-height: 1.6; }
+.rh-empty-icon {
+    font-size: 42px;
+    color: #d1d5db;
+    margin-bottom: 14px;
+}
+
+.rh-empty-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.rh-empty-desc {
+    font-size: 13px;
+    color: #9ca3af;
+    line-height: 1.6;
+}
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 576px) {
-    .rh-header          { flex-direction: column; }
-    .rh-header-actions  { width: 100%; }
-    .rh-header-actions a { flex: 1; justify-content: center; }
-    .rh-timeline        { padding-left: 22px; }
-    .rh-dot             { left: -18px; }
-    .rh-card-head       { flex-direction: column; align-items: flex-start; }
-    .rh-card-body       { flex-direction: column; }
-    .rh-task-banner     { flex-direction: column; align-items: flex-start; }
+    .rh-header {
+        flex-direction: column;
+    }
+
+    .rh-header-actions {
+        width: 100%;
+    }
+
+    .rh-header-actions a {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .rh-timeline {
+        padding-left: 22px;
+    }
+
+    .rh-dot {
+        left: -18px;
+    }
+
+    .rh-card-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .rh-card-body {
+        flex-direction: column;
+    }
+
+    .rh-task-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 </style>
 <?= $this->endSection() ?>
@@ -434,7 +512,7 @@
             <p>Riwayat pengumpulan untuk tugas <strong><?= esc($tugas['judul_tugas']) ?></strong></p>
         </div>
         <div class="rh-header-actions">
-            <a href="<?= base_url('dashboard/peserta/kelas-saya') ?>" class="btn-back">
+            <a href="<?= base_url('dashboard/peserta/kelas') ?>" class="btn-back">
                 <i class="bi bi-arrow-left"></i> Kembali
             </a>
             <a href="<?= base_url('dashboard/peserta/kelas-tugas?kelas=' . $tugas['id_kelas']) ?>" class="btn-daftar">
@@ -479,7 +557,8 @@
     <div class="rh-empty">
         <div class="rh-empty-icon"><i class="bi bi-clock-history"></i></div>
         <div class="rh-empty-title">Belum ada riwayat pengumpulan</div>
-        <div class="rh-empty-desc">Kamu belum mengumpulkan tugas ini.<br>Kerjakan tugas terlebih dahulu untuk melihat riwayat pengumpulan.</div>
+        <div class="rh-empty-desc">Kamu belum mengumpulkan tugas ini.<br>Kerjakan tugas terlebih dahulu untuk melihat
+            riwayat pengumpulan.</div>
     </div>
 
     <?php else: ?>

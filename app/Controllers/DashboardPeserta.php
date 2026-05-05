@@ -245,6 +245,8 @@ class DashboardPeserta extends BaseController
                 k.id_kelas,
                 k.nama_kelas,
                 k.deskripsi_kelas,
+                kp.tanggal_daftar_kelas_peserta,
+                kp.tanggal_berakhir,
                 p.id_program,
                 p.nama_program,
                 u.nama_users AS nama_pengajar,
@@ -269,6 +271,19 @@ class DashboardPeserta extends BaseController
 
         // Hitung progress & kelompokkan per program
         $grouped = [];
+        $kelasIds = array_column($kelas_list, 'id_kelas');
+        $tugasCounts = [];
+        if (! empty($kelasIds)) {
+            $tugasCounts = $db->table('tugas')
+                ->select('id_kelas, COUNT(*) AS total_tugas')
+                ->whereIn('id_kelas', $kelasIds)
+                ->where('deleted_at IS NULL')
+                ->groupBy('id_kelas')
+                ->get()
+                ->getResultArray();
+            $tugasCounts = array_column($tugasCounts, 'total_tugas', 'id_kelas');
+        }
+
         foreach ($kelas_list as &$k) {
             $total = $db->table('materi ma')
                 ->join('modul m', 'm.id_modul = ma.id_modul')
@@ -286,6 +301,7 @@ class DashboardPeserta extends BaseController
                 ->countAllResults();
 
             $k['persen'] = $total > 0 ? round(($selesai / $total) * 100) : 0;
+            $k['tugas_count'] = isset($tugasCounts[$k['id_kelas']]) ? (int) $tugasCounts[$k['id_kelas']] : 0;
 
             $programKey = $k['id_program'] ?? 0;
             if (! isset($grouped[$programKey])) {
@@ -294,6 +310,26 @@ class DashboardPeserta extends BaseController
                     'kelas'        => [],
                 ];
             }
+
+            // ===============================
+            // HITUNG SISA HARI AKSES KELAS
+            // (AKURAT BERDASARKAN TANGGAL)
+            // ===============================
+            if (! empty($k['tanggal_berakhir'])) {
+
+                $hariIni = new \DateTime(date('Y-m-d')); // jam 00:00:00
+                $akhir   = new \DateTime(date('Y-m-d', strtotime($k['tanggal_berakhir'])));
+
+                // Selisih hari murni (tanpa jam)
+                $selisih = (int) $hariIni->diff($akhir)->format('%r%a');
+
+                $k['sisa_hari'] = max(0, $selisih);
+
+            } else {
+                // NULL = akses selamanya
+                $k['sisa_hari'] = null;
+            }
+            
             $grouped[$programKey]['kelas'][] = $k;
         }
         unset($k);
@@ -302,6 +338,145 @@ class DashboardPeserta extends BaseController
             'grouped'     => $grouped,
             'total_kelas' => count($kelas_list),
         ]);
+    }
+
+    public function kelasTugas($id_kelas = null)
+    {
+        if (! $id_kelas) {
+            $id_kelas = $this->request->getGet('kelas');
+        }
+
+        if (! $id_kelas) {
+            return redirect()->to(base_url('dashboard/peserta/kelas-saya'))
+                ->with('error', 'Kelas tidak valid.');
+        }
+
+        $db = \Config\Database::connect();
+
+        $kelas = $db->table('kelas k')
+            ->select('k.id_kelas, k.nama_kelas, k.deskripsi_kelas, u.nama_users AS nama_pengajar')
+            ->join('users u', 'u.id_users = k.id_users', 'left')
+            ->join(
+                'kelas_peserta kp',
+                'kp.id_kelas = k.id_kelas 
+                AND kp.id_users = ' . (int)$this->idUsers . ' 
+                AND kp.deleted_at IS NULL',
+                'inner'
+            )
+            ->where('k.id_kelas', $id_kelas)
+            ->where('k.deleted_at IS NULL')
+            ->get()
+            ->getRowArray();
+
+        if (! $kelas) {
+            return redirect()->to(base_url('dashboard/peserta/kelas-saya'))
+                ->with('error', 'Kelas tidak ditemukan.');
+        }
+
+        $tugas = $this->getTugasForClass($id_kelas);
+
+        // ===============================
+        // BACK URL (DARI HALAMAN SEBELUMNYA)
+        // ===============================
+        $backUrl = $this->request->getGet('back');
+        $backUrl = $backUrl ?: base_url('dashboard/peserta/kelas-saya');
+
+        return view('Dashboard/Peserta/kelas_tugas', [
+            'kelas'   => $kelas,
+            'tugas'   => $tugas,
+            'backUrl' => $backUrl,
+        ]);
+    }
+
+    public function tugasRiwayat($id_tugas = null)
+    {
+        if (! $id_tugas) {
+            return redirect()->back()->with('error', 'Tugas tidak valid.');
+        }
+
+        $db = \Config\Database::connect();
+        $tugas = $db->table('tugas t')
+            ->select('t.*, k.id_kelas')
+            ->join('kelas k', 'k.id_kelas = t.id_kelas', 'left')
+            ->where('t.id_tugas', $id_tugas)
+            ->where('t.deleted_at IS NULL')
+            ->get()
+            ->getRowArray();
+
+        if (! $tugas) {
+            return redirect()->back()->with('error', 'Tugas tidak ditemukan.');
+        }
+
+        $kelasPeserta = $db->table('kelas_peserta')
+            ->where('id_kelas', $tugas['id_kelas'])
+            ->where('id_users', $this->idUsers)
+            ->where('deleted_at', null)
+            ->get()
+            ->getRowArray();
+
+        if (! $kelasPeserta) {
+            return redirect()->back()->with('error', 'Akses tidak diizinkan.');
+        }
+
+        $history = (new TugasPengumpulanModel())->getHistory($id_tugas, $this->idUsers);
+
+        return view('Dashboard/Peserta/tugas_history', [
+            'tugas'   => $tugas,
+            'history' => $history,
+        ]);
+    }
+
+    private function getTugasForClass(int $idKelas): array
+    {
+        $db = \Config\Database::connect();
+        $kelasPeserta = $db->table('kelas_peserta')
+            ->where('id_kelas', $idKelas)
+            ->where('id_users', $this->idUsers)
+            ->where('deleted_at', null)
+            ->get()
+            ->getRowArray();
+
+        if (! $kelasPeserta) {
+            return [];
+        }
+
+        $joinDate = $kelasPeserta['tanggal_daftar_kelas_peserta'];
+        $tugasRows = $db->table('tugas t')
+            ->select('t.*, m.judul_modul')
+            ->join('modul m', 'm.id_modul = t.id_modul', 'left')
+            ->where('t.id_kelas', $idKelas)
+            ->where('t.deleted_at IS NULL')
+            ->orderBy('t.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        $pengumpulanModel = new TugasPengumpulanModel();
+        $hasAnyPosttest = false;
+        $classTugas = [];
+
+        foreach ($tugasRows as $task) {
+            $deadlineAt = null;
+            $isExpired = false;
+            if ($task['deadline_hari'] !== null && $task['deadline_hari'] !== '') {
+                $deadlineAt = date('Y-m-d H:i:s', strtotime("+{$task['deadline_hari']} days", strtotime($joinDate)));
+                $isExpired = strtotime($deadlineAt) < time();
+            }
+
+            $history = $pengumpulanModel->getHistory($task['id_tugas'], $this->idUsers);
+            $hasSubmission = ! empty($history);
+            $canSubmit = ! $isExpired && (! $task['is_wajib_posttest'] || $this->hasPassedModulePosttest($task['id_modul']));
+
+            $classTugas[] = array_merge($task, [
+                'deadline_at' => $deadlineAt,
+                'is_expired' => $isExpired,
+                'has_submission' => $hasSubmission,
+                'history' => $history,
+                'can_submit' => $canSubmit,
+                'available_after_posttest' => $task['is_wajib_posttest'] && ! $this->hasPassedModulePosttest($task['id_modul']),
+            ]);
+        }
+
+        return $classTugas;
     }
 
     // =========================================================
