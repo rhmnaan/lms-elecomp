@@ -340,6 +340,10 @@ class DashboardPeserta extends BaseController
         ]);
     }
 
+
+    // =========================================================
+    // TUGAS KELAS
+    // =========================================================
     public function kelasTugas($id_kelas = null)
     {
         if (! $id_kelas) {
@@ -429,6 +433,7 @@ class DashboardPeserta extends BaseController
     private function getTugasForClass(int $idKelas): array
     {
         $db = \Config\Database::connect();
+
         $kelasPeserta = $db->table('kelas_peserta')
             ->where('id_kelas', $idKelas)
             ->where('id_users', $this->idUsers)
@@ -441,6 +446,7 @@ class DashboardPeserta extends BaseController
         }
 
         $joinDate = $kelasPeserta['tanggal_daftar_kelas_peserta'];
+
         $tugasRows = $db->table('tugas t')
             ->select('t.*, m.judul_modul')
             ->join('modul m', 'm.id_modul = t.id_modul', 'left')
@@ -451,28 +457,59 @@ class DashboardPeserta extends BaseController
             ->getResultArray();
 
         $pengumpulanModel = new TugasPengumpulanModel();
-        $hasAnyPosttest = false;
+        $deadlineModel = new \App\Models\TugasDeadlinePesertaModel();
+
         $classTugas = [];
 
         foreach ($tugasRows as $task) {
-            $deadlineAt = null;
-            $isExpired = false;
-            if ($task['deadline_hari'] !== null && $task['deadline_hari'] !== '') {
-                $deadlineAt = date('Y-m-d H:i:s', strtotime("+{$task['deadline_hari']} days", strtotime($joinDate)));
-                $isExpired = strtotime($deadlineAt) < time();
+
+            // =========================
+            // 1️⃣ DEADLINE KHUSUS PESERTA
+            // =========================
+            $deadlinePeserta = $deadlineModel->getDeadline(
+                $task['id_tugas'],
+                $this->idUsers
+            );
+
+            if ($deadlinePeserta) {
+                $deadlineAt = $deadlinePeserta['deadline_at'];
+            }
+            // =========================
+            // 2️⃣ DEADLINE DEFAULT TUGAS
+            // =========================
+            elseif (! empty($task['deadline_hari'])) {
+                $deadlineAt = date(
+                    'Y-m-d H:i:s',
+                    strtotime("+{$task['deadline_hari']} days", strtotime($joinDate))
+                );
+            }
+            // =========================
+            // 3️⃣ TANPA DEADLINE
+            // =========================
+            else {
+                $deadlineAt = null;
             }
 
-            $history = $pengumpulanModel->getHistory($task['id_tugas'], $this->idUsers);
+            // Status kadaluarsa
+            $isExpired = $deadlineAt ? strtotime($deadlineAt) < time() : false;
+
+            // Riwayat pengumpulan
+            $history = $pengumpulanModel->getHistory(
+                $task['id_tugas'],
+                $this->idUsers
+            );
+
             $hasSubmission = ! empty($history);
-            $canSubmit = ! $isExpired && (! $task['is_wajib_posttest'] || $this->hasPassedModulePosttest($task['id_modul']));
+
+            // Submit hanya tergantung deadline
+            $canSubmit = ! $isExpired;
 
             $classTugas[] = array_merge($task, [
-                'deadline_at' => $deadlineAt,
-                'is_expired' => $isExpired,
-                'has_submission' => $hasSubmission,
-                'history' => $history,
-                'can_submit' => $canSubmit,
-                'available_after_posttest' => $task['is_wajib_posttest'] && ! $this->hasPassedModulePosttest($task['id_modul']),
+                'deadline_at'     => $deadlineAt,
+                'is_expired'      => $isExpired,
+                'has_submission'  => $hasSubmission,
+                'history'         => $history,
+                'can_submit'      => $canSubmit,
             ]);
         }
 

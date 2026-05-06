@@ -44,7 +44,6 @@
                                         ? 'Deadline ' . $t['deadline_hari'] . ' hari'
                                         : 'Tanpa deadline' ?>
                         </small>
-
                         <a href="#" class="btn btn-sm btn-primary">
                             Kerjakan
                         </a>

@@ -18,6 +18,8 @@ class KelasPesertaModel extends Model
         'tanggal_daftar_kelas_peserta',
         'tanggal_berakhir',
         'status',
+        'sumber_masuk',   // ✅ baru
+        'id_voucher',     // ✅ baru
         'created_at',
         'updated_at',
         'deleted_at'
@@ -84,16 +86,20 @@ class KelasPesertaModel extends Model
     /**
      * Enroll user to class
      */
-    public function enroll($id_kelas, $id_users)
+    public function enroll($id_kelas, $id_users, $sumber_masuk = 'transaksi', $id_voucher = null)
     {
         if ($this->isEnrolled($id_kelas, $id_users)) {
             return false;
         }
-        
+
         return $this->insert([
             'id_kelas' => $id_kelas,
             'id_users' => $id_users,
-            'tanggal_daftar_kelas_peserta' => date('Y-m-d H:i:s')
+            'tanggal_daftar_kelas_peserta' => date('Y-m-d H:i:s'),
+            'sumber_masuk' => $sumber_masuk,
+            'id_voucher' => $sumber_masuk === 'voucher' ? $id_voucher : null,
+            'status' => 'aktif'
         ]);
     }
+    
 }

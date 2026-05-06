@@ -17,8 +17,6 @@ class TugasModel extends Model
         'id_modul',
         'judul_tugas',
         'deskripsi_tugas',
-        'deadline_hari',
-        'is_wajib_posttest',
         'created_by',
         'created_at',
         'updated_at',

@@ -639,20 +639,34 @@ class DashboardPengajar extends BaseController
         return redirect()->to('/dashboard/pengajar/modul')->with('success', 'Modul berhasil dihapus.');
     }
 
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  Tugas
+    // ══════════════════════════════════════════════════════════════════════
     public function tugas()
     {
         if ($r = $this->guardPengajar()) {
             return $r;
         }
 
-        $db     = \Config\Database::connect();
-        $uid    = $this->myId();
+        $db  = \Config\Database::connect();
+        $uid = $this->myId();
 
+        // PROGRAM
+        $programList = $db->table('program p')
+            ->join('kelas k', 'k.id_program = p.id_program')
+            ->where('k.id_users', $uid)
+            ->where('p.deleted_at IS NULL')
+            ->groupBy('p.id_program')
+            ->get()->getResultArray();
+
+        // KELAS
         $kelasList = (new KelasModel())
             ->where('id_users', $uid)
             ->where('deleted_at IS NULL')
             ->findAll();
 
+        // MODUL
         $modulList = $db->table('modul m')
             ->select('m.id_modul, m.judul_modul, m.id_kelas')
             ->join('kelas k', 'k.id_kelas = m.id_kelas')
@@ -661,8 +675,9 @@ class DashboardPengajar extends BaseController
             ->orderBy('m.id_kelas, m.urutan_modul')
             ->get()->getResultArray();
 
+        // TUGAS
         $tugasList = $db->table('tugas t')
-            ->select('t.*, k.nama_kelas, m.judul_modul')
+            ->select('t.*, k.nama_kelas, m.judul_modul, k.id_program')
             ->join('kelas k', 'k.id_kelas = t.id_kelas')
             ->join('modul m', 'm.id_modul = t.id_modul', 'left')
             ->where('k.id_users', $uid)
@@ -671,12 +686,12 @@ class DashboardPengajar extends BaseController
             ->get()->getResultArray();
 
         return view('Dashboard/Pengajar/tugas', [
-            'kelas' => $kelasList,
-            'modul' => $modulList,
-            'tugas' => $tugasList,
+            'program' => $programList,
+            'kelas'   => $kelasList,
+            'modul'   => $modulList,
+            'tugas'   => $tugasList,
         ]);
     }
-
     public function tugasStore()
     {
         if ($r = $this->guardPengajar()) {
@@ -687,7 +702,6 @@ class DashboardPengajar extends BaseController
             'id_kelas'        => 'required|is_natural_no_zero',
             'judul_tugas'     => 'required|min_length[3]|max_length[200]',
             'deskripsi_tugas' => 'required|min_length[10]',
-            'deadline_hari'   => 'permit_empty|is_natural',
         ];
 
         if (! $this->validate($rules)) {
@@ -709,8 +723,6 @@ class DashboardPengajar extends BaseController
             'id_modul'          => $idModul,
             'judul_tugas'       => $this->request->getPost('judul_tugas'),
             'deskripsi_tugas'   => $this->request->getPost('deskripsi_tugas'),
-            'deadline_hari'     => $this->request->getPost('deadline_hari') ?: null,
-            'is_wajib_posttest' => $this->request->getPost('is_wajib_posttest') ? 1 : 0,
             'created_by'        => $this->myId(),
             'created_at'        => date('Y-m-d H:i:s'),
         ];

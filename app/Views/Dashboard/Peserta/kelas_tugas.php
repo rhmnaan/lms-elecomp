@@ -861,14 +861,13 @@
 
                 <!-- Kiri: deadline, modul, syarat -->
                 <div class="tj-meta-left">
-                    <div class="tj-meta-item">
-                        <div class="tj-meta-label">Deadline</div>
-                        <div class="tj-meta-val">
-                            <i class="bi bi-clock-history"></i>
-                            <?= $task['deadline_hari'] !== null
-                                ? (int)$task['deadline_hari'] . ' hari'
-                                : 'Tanpa batas' ?>
-                        </div>
+                    <div class="tj-meta-val">
+                        <i class="bi bi-clock-history"></i>
+                        <?php if ($task['deadline_at']): ?>
+                        <?= date('d M Y H:i', strtotime($task['deadline_at'])) ?>
+                        <?php else: ?>
+                        Tanpa batas
+                        <?php endif ?>
                     </div>
 
                     <?php if (!empty($task['judul_modul'])): ?>
@@ -882,17 +881,10 @@
                     <?php endif ?>
 
                     <div class="tj-meta-item">
-                        <div class="tj-meta-label">Syarat Pengumpulan</div>
                         <div class="tj-meta-val">
-                            <?php if ($task['is_wajib_posttest']): ?>
-                            <span class="pill pill-warn">
-                                <i class="bi bi-shield-check"></i> Setelah Posttest
-                            </span>
-                            <?php else: ?>
                             <span class="pill pill-neutral">
                                 <i class="bi bi-unlock"></i> Bisa Langsung
                             </span>
-                            <?php endif ?>
                         </div>
                     </div>
                 </div>
@@ -936,11 +928,6 @@
                 <span class="tj-footer-note success">
                     <i class="bi bi-check-circle"></i>
                     Tugas sudah dikumpulkan
-                </span>
-                <?php elseif ($task['is_wajib_posttest'] && !$task['can_submit']): ?>
-                <span class="tj-footer-note">
-                    <i class="bi bi-info-circle"></i>
-                    Selesaikan posttest modul terlebih dahulu
                 </span>
                 <?php else: ?>
                 <span class="tj-footer-note">
