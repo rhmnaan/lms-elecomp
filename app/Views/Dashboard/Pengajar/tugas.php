@@ -133,65 +133,71 @@
 <div class="modal fade" id="modalTambahTugas" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0 pb-0">
+
+            <div class="modal-header">
                 <h5 class="modal-title fw-semibold">
                     <i class="bi bi-plus-circle text-primary me-2"></i> Tambah Tugas Baru
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body pt-3">
-                <form action="<?= base_url('dashboard/pengajar/tugas/store') ?>" method="POST">
-                    <?= csrf_field() ?>
 
+            <form action="<?= base_url('dashboard/pengajar/tugas/store') ?>" method="POST">
+                <?= csrf_field() ?>
+
+                <div class="modal-body">
                     <div class="row g-3">
+
+                        <!-- Kelas -->
                         <div class="col-md-6">
-                            <label class="form-label fw-medium small">Kelas <span class="text-danger">*</span></label>
-                            <select class="form-select" id="tugasKelas" name="id_kelas" required>
-                                <option value="" selected disabled>-- Pilih Kelas --</option>
+                            <label class="form-label fw-medium small">
+                                Kelas <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" name="id_kelas" required>
+                                <option value="" disabled selected>-- Pilih Kelas --</option>
                                 <?php foreach ($kelas as $k): ?>
-                                <option value="<?= $k['id_kelas'] ?>"><?= esc($k['nama_kelas']) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium small">Modul (opsional)</label>
-                            <select class="form-select" id="tugasModul" name="id_modul" disabled>
-                                <option value="" selected>Tidak terkait modul</option>
-                                <?php foreach ($modul as $m): ?>
-                                <option value="<?= $m['id_modul'] ?>" data-kelas="<?= $m['id_kelas'] ?>">
-                                    <?= esc($m['judul_modul']) ?>
+                                <option value="<?= $k['id_kelas'] ?>"
+                                    <?= old('id_kelas') == $k['id_kelas'] ? 'selected' : '' ?>>
+                                    <?= esc($k['nama_kelas']) ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
+
+                        <!-- Judul -->
                         <div class="col-12">
-                            <label class="form-label fw-medium small">Judul Tugas <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="judul_tugas" required>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-medium small">Deskripsi Tugas <span
-                                    class="text-danger">*</span></label>
-                            <textarea class="form-control" name="deskripsi_tugas" rows="4" required></textarea>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-medium small">Deadline (hari)</label>
-                            <input type="number" class="form-control" name="deadline_hari" min="0"
-                                placeholder="Contoh: 7">
-                            <div class="form-text">Berdasarkan tanggal daftar peserta.</div>
+                            <label class="form-label fw-medium small">
+                                Judul Tugas <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="judul_tugas" value="<?= old('judul_tugas') ?>"
+                                required>
                         </div>
 
-                        <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
-                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="bi bi-save me-1"></i> Simpan Tugas
-                            </button>
+                        <!-- Deskripsi -->
+                        <div class="col-12">
+                            <label class="form-label fw-medium small">
+                                Deskripsi Tugas <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" name="deskripsi_tugas" rows="4"
+                                required><?= old('deskripsi_tugas') ?></textarea>
                         </div>
-                </form>
-            </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-save me-1"></i> Simpan Tugas
+                    </button>
+                </div>
+
+            </form>
         </div>
     </div>
 </div>
+
 
 <script>
 const filterProgram = document.getElementById('filterProgram');
