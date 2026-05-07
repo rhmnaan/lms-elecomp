@@ -917,6 +917,37 @@
 
             </div>
 
+            <?php if (!empty($task['komentar'])): ?>
+            <div style="
+                    margin: 0 22px 14px;
+                    padding: 14px 16px;
+                    border-radius: 14px;
+                    background: #eff6ff;
+                    border: 1px solid #bfdbfe;
+                ">
+                <div style="
+                        font-size:11px;
+                        font-weight:700;
+                        color:#2563eb;
+                        text-transform:uppercase;
+                        margin-bottom:6px;
+                        letter-spacing:.5px;
+                    ">
+                    <i class="bi bi-chat-left-text"></i>
+                    Komentar Pengajar
+                </div>
+
+                <div style="
+                        font-size:13px;
+                        color:#1e3a8a;
+                        line-height:1.6;
+                        font-weight:500;
+                    ">
+                    <?= esc($task['komentar']) ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- FOOTER: status kiri + tombol riwayat kanan -->
             <div class="tj-card-footer">
                 <?php if ($task['is_expired']): ?>
@@ -1022,6 +1053,8 @@ const jawabanFile = document.getElementById('jawabanFile');
 const tugasFileCard = document.getElementById('tugasFileCard');
 const tugasFileName = document.getElementById('tugasFileName');
 const tugasTextGroup = document.getElementById('tugasTextGroup');
+
+const tugasFileGroup = document.getElementById('tugasFileGroup'); // TAMBAHKAN INI
 
 document.querySelectorAll('.btn-open-tugas-modal').forEach(button => {
     button.addEventListener('click', () => {

@@ -535,10 +535,23 @@
                     <span style="color:#e5e7eb">·</span>
                     <?php endif ?>
                     <span>
+                        <?php if (!empty($deadline_peserta['deadline_at'])): ?>
+
+                        <i class="bi bi-alarm"></i>
+                        Deadline:
+                        <?= date('d M Y H:i', strtotime($deadline_peserta['deadline_at'])) ?> WIB
+
+                        <?php elseif (isset($tugas['deadline_hari']) && $tugas['deadline_hari'] !== null): ?>
+
                         <i class="bi bi-clock-history"></i>
-                        <?= $tugas['deadline_hari'] !== null
-                            ? (int)$tugas['deadline_hari'] . ' hari deadline'
-                            : 'Tanpa batas deadline' ?>
+                        <?= (int)$tugas['deadline_hari'] ?> hari deadline
+
+                        <?php else: ?>
+
+                        <i class="bi bi-infinity"></i>
+                        Tanpa batas deadline
+
+                        <?php endif; ?>
                     </span>
                 </div>
             </div>
@@ -671,7 +684,32 @@
                     ...
                 </div>
                 <?php endif ?>
+                <!-- KOMENTAR PENGAJAR -->
+                <?php if (!empty($item['komentar'])): ?>
+                <div class="rh-card-note" style="border-top:1px solid #f0f0f0;">
+                    <i class="bi bi-chat-dots rh-note-icon"></i>
 
+                    <div style="width:100%">
+                        <div class="rh-note-label mb-2">Komentar Pengajar</div>
+
+                        <?php foreach ($item['komentar'] as $km): ?>
+                        <div style="margin-bottom:10px;">
+                            <div style="font-size:12px;font-weight:700;color:#111827;">
+                                <?= esc($km['nama_users']) ?>
+                            </div>
+
+                            <div class="rh-note-text">
+                                <?= esc($km['komentar']) ?>
+                            </div>
+
+                            <div style="font-size:11px;color:#9ca3af;margin-top:3px;">
+                                <?= date('d M Y H:i', strtotime($km['created_at'])) ?> WIB
+                            </div>
+                        </div>
+                        <?php endforeach ?>
+                    </div>
+                </div>
+                <?php endif ?>
             </div><!-- /.rh-card -->
         </div><!-- /.rh-item -->
 

@@ -836,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Redirect setelah delay singkat
                     setTimeout(() => {
                         window.location.href =
-                            '<?php echo base_url('dashboard/peserta/kelas-saya') ?>';
+                            '<?php echo base_url('dashboard/peserta/kelasSaya') ?>';
                     }, 1200);
                 } else {
                     showAlert('error', res.message || 'Kode voucher tidak valid atau kuota habis.');

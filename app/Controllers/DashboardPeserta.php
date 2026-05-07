@@ -399,6 +399,7 @@ class DashboardPeserta extends BaseController
         }
 
         $db = \Config\Database::connect();
+
         $tugas = $db->table('tugas t')
             ->select('t.*, k.id_kelas')
             ->join('kelas k', 'k.id_kelas = t.id_kelas', 'left')
@@ -422,11 +423,29 @@ class DashboardPeserta extends BaseController
             return redirect()->back()->with('error', 'Akses tidak diizinkan.');
         }
 
+        // ── AMBIL DEADLINE TUGAS PESERTA ──
+        $deadlinePeserta = $db->table('tugas_deadline_peserta')
+            ->where('id_users', $this->idUsers)
+            ->where('id_kelas', $tugas['id_kelas'])
+            ->get()
+            ->getRowArray();
+
         $history = (new TugasPengumpulanModel())->getHistory($id_tugas, $this->idUsers);
 
+        // ==========================
+        // AMBIL KOMENTAR PENGAJAR
+        // ==========================
+        $komentarModel = new \App\Models\TugasKomentarModel();
+
+        foreach ($history as &$item) {
+            $item['komentar'] = $komentarModel->getByPengumpulan($item['id_pengumpulan']);
+        }
+        unset($item);
+
         return view('Dashboard/Peserta/tugas_history', [
-            'tugas'   => $tugas,
-            'history' => $history,
+            'tugas'             => $tugas,
+            'history'           => $history,
+            'deadline_peserta'  => $deadlinePeserta,
         ]);
     }
 
@@ -464,34 +483,23 @@ class DashboardPeserta extends BaseController
         foreach ($tugasRows as $task) {
 
             // =========================
-            // 1️⃣ DEADLINE KHUSUS PESERTA
+            // DEADLINE PESERTA
             // =========================
             $deadlinePeserta = $deadlineModel->getDeadline(
-                $task['id_tugas'],
+                $idKelas,
                 $this->idUsers
             );
 
             if ($deadlinePeserta) {
                 $deadlineAt = $deadlinePeserta['deadline_at'];
-            }
-            // =========================
-            // 2️⃣ DEADLINE DEFAULT TUGAS
-            // =========================
-            elseif (! empty($task['deadline_hari'])) {
-                $deadlineAt = date(
-                    'Y-m-d H:i:s',
-                    strtotime("+{$task['deadline_hari']} days", strtotime($joinDate))
-                );
-            }
-            // =========================
-            // 3️⃣ TANPA DEADLINE
-            // =========================
-            else {
+            } else {
                 $deadlineAt = null;
             }
 
             // Status kadaluarsa
-            $isExpired = $deadlineAt ? strtotime($deadlineAt) < time() : false;
+            $isExpired = $deadlineAt
+                ? strtotime($deadlineAt) < time()
+                : false;
 
             // Riwayat pengumpulan
             $history = $pengumpulanModel->getHistory(
@@ -501,8 +509,22 @@ class DashboardPeserta extends BaseController
 
             $hasSubmission = ! empty($history);
 
-            // Submit hanya tergantung deadline
+            // Bisa submit jika belum expired
             $canSubmit = ! $isExpired;
+
+            // Ambil komentar terbaru dari pengajar
+            $komentar = null;
+
+            if (!empty($history)) {
+
+                // ambil pengumpulan terakhir
+                $lastHistory = $history[0];
+
+                // jika ada komentar
+                if (!empty($lastHistory['komentar_pengajar'])) {
+                    $komentar = $lastHistory['komentar_pengajar'];
+                }
+            }
 
             $classTugas[] = array_merge($task, [
                 'deadline_at'     => $deadlineAt,
@@ -510,6 +532,7 @@ class DashboardPeserta extends BaseController
                 'has_submission'  => $hasSubmission,
                 'history'         => $history,
                 'can_submit'      => $canSubmit,
+                'komentar'        => $komentar,
             ]);
         }
 
@@ -721,15 +744,21 @@ class DashboardPeserta extends BaseController
             return redirect()->back()->with('error', 'Data pendaftaran kelas tidak ditemukan.');
         }
 
-        if ($tugas['deadline_hari']) {
-            $deadlineAt = date('Y-m-d H:i:s', strtotime("+{$tugas['deadline_hari']} days", strtotime($kelasPeserta['tanggal_daftar_kelas_peserta'])));
-            if (strtotime($deadlineAt) < time()) {
-                return redirect()->back()->with('error', 'Batas waktu pengumpulan tugas telah berakhir.');
-            }
-        }
+        $deadlineModel = new \App\Models\TugasDeadlinePesertaModel();
 
-        if ($tugas['is_wajib_posttest'] && ! $this->hasPassedModulePosttest($tugas['id_modul'])) {
-            return redirect()->back()->with('error', 'Tugas ini hanya dapat dikerjakan setelah Anda menyelesaikan posttest modul.');
+        $deadlinePeserta = $deadlineModel->getDeadline(
+            $tugas['id_kelas'],
+            $this->idUsers
+        );
+
+        if ($deadlinePeserta && !empty($deadlinePeserta['deadline_at'])) {
+
+            $deadlineAt = $deadlinePeserta['deadline_at'];
+
+            if (strtotime($deadlineAt) < time()) {
+                return redirect()->back()
+                    ->with('error', 'Batas waktu pengumpulan tugas telah berakhir.');
+            }
         }
 
         $tipeJawaban = $this->request->getPost('tipe_jawaban');
