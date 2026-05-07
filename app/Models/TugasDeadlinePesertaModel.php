@@ -14,7 +14,7 @@ class TugasDeadlinePesertaModel extends Model
     protected $protectFields  = true;
 
     protected $allowedFields = [
-        'id_tugas',
+        'id_kelas',
         'id_users',
         'deadline_at',
         'created_at'
@@ -25,27 +25,27 @@ class TugasDeadlinePesertaModel extends Model
     /**
      * Ambil deadline tugas peserta
      */
-    public function getDeadline($id_tugas, $id_users)
+    public function getDeadline($id_kelas, $id_users)
     {
-        return $this->where('id_tugas', $id_tugas)
+        return $this->where('id_kelas', $id_kelas)
                     ->where('id_users', $id_users)
                     ->first();
     }
 
     /**
      * Set atau update deadline tugas peserta
-     * (aman dengan UNIQUE KEY id_tugas + id_users)
+     * (aman dengan UNIQUE KEY id_kelas + id_users)
      */
-    public function setDeadline($id_tugas, $id_users, $deadline_at)
+    public function setDeadline($id_kelas, $id_users, $deadline_at)
     {
         $data = [
-            'id_tugas'    => $id_tugas,
+            'id_kelas'    => $id_kelas,
             'id_users'    => $id_users,
             'deadline_at' => $deadline_at,
             'created_at'  => date('Y-m-d H:i:s')
         ];
 
-        $existing = $this->getDeadline($id_tugas, $id_users);
+        $existing = $this->getDeadline($id_kelas, $id_users);
 
         if ($existing) {
             return $this->where('id', $existing['id'])

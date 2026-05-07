@@ -63,6 +63,7 @@
                         <th>Kelas</th>
                         <th>Berlaku</th>
                         <th>Durasi</th>
+                        <th>Durasi Tugas</th>
                         <th>Kuota</th>
                         <th>Klaim</th>
                         <th>Status</th>
@@ -72,7 +73,7 @@
                 <tbody>
                     <?php if (empty($vouchers)): ?>
                     <tr>
-                        <td colspan="9" class="text-center py-4 text-muted">
+                        <td colspan="11" class="text-center py-4 text-muted">
                             Belum ada voucher. Klik <strong>+ Tambah Voucher</strong> untuk memulai.
                         </td>
                     </tr>
@@ -122,11 +123,22 @@
                             <?php endif; ?>
                         </td>
 
-                        <!-- ✅ Durasi (FIX) -->
+                        <!-- Durasi Voucher -->
                         <td class="text-center">
                             <?php if ($v['durasi_hari']): ?>
                             <span class="badge bg-info">
                                 <?= $v['durasi_hari'] ?> hari
+                            </span>
+                            <?php else: ?>
+                            <span class="text-muted">—</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <!-- ✅ Durasi Tugas -->
+                        <td class="text-center">
+                            <?php if ($v['durasi_tugas']): ?>
+                            <span class="badge bg-warning text-dark">
+                                <?= $v['durasi_tugas'] ?> hari
                             </span>
                             <?php else: ?>
                             <span class="text-muted">—</span>
@@ -155,7 +167,8 @@
                             <button class="btn btn-sm btn-outline-primary btn-edit" data-id="<?= $v['id_voucher'] ?>"
                                 data-nama="<?= esc($v['nama_voucher']) ?>" data-deskripsi="<?= esc($v['deskripsi']) ?>"
                                 data-mulai="<?= $v['tanggal_mulai'] ?>" data-berakhir="<?= $v['tanggal_berakhir'] ?>"
-                                data-kuota="<?= $v['kuota'] ?>" data-durasi="<?= $v['durasi_hari'] ?>">
+                                data-kuota="<?= $v['kuota'] ?>" data-durasi="<?= $v['durasi_hari'] ?>"
+                                data-durasi-tugas="<?= $v['durasi_tugas'] ?>">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger btn-delete" data-id="<?= $v['id_voucher'] ?>"
@@ -262,6 +275,19 @@
                                 value="<?= old('tanggal_berakhir') ?>" required>
                         </div>
 
+                        <!-- ✅ Durasi Tugas -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Durasi Tugas (Hari)
+                                <span class="text-muted">(opsional)</span>
+                            </label>
+                            <input type="number" name="durasi_tugas" class="form-control"
+                                placeholder="Contoh: 7" min="1" value="<?= old('durasi_tugas') ?>">
+                            <small class="text-muted">
+                                Batas waktu pengerjaan tugas setelah akses diberikan
+                            </small>
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label fw-semibold">Deskripsi</label>
                             <textarea name="deskripsi" class="form-control" rows="2"
@@ -319,6 +345,13 @@
                             <label class="form-label fw-semibold">Tanggal Berakhir <span
                                     class="text-danger">*</span></label>
                             <input type="date" name="tanggal_berakhir" id="editBerakhir" class="form-control" required>
+                        </div>
+
+                        <!-- ✅ Durasi Tugas -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Durasi Tugas (Hari)</label>
+                            <input type="number" name="durasi_tugas" id="editDurasiTugas" class="form-control" min="1"
+                                placeholder="Opsional">
                         </div>
 
                         <div class="col-12">
@@ -413,10 +446,9 @@ document.querySelectorAll('.btn-edit').forEach(btn => {
         document.getElementById('editNama').value = this.dataset.nama;
         document.getElementById('editDeskripsi').value = this.dataset.deskripsi || '';
         document.getElementById('editDurasi').value = this.dataset.durasi || '';
-        document.getElementById('editMulai').value = this.dataset.mulai ? this.dataset.mulai.substring(
-            0, 10) : '';
-        document.getElementById('editBerakhir').value = this.dataset.berakhir ? this.dataset.berakhir
-            .substring(0, 10) : '';
+        document.getElementById('editDurasiTugas').value = this.dataset.durasiTugas || ''; // ✅
+        document.getElementById('editMulai').value = this.dataset.mulai ? this.dataset.mulai.substring(0, 10) : '';
+        document.getElementById('editBerakhir').value = this.dataset.berakhir ? this.dataset.berakhir.substring(0, 10) : '';
         document.getElementById('editKuota').value = this.dataset.kuota || '';
         new bootstrap.Modal(document.getElementById('modalEditVoucher')).show();
     });
@@ -469,13 +501,13 @@ document.querySelectorAll('.btn-copy').forEach(btn => {
         const label = document.getElementById('label-' + id);
 
         const doSalin = () => {
-            icon.className = 'bi bi-check-lg';
-            label.textContent = 'Tersalin!';
+            if (icon) icon.className = 'bi bi-check-lg';
+            if (label) label.textContent = 'Tersalin!';
             this.classList.add('copied');
 
             setTimeout(() => {
-                icon.className = 'bi bi-copy';
-                label.textContent = 'Salin';
+                if (icon) icon.className = 'bi bi-copy';
+                if (label) label.textContent = 'Salin';
                 this.classList.remove('copied');
             }, 2000);
         };

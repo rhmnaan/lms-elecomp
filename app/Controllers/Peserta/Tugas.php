@@ -5,16 +5,19 @@ namespace App\Controllers\Peserta;
 use App\Controllers\BaseController;
 use App\Models\TugasModel;
 use App\Models\KelasModel;
+use App\Models\TugasKomentarModel;
 
 class Tugas extends BaseController
 {
     protected $tugasModel;
+    protected $komentarModel;
     protected $kelasModel;
 
     public function __construct()
     {
         $this->tugasModel = new TugasModel();
         $this->kelasModel = new KelasModel();
+        $this->komentarModel = new TugasKomentarModel();
     }
 
     /**
@@ -39,6 +42,11 @@ class Tugas extends BaseController
 
         // Tugas per kelas
         $tugas = $this->tugasModel->getByKelas($id_kelas);
+
+        foreach ($tugas as &$item) {
+            $item['komentar'] = $this->komentarModel->getByPengumpulan($item['id_pengumpulan']);
+        }
+        unset($item);
 
         return view('Dashboard/Peserta/tugas', [
             'kelas'       => $kelas,

@@ -19,7 +19,8 @@ class VoucherModel extends Model
         'kuota',
         'tanggal_mulai',
         'tanggal_berakhir',
-        'durasi_hari', // ✅ TAMBAHKAN INI
+        'durasi_hari',
+        'durasi_tugas', 
         'is_active',
         'created_at',
         'updated_at',

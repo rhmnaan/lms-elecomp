@@ -102,16 +102,13 @@ class VoucherController extends BaseController
                 'created_at'    => date('Y-m-d H:i:s'),
             ]);
 
-            // b. Daftarkan user ke kelas (PAKSA ikut durasi voucher)
-
-            // pastikan durasi benar-benar dari voucher
-            $durasiHari = isset($voucher['durasi_hari']) 
-                ? (int) $voucher['durasi_hari'] 
-                : 0;
+            // b. Ambil durasi voucher & durasi tugas dari voucher
+            $durasiHari   = isset($voucher['durasi_hari'])   ? (int) $voucher['durasi_hari']   : 0;
+            $durasiTugas  = isset($voucher['durasi_tugas'])  ? (int) $voucher['durasi_tugas']  : 0;
 
             $tanggalMulai = date('Y-m-d H:i:s');
 
-            // hitung tanggal berakhir sesuai voucher
+            // Hitung tanggal berakhir kelas sesuai durasi voucher
             $tanggalBerakhir = null;
             if ($durasiHari > 0) {
                 $tanggalBerakhir = date(
@@ -120,11 +117,22 @@ class VoucherController extends BaseController
                 );
             }
 
-            log_message('debug', 'Voucher durasi_hari = ' . $durasiHari);
-            log_message('debug', 'Tanggal mulai = ' . $tanggalMulai);
-            log_message('debug', 'Tanggal berakhir = ' . ($tanggalBerakhir ?? 'NULL'));
+            // Hitung deadline tugas sesuai durasi_tugas voucher
+            $deadlineTugas = null;
+            if ($durasiTugas > 0) {
+                $deadlineTugas = date(
+                    'Y-m-d H:i:s',
+                    strtotime($tanggalMulai . " +{$durasiTugas} days")
+                );
+            }
 
-            // 1️⃣ INSERT dulu (hindari trigger / default)
+            log_message('debug', 'Voucher durasi_hari  = ' . $durasiHari);
+            log_message('debug', 'Voucher durasi_tugas = ' . $durasiTugas);
+            log_message('debug', 'Tanggal mulai        = ' . $tanggalMulai);
+            log_message('debug', 'Tanggal berakhir     = ' . ($tanggalBerakhir ?? 'NULL'));
+            log_message('debug', 'Deadline tugas       = ' . ($deadlineTugas ?? 'NULL'));
+
+            // c. INSERT kelas_peserta
             $idKelasPeserta = $this->kelasPesertaModel->insert([
                 'id_users'                     => $id_users,
                 'id_kelas'                     => $id_kelas,
@@ -136,11 +144,18 @@ class VoucherController extends BaseController
                 throw new \Exception('Gagal insert kelas_peserta');
             }
 
-            // 2️⃣ UPDATE paksa tanggal_berakhir (override apapun)
+            // d. UPDATE paksa tanggal_berakhir (override apapun)
             $this->kelasPesertaModel->update($idKelasPeserta, [
                 'tanggal_berakhir' => $tanggalBerakhir,
             ]);
-            // c. Kurangi kuota voucher (nonaktifkan jika habis)
+
+            // e. Simpan deadline tugas peserta jika durasi_tugas diisi
+            if ($deadlineTugas !== null) {
+                $tugasDeadlineModel = new \App\Models\TugasDeadlinePesertaModel();
+                $tugasDeadlineModel->setDeadline($id_kelas, $id_users, $deadlineTugas);
+            }
+
+            // f. Kurangi kuota voucher (nonaktifkan jika habis)
             $this->voucherModel->claimVoucher($voucher['id_voucher']);
 
             $db->transComplete();

@@ -78,7 +78,7 @@
                         <th>Judul Tugas</th>
                         <th>Kelas / Modul</th>
                         <th style="width:120px;">Dibuat</th>
-                        <th style="width:130px;" class="text-center">Aksi</th>
+                        <th style="width:160px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -104,6 +104,11 @@
                             <span class="small text-muted"><?= date('d M Y', strtotime($task['created_at'])) ?></span>
                         </td>
                         <td class="text-center">
+                            <a href="<?= base_url('dashboard/pengajar/tugas/pengumpulan/' . $task['id_tugas']) ?>"
+                                class="btn btn-sm btn-outline-primary me-1"
+                                title="Lihat Pengumpulan">
+                                <i class="bi bi-people"></i>
+                            </a>
                             <form action="<?= base_url('dashboard/pengajar/tugas/delete/' . $task['id_tugas']) ?>"
                                 method="POST" class="d-inline">
                                 <?= csrf_field() ?>
@@ -117,7 +122,7 @@
                     <?php endforeach; ?>
                     <?php else: ?>
                     <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
+                        <td colspan="5" class="text-center py-5 text-muted">
                             <div class="fw-semibold mb-1">Belum ada tugas.</div>
                             Tambahkan tugas baru untuk mulai mengelola tugas siswa.
                         </td>

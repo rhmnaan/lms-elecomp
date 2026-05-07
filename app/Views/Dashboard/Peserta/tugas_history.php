@@ -666,6 +666,11 @@
                     </div>
                 </div>
                 <?php endif ?>
+                <?php if (!empty($item['catatan_jawaban'])): ?>
+                <div class="rh-card-note">
+                    ...
+                </div>
+                <?php endif ?>
 
             </div><!-- /.rh-card -->
         </div><!-- /.rh-item -->

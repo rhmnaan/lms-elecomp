@@ -7,6 +7,8 @@ use App\Models\MateriModel;
 use App\Models\ModulModel;
 use App\Models\TugasModel;
 use App\Models\VoucherModel;
+use App\Models\TugasPengumpulanModel;
+use App\Models\TugasKomentarModel;
 
 class DashboardPengajar extends BaseController
 {
@@ -408,6 +410,79 @@ class DashboardPengajar extends BaseController
 
         $model->delete($id);
         return redirect()->to('/dashboard/pengajar/kelas')->with('success', 'Kelas berhasil dihapus.');
+    }
+
+    public function tugasPengumpulan(int $id)
+    {
+        if ($r = $this->guardPengajar()) {
+            return $r;
+        }
+ 
+        $tugasModel = new TugasModel();
+        $tugas      = $tugasModel->find($id);
+ 
+        if (! $tugas || ! $this->isMyKelas(new KelasModel(), $tugas['id_kelas'])) {
+            return redirect()->to('/dashboard/pengajar/tugas')->with('error', 'Tugas tidak ditemukan.');
+        }
+ 
+        // Ambil nama kelas & modul untuk banner
+        $db    = \Config\Database::connect();
+        $extra = $db->table('tugas t')
+            ->select('t.*, k.nama_kelas, m.judul_modul')
+            ->join('kelas k', 'k.id_kelas = t.id_kelas')
+            ->join('modul m', 'm.id_modul = t.id_modul', 'left')
+            ->where('t.id_tugas', $id)
+            ->get()->getRowArray();
+ 
+        // Semua pengumpulan untuk tugas ini (seluruh peserta, terbaru per peserta)
+        $pengumpulan = $db->table('tugas_pengumpulan tp')
+            ->select('tp.*, u.nama_users, u.email_users AS email')
+            ->join('users u', 'u.id_users = tp.id_users')
+            ->where('tp.id_tugas', $id)
+            ->orderBy('tp.created_at', 'DESC')
+            ->get()->getResultArray();
+ 
+        // Sertakan komentar untuk tiap pengumpulan
+        $komentarModel = new TugasKomentarModel();
+        foreach ($pengumpulan as &$item) {
+            $item['komentar'] = $komentarModel->getByPengumpulan($item['id_pengumpulan']);
+        }
+        unset($item);
+ 
+        return view('Dashboard/Pengajar/tugas_pengumpulan', [
+            'tugas'       => $extra ?? $tugas,
+            'pengumpulan' => $pengumpulan,
+        ]);
+    }
+ 
+    /**
+     * Simpan komentar pengajar ke pengumpulan peserta
+     * URL: dashboard/pengajar/tugas/komentar/simpan  (POST)
+     */
+    public function simpanKomentar()
+    {
+        if ($r = $this->guardPengajar()) {
+            return $r;
+        }
+ 
+        $idPengumpulan = (int) $this->request->getPost('id_pengumpulan');
+        $idTugas       = (int) $this->request->getPost('id_tugas');
+        $komentar      = trim($this->request->getPost('komentar'));
+ 
+        if (! $idPengumpulan || $komentar === '') {
+            return redirect()->back()->with('error', 'Komentar tidak boleh kosong.');
+        }
+ 
+        $komentarModel = new TugasKomentarModel();
+        $komentarModel->insert([
+            'id_pengumpulan' => $idPengumpulan,
+            'id_users'       => $this->myId(),
+            'komentar'       => $komentar,
+            'created_at'     => date('Y-m-d H:i:s'),
+        ]);
+ 
+        return redirect()->to(base_url('dashboard/pengajar/tugas/pengumpulan/' . $idTugas))
+            ->with('success', 'Komentar berhasil dikirim.');
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -1125,7 +1200,8 @@ class DashboardPengajar extends BaseController
             'nama_voucher'     => 'required|min_length[3]|max_length[100]',
             'tanggal_mulai'    => 'required|valid_date[Y-m-d]',
             'tanggal_berakhir' => 'required|valid_date[Y-m-d]',
-            'durasi_hari' => 'permit_empty|is_natural_no_zero',
+            'durasi_hari'      => 'permit_empty|is_natural_no_zero',
+            'durasi_tugas'     => 'permit_empty|is_natural_no_zero', // ✅
             'kuota'            => 'permit_empty|is_natural',
             'deskripsi'        => 'permit_empty|max_length[500]',
         ];
@@ -1140,10 +1216,10 @@ class DashboardPengajar extends BaseController
             return redirect()->back()->with('error', 'Kelas tidak valid.');
         }
 
-        $kuota = $this->request->getPost('kuota');
-
-        $mulai  = $this->request->getPost('tanggal_mulai');
-        $durasi = $this->request->getPost('durasi_hari');
+        $kuota        = $this->request->getPost('kuota');
+        $mulai        = $this->request->getPost('tanggal_mulai');
+        $durasi       = $this->request->getPost('durasi_hari');
+        $durasiTugas  = $this->request->getPost('durasi_tugas'); // ✅
 
         $tanggalBerakhir = $this->request->getPost('tanggal_berakhir');
 
@@ -1160,8 +1236,9 @@ class DashboardPengajar extends BaseController
             'nama_voucher'     => $this->request->getPost('nama_voucher'),
             'deskripsi'        => $this->request->getPost('deskripsi'),
             'tanggal_mulai'    => $mulai,
-            'tanggal_berakhir' => $tanggalBerakhir, 
-            'durasi_hari'      => $durasi ?: null, 
+            'tanggal_berakhir' => $tanggalBerakhir,
+            'durasi_hari'      => $durasi ?: null,
+            'durasi_tugas'     => $durasiTugas ?: null, // ✅
             'kuota'            => $kuota !== '' ? (int) $kuota : null,
             'is_active'        => 1,
             'created_at'       => date('Y-m-d H:i:s'),
@@ -1182,8 +1259,9 @@ class DashboardPengajar extends BaseController
             return redirect()->back()->with('error', 'Voucher tidak ditemukan.');
         }
 
-        $mulai  = $this->request->getPost('tanggal_mulai');
-        $durasi = $this->request->getPost('durasi_hari');
+        $mulai        = $this->request->getPost('tanggal_mulai');
+        $durasi       = $this->request->getPost('durasi_hari');
+        $durasiTugas  = $this->request->getPost('durasi_tugas'); // ✅
 
         $tanggalBerakhir = $this->request->getPost('tanggal_berakhir');
 
@@ -1199,6 +1277,7 @@ class DashboardPengajar extends BaseController
             'tanggal_mulai'    => 'required|valid_date[Y-m-d]',
             'tanggal_berakhir' => 'required|valid_date[Y-m-d]',
             'durasi_hari'      => 'permit_empty|is_natural_no_zero',
+            'durasi_tugas'     => 'permit_empty|is_natural_no_zero', // ✅
             'kuota'            => 'permit_empty|is_natural',
             'deskripsi'        => 'permit_empty|max_length[500]',
         ];
@@ -1214,8 +1293,9 @@ class DashboardPengajar extends BaseController
             'nama_voucher'     => $this->request->getPost('nama_voucher'),
             'deskripsi'        => $this->request->getPost('deskripsi'),
             'tanggal_mulai'    => $mulai,
-            'tanggal_berakhir' => $tanggalBerakhir, // 🔥
-            'durasi_hari'      => $durasi ?: null,  // 🔥
+            'tanggal_berakhir' => $tanggalBerakhir,
+            'durasi_hari'      => $durasi ?: null,
+            'durasi_tugas'     => $durasiTugas ?: null, // ✅
             'kuota'            => $kuota !== '' ? (int) $kuota : null,
             'updated_at'       => date('Y-m-d H:i:s'),
         ]);
@@ -1245,8 +1325,8 @@ class DashboardPengajar extends BaseController
         $label = $newStatus ? 'diaktifkan' : 'dinonaktifkan';
 
         return $this->jsonResponse([
-            'success' => true,
-            'message' => "Voucher berhasil {$label}.",
+            'success'   => true,
+            'message'   => "Voucher berhasil {$label}.",
             'is_active' => $newStatus,
         ]);
     }
@@ -1326,12 +1406,29 @@ class DashboardPengajar extends BaseController
             ->countAllResults();
 
         if ($sudahDaftar === 0) {
+            $tanggalMulai    = date('Y-m-d H:i:s');
+            $durasiHari      = isset($voucher['durasi_hari'])  ? (int) $voucher['durasi_hari']  : 0;
+            $durasiTugas     = isset($voucher['durasi_tugas']) ? (int) $voucher['durasi_tugas'] : 0;
+
+            $tanggalBerakhir = null;
+            if ($durasiHari > 0) {
+                $tanggalBerakhir = date('Y-m-d H:i:s', strtotime($tanggalMulai . " +{$durasiHari} days"));
+            }
+
             $db->table('kelas_peserta')->insert([
                 'id_kelas'                     => $voucher['id_kelas'],
                 'id_users'                     => $idUsers,
-                'tanggal_daftar_kelas_peserta' => date('Y-m-d H:i:s'),
+                'tanggal_daftar_kelas_peserta' => $tanggalMulai,
+                'tanggal_berakhir'             => $tanggalBerakhir,
                 'created_at'                   => date('Y-m-d H:i:s'),
             ]);
+
+            // ✅ Simpan deadline tugas jika durasi_tugas diisi
+            if ($durasiTugas > 0) {
+                $deadlineTugas = date('Y-m-d H:i:s', strtotime($tanggalMulai . " +{$durasiTugas} days"));
+                $tugasDeadlineModel = new \App\Models\TugasDeadlinePesertaModel();
+                $tugasDeadlineModel->setDeadline($voucher['id_kelas'], $idUsers, $deadlineTugas);
+            }
         }
 
         return $this->jsonResponse([

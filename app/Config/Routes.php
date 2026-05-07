@@ -153,6 +153,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('tugas', 'DashboardPengajar::tugas');
         $routes->post('tugas/store', 'DashboardPengajar::tugasStore');
         $routes->post('tugas/delete/(:num)', 'DashboardPengajar::tugasDelete/$1');
+        $routes->get('tugas/pengumpulan/(:num)', 'DashboardPengajar::tugasPengumpulan/$1');
+        $routes->post('tugas/komentar/simpan', 'DashboardPengajar::simpanKomentar');
 
         // Materi
         $routes->get('materi', 'DashboardPengajar::materi');
