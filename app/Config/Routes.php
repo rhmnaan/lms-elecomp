@@ -68,6 +68,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('kelas/tugas/(:num)', 'DashboardPeserta::kelasTugas/$1');
         $routes->get('kelas-tugas', 'DashboardPeserta::kelasTugas');
         $routes->get('tugas-riwayat/(:num)', 'DashboardPeserta::tugasRiwayat/$1');
+        $routes->get('aplikasi', 'DashboardPeserta::aplikasi');
 
         // =====================
         // KELAS SAYA

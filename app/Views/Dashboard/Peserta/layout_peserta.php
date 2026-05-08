@@ -85,8 +85,15 @@
                         <?php endif; ?>
                     </a>
                 </li>
+                <li <?php echo str_starts_with(uri_string(), 'dashboard/peserta/aplikasi') ? 'class="active"' : '' ?>>
+                <a href="<?php echo base_url('dashboard/peserta/aplikasi') ?>">
+                    <i class="bi bi-grid-fill"></i> Aplikasi Pendukung
+                    <?php if (str_starts_with(uri_string(), 'dashboard/peserta/aplikasi')): ?>
+                    <span class="dot"></span>
+                    <?php endif; ?>
+                </a>
+            </li>
             </ul>
-
             <div class="menu-label" style="margin-top:12px;">Akun</div>
             <ul class="sidebar-nav">
                 <li <?php echo uri_string() === 'dashboard/peserta/profil' ? 'class="active"' : '' ?>>

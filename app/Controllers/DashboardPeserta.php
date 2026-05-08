@@ -1180,6 +1180,22 @@ class DashboardPeserta extends BaseController
     }
 
     // =========================================================
+    //  APLIKASI PENDUKUNG
+    // =========================================================
+    public function aplikasi()
+    {
+        if (session()->get('role') !== 'peserta') {
+            return redirect()->to('/dashboard');
+        }
+
+        $aplikasiUserModel = new \App\Models\AplikasiUserModel();
+
+        return view('Dashboard/Peserta/aplikasi_pendukung', [
+            'aplikasi' => $aplikasiUserModel->getAplikasiByUser($this->idUsers),
+        ]);
+    }
+
+    // =========================================================
     //  SIMPAN HASIL QUIZ MATERI (AJAX)
     // =========================================================
     public function simpanHasilQuizMateri()
