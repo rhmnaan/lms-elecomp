@@ -399,7 +399,6 @@ class DashboardPeserta extends BaseController
         }
 
         $db = \Config\Database::connect();
-
         $tugas = $db->table('tugas t')
             ->select('t.*, k.id_kelas')
             ->join('kelas k', 'k.id_kelas = t.id_kelas', 'left')
@@ -423,29 +422,11 @@ class DashboardPeserta extends BaseController
             return redirect()->back()->with('error', 'Akses tidak diizinkan.');
         }
 
-        // ── AMBIL DEADLINE TUGAS PESERTA ──
-        $deadlinePeserta = $db->table('tugas_deadline_peserta')
-            ->where('id_users', $this->idUsers)
-            ->where('id_kelas', $tugas['id_kelas'])
-            ->get()
-            ->getRowArray();
-
         $history = (new TugasPengumpulanModel())->getHistory($id_tugas, $this->idUsers);
 
-        // ==========================
-        // AMBIL KOMENTAR PENGAJAR
-        // ==========================
-        $komentarModel = new \App\Models\TugasKomentarModel();
-
-        foreach ($history as &$item) {
-            $item['komentar'] = $komentarModel->getByPengumpulan($item['id_pengumpulan']);
-        }
-        unset($item);
-
         return view('Dashboard/Peserta/tugas_history', [
-            'tugas'             => $tugas,
-            'history'           => $history,
-            'deadline_peserta'  => $deadlinePeserta,
+            'tugas'   => $tugas,
+            'history' => $history,
         ]);
     }
 
@@ -483,23 +464,34 @@ class DashboardPeserta extends BaseController
         foreach ($tugasRows as $task) {
 
             // =========================
-            // DEADLINE PESERTA
+            // 1️⃣ DEADLINE KHUSUS PESERTA
             // =========================
             $deadlinePeserta = $deadlineModel->getDeadline(
-                $idKelas,
+                $task['id_tugas'],
                 $this->idUsers
             );
 
             if ($deadlinePeserta) {
                 $deadlineAt = $deadlinePeserta['deadline_at'];
-            } else {
+            }
+            // =========================
+            // 2️⃣ DEADLINE DEFAULT TUGAS
+            // =========================
+            elseif (! empty($task['deadline_hari'])) {
+                $deadlineAt = date(
+                    'Y-m-d H:i:s',
+                    strtotime("+{$task['deadline_hari']} days", strtotime($joinDate))
+                );
+            }
+            // =========================
+            // 3️⃣ TANPA DEADLINE
+            // =========================
+            else {
                 $deadlineAt = null;
             }
 
             // Status kadaluarsa
-            $isExpired = $deadlineAt
-                ? strtotime($deadlineAt) < strtotime(date('Y-m-d H:i:s'))
-                : false;
+            $isExpired = $deadlineAt ? strtotime($deadlineAt) < time() : false;
 
             // Riwayat pengumpulan
             $history = $pengumpulanModel->getHistory(
@@ -509,22 +501,8 @@ class DashboardPeserta extends BaseController
 
             $hasSubmission = ! empty($history);
 
-            // Bisa submit jika belum expired
+            // Submit hanya tergantung deadline
             $canSubmit = ! $isExpired;
-
-            // Ambil komentar terbaru dari pengajar
-            $komentar = null;
-
-            if (!empty($history)) {
-
-                // ambil pengumpulan terakhir
-                $lastHistory = $history[0];
-
-                // jika ada komentar
-                if (!empty($lastHistory['komentar_pengajar'])) {
-                    $komentar = $lastHistory['komentar_pengajar'];
-                }
-            }
 
             $classTugas[] = array_merge($task, [
                 'deadline_at'     => $deadlineAt,
@@ -532,7 +510,6 @@ class DashboardPeserta extends BaseController
                 'has_submission'  => $hasSubmission,
                 'history'         => $history,
                 'can_submit'      => $canSubmit,
-                'komentar'        => $komentar,
             ]);
         }
 
@@ -715,33 +692,178 @@ class DashboardPeserta extends BaseController
         ]);
     }
 
-    public function submitTugas()
-    {
-        $idTugas = (int) $this->request->getPost('id_tugas');
-        if (! $idTugas) {
-            return redirect()->back()->with('error', 'Data tugas tidak valid.');
+private function hasCompletedAllQuizInKelas(int $idKelas): bool
+{
+    $db = \Config\Database::connect();
+
+    $materiList = $db->table('materi ma')
+        ->select('ma.id_materi, ma.pre_test, ma.post_test')
+        ->join('modul mo', 'mo.id_modul = ma.id_modul')
+        ->where('mo.id_kelas', $idKelas)
+        ->where('ma.deleted_at IS NULL')
+        ->where('mo.deleted_at IS NULL')
+        ->get()->getResultArray();
+
+    foreach ($materiList as $materi) {
+
+        // Cek pre_test — wajib sudah dikerjakan (nilai berapapun)
+        if (! empty($materi['pre_test']) && $materi['pre_test'] !== 'null') {
+            $soal = json_decode($materi['pre_test'], true);
+            if (! empty($soal)) {
+                $done = $db->table('materi_quiz_results')
+                    ->where('id_materi', $materi['id_materi'])
+                    ->where('id_users', $this->idUsers)
+                    ->where('jenis_test', 'pre')
+                    ->countAllResults();
+                if ($done === 0) return false;
+            }
         }
 
-        $tugasModel = new TugasModel();
-        $tugas      = $tugasModel->find($idTugas);
+        // Cek post_test — wajib lulus (nilai >= 70)
+        if (! empty($materi['post_test']) && $materi['post_test'] !== 'null') {
+            $soal = json_decode($materi['post_test'], true);
+            if (! empty($soal)) {
+                $done = $db->table('materi_quiz_results')
+                    ->where('id_materi', $materi['id_materi'])
+                    ->where('id_users', $this->idUsers)
+                    ->where('jenis_test', 'post')
+                    ->where('nilai >=', 70)
+                    ->countAllResults();
+                if ($done === 0) return false;
+            }
+        }
+    }
 
-        if (! $tugas) {
-            return redirect()->back()->with('error', 'Tugas tidak ditemukan.');
+    return true;
+}
+
+public function submitTugas()
+{
+    $idTugas = (int) $this->request->getPost('id_tugas');
+    if (! $idTugas) {
+        return redirect()->back()->with('error', 'Data tugas tidak valid.');
+    }
+
+    $tugasModel = new TugasModel();
+    $tugas      = $tugasModel->asArray()->find($idTugas);
+
+    if (! $tugas) {
+        return redirect()->back()->with('error', 'Tugas tidak ditemukan.');
+    }
+
+    if (! $this->kelasPesertaModel->isEnrolled($tugas['id_kelas'], $this->idUsers)) {
+        return redirect()->back()->with('error', 'Anda tidak terdaftar di kelas tugas ini.');
+    }
+
+    $db = \Config\Database::connect();
+
+    $kelasPeserta = $db->table('kelas_peserta')
+        ->where('id_kelas', $tugas['id_kelas'])
+        ->where('id_users', $this->idUsers)
+        ->where('deleted_at', null)
+        ->get()->getRowArray();
+
+    if (! $kelasPeserta) {
+        return redirect()->back()->with('error', 'Data pendaftaran kelas tidak ditemukan.');
+    }
+
+    // Cek deadline
+    if (isset($tugas['deadline_hari']) && ! empty($tugas['deadline_hari'])) {
+        $deadlineAt = date('Y-m-d H:i:s', strtotime("+{$tugas['deadline_hari']} days", strtotime($kelasPeserta['tanggal_daftar_kelas_peserta'])));
+        if (strtotime($deadlineAt) < time()) {
+            return redirect()->back()->with('error', 'Batas waktu pengumpulan tugas telah berakhir.');
+        }
+    }
+
+    // Cek semua quiz selesai
+    if (! $this->hasCompletedAllQuizInKelas($tugas['id_kelas'])) {
+        return redirect()->back()->with('error', 'Anda harus menyelesaikan semua pre-test dan post-test pada kelas ini sebelum mengumpulkan tugas.');
+    }
+
+    $tipeJawaban = $this->request->getPost('tipe_jawaban');
+    if (! in_array($tipeJawaban, ['file', 'text'])) {
+        return redirect()->back()->with('error', 'Tipe jawaban tidak valid.');
+    }
+
+    $data = [
+        'id_tugas'        => $idTugas,
+        'id_users'        => $this->idUsers,
+        'tipe_jawaban'    => $tipeJawaban,
+        'catatan_peserta' => $this->request->getPost('catatan_peserta') ?: null,
+        'status'          => 'dikumpulkan',
+        'created_at'      => date('Y-m-d H:i:s'),
+    ];
+
+    if ($tipeJawaban === 'file') {
+        $file = $this->request->getFile('jawaban_file');
+        if (! $file || ! $file->isValid() || $file->hasMoved()) {
+            return redirect()->back()->with('error', 'Silakan unggah file jawaban tugas.');
         }
 
-        if (! $this->kelasPesertaModel->isEnrolled($tugas['id_kelas'], $this->idUsers)) {
-            return redirect()->back()->with('error', 'Anda tidak terdaftar di kelas tugas ini.');
+        $allowed = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+        $ext     = strtolower($file->getExtension());
+        if (! in_array($ext, $allowed)) {
+            return redirect()->back()->with('error', 'Format file tidak didukung. Gunakan PDF, Word, Excel, atau PowerPoint.');
+        }
+        if ($file->getSize() > 20 * 1024 * 1024) {
+            return redirect()->back()->with('error', 'Ukuran file maksimal 20 MB.');
         }
 
-        $db = \Config\Database::connect();
-        $kelasPeserta = $db->table('kelas_peserta')
+        // Simpan sementara ke lokal dulu
+        $uploadDir = FCPATH . 'uploads/tugas/tmp/';
+        if (! is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $newName = $file->getRandomName();
+        $file->move($uploadDir, $newName);
+        $tmpPath = $uploadDir . $newName;
+
+        // Load helper
+        helper('google_drive');
+
+        // Ambil nama kelas dan nama peserta
+        $kelas = $db->table('kelas')
+            ->select('nama_kelas')
             ->where('id_kelas', $tugas['id_kelas'])
-            ->where('id_users', $this->idUsers)
-            ->where('deleted_at', null)
             ->get()->getRowArray();
 
-        if (! $kelasPeserta) {
-            return redirect()->back()->with('error', 'Data pendaftaran kelas tidak ditemukan.');
+        $user = $db->table('users')
+            ->select('nama_users')
+            ->where('id_users', $this->idUsers)
+            ->get()->getRowArray();
+
+        $namaFile = sprintf(
+            '%s_%s_%s_%s.%s',
+            preg_replace('/[^a-zA-Z0-9]/', '_', $kelas['nama_kelas'] ?? 'kelas'),
+            preg_replace('/[^a-zA-Z0-9]/', '_', $user['nama_users'] ?? 'peserta'),
+            preg_replace('/[^a-zA-Z0-9]/', '_', $tugas['judul_tugas'] ?? 'tugas'),
+            date('Ymd'),
+            $ext
+        );
+
+        // Upload ke Google Drive (otomatis fallback ke lokal jika gagal)
+        $driveConfig = new \Config\GoogleDrive();
+        $driveResult = uploadToGoogleDrive(
+            $tmpPath,
+            $namaFile,
+            getMimeType($ext),
+            $driveConfig->tugasFolderId
+        );
+
+        // Hapus tmp jika masih ada
+        @unlink($tmpPath);
+
+        $data['link_file']     = $driveResult['view_link'];
+        $data['drive_file_id'] = $driveResult['file_id'];
+        $data['jawaban_text']  = null;
+
+        log_message('info', '[submitTugas] File tersimpan di: ' . $driveResult['storage'] . ' | link: ' . $driveResult['view_link']);
+
+    } else {
+        $jawabanText = trim($this->request->getPost('jawaban_text'));
+        if ($jawabanText === '') {
+            return redirect()->back()->with('error', 'Silakan isi jawaban tugas.');
         }
 
         $deadlineModel = new \App\Models\TugasDeadlinePesertaModel();
@@ -811,7 +933,14 @@ class DashboardPeserta extends BaseController
         (new TugasPengumpulanModel())->insert($data);
 
         return redirect()->back()->with('success', 'Jawaban tugas berhasil dikirim.');
+        $data['jawaban_text'] = $jawabanText;
+        $data['link_file']    = null;
     }
+
+    (new TugasPengumpulanModel())->insert($data);
+
+    return redirect()->back()->with('success', 'Jawaban tugas berhasil dikirim.');
+}
 
     // =========================================================
     //  TUGAS DETAIL
@@ -1176,22 +1305,6 @@ class DashboardPeserta extends BaseController
             'has_posttest' => ! empty($posttestResult),
             'nilai_post'   => $posttestResult,
             'redirect'     => $redirect,
-        ]);
-    }
-
-    // =========================================================
-    //  APLIKASI PENDUKUNG
-    // =========================================================
-    public function aplikasi()
-    {
-        if (session()->get('role') !== 'peserta') {
-            return redirect()->to('/dashboard');
-        }
-
-        $aplikasiUserModel = new \App\Models\AplikasiUserModel();
-
-        return view('Dashboard/Peserta/aplikasi_pendukung', [
-            'aplikasi' => $aplikasiUserModel->getAplikasiByUser($this->idUsers),
         ]);
     }
 

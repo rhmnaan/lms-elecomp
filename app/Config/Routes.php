@@ -24,6 +24,7 @@ $routes->get('api/realtime/attendance-stream', 'RealtimeDatabaseMonitoring::atte
 $routes->get('api/check-session', 'RealtimeDatabaseMonitoring::checkSession');
 $routes->post('cekfingerprint', 'Webhook::cekFingerprint');
 
+
 // ─────────────────────────────────────────
 // PROTECTED ROUTES (LOGIN REQUIRED)
 // ─────────────────────────────────────────
@@ -195,3 +196,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('video/delete/(:segment)', 'VideoStream::deleteVideo/$1');
     });
 });
+
+$routes->get('auth/google', 'GoogleAuth::index');
+$routes->get('auth/google/authorize', 'GoogleAuth::authorize');
+$routes->get('auth/google/callback', 'GoogleAuth::callback');
+$routes->get('auth/google/disconnect', 'GoogleAuth::disconnect');
