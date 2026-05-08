@@ -127,6 +127,16 @@
                     </ul>
                 </li>
 
+                <li
+                    <?= str_starts_with(uri_string(), 'dashboard/pengajar/aplikasi-pendukung') ? 'class="active"' : '' ?>>
+                    <a href="<?= base_url('dashboard/pengajar/aplikasi-pendukung') ?>">
+                        <i class="bi bi-puzzle-fill"></i> Aplikasi Pendukung
+                        <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/aplikasi-pendukung')): ?>
+                        <span class="dot"></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+
                 <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/peserta')) ? 'class="active"' : '' ?>>
                     <a href="<?= base_url('dashboard/pengajar/peserta') ?>">
                         <i class="bi bi-people-fill"></i> Peserta

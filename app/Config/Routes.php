@@ -194,6 +194,14 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('video/upload', 'VideoStream::doUpload');
         $routes->get('video/list', 'VideoStream::listVideos');
         $routes->post('video/delete/(:segment)', 'VideoStream::deleteVideo/$1');
+
+        $routes->get('aplikasi-pendukung', 'AplikasiPendukung::index');
+        $routes->post('aplikasi-pendukung/store', 'AplikasiPendukung::store');
+        $routes->post('aplikasi-pendukung/update/(:num)', 'AplikasiPendukung::update/$1');
+        $routes->post('aplikasi-pendukung/delete/(:num)', 'AplikasiPendukung::delete/$1');
+
+        $routes->get('aplikasi-pendukung/manajemen', 'AplikasiPendukung::manajemen');
+        $routes->post('aplikasi-pendukung/simpan-akses', 'AplikasiPendukung::simpanAkses');
     });
 });
 
