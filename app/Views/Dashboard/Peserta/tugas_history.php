@@ -503,6 +503,15 @@
 
 <?= $this->section('content') ?>
 
+<?php
+/* ── Helper: konversi UTC → WIB ── */
+function toWIB(string $datetime): DateTime {
+    $dt = new DateTime($datetime, new DateTimeZone('UTC'));
+    $dt->setTimezone(new DateTimeZone('Asia/Jakarta'));
+    return $dt;
+}
+?>
+
 <div class="rh-root">
 
     <!-- ── PAGE HEADER ── -->
@@ -536,21 +545,15 @@
                     <?php endif ?>
                     <span>
                         <?php if (!empty($deadline_peserta['deadline_at'])): ?>
-
                         <i class="bi bi-alarm"></i>
                         Deadline:
-                        <?= date('d M Y H:i', strtotime($deadline_peserta['deadline_at'])) ?> WIB
-
+                        <?= toWIB($deadline_peserta['deadline_at'])->format('d M Y H:i') ?> WIB
                         <?php elseif (isset($tugas['deadline_hari']) && $tugas['deadline_hari'] !== null): ?>
-
                         <i class="bi bi-clock-history"></i>
                         <?= (int)$tugas['deadline_hari'] ?> hari deadline
-
                         <?php else: ?>
-
                         <i class="bi bi-infinity"></i>
                         Tanpa batas deadline
-
                         <?php endif; ?>
                     </span>
                 </div>
@@ -600,6 +603,8 @@
                 $badgeClass = 'badge-default';
                 $badgeIcon  = 'bi-circle';
             }
+
+            $createdWIB = toWIB($item['created_at']);
         ?>
 
         <div class="rh-item">
@@ -619,9 +624,9 @@
                     <div>
                         <div class="rh-card-date">
                             <i class="bi bi-calendar3"></i>
-                            <?= date('d M Y', strtotime($item['created_at'])) ?>
+                            <?= $createdWIB->format('d M Y') ?>
                             <span style="color:#d1d5db;font-weight:400">·</span>
-                            <?= date('H:i', strtotime($item['created_at'])) ?> WIB
+                            <?= $createdWIB->format('H:i') ?> WIB
                         </div>
                         <div class="rh-card-tipe">
                             <i class="bi bi-paperclip"></i>
@@ -657,7 +662,7 @@
                             <div class="rh-meta-label">Waktu Kirim</div>
                             <div class="rh-meta-val">
                                 <i class="bi bi-clock"></i>
-                                <?= date('d M Y, H:i', strtotime($item['created_at'])) ?> WIB
+                                <?= $createdWIB->format('d M Y, H:i') ?> WIB
                             </div>
                         </div>
                     </div>
@@ -679,37 +684,30 @@
                     </div>
                 </div>
                 <?php endif ?>
-                <?php if (!empty($item['catatan_jawaban'])): ?>
-                <div class="rh-card-note">
-                    ...
-                </div>
-                <?php endif ?>
+
                 <!-- KOMENTAR PENGAJAR -->
                 <?php if (!empty($item['komentar'])): ?>
                 <div class="rh-card-note" style="border-top:1px solid #f0f0f0;">
                     <i class="bi bi-chat-dots rh-note-icon"></i>
-
                     <div style="width:100%">
                         <div class="rh-note-label mb-2">Komentar Pengajar</div>
-
                         <?php foreach ($item['komentar'] as $km): ?>
                         <div style="margin-bottom:10px;">
                             <div style="font-size:12px;font-weight:700;color:#111827;">
                                 <?= esc($km['nama_users']) ?>
                             </div>
-
                             <div class="rh-note-text">
                                 <?= esc($km['komentar']) ?>
                             </div>
-
                             <div style="font-size:11px;color:#9ca3af;margin-top:3px;">
-                                <?= date('d M Y H:i', strtotime($km['created_at'])) ?> WIB
+                                <?= toWIB($km['created_at'])->format('d M Y H:i') ?> WIB
                             </div>
                         </div>
                         <?php endforeach ?>
                     </div>
                 </div>
                 <?php endif ?>
+
             </div><!-- /.rh-card -->
         </div><!-- /.rh-item -->
 

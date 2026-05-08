@@ -498,7 +498,7 @@ class DashboardPeserta extends BaseController
 
             // Status kadaluarsa
             $isExpired = $deadlineAt
-                ? strtotime($deadlineAt) < time()
+                ? strtotime($deadlineAt) < strtotime(date('Y-m-d H:i:s'))
                 : false;
 
             // Riwayat pengumpulan
@@ -755,7 +755,7 @@ class DashboardPeserta extends BaseController
 
             $deadlineAt = $deadlinePeserta['deadline_at'];
 
-            if (strtotime($deadlineAt) < time()) {
+            if (strtotime($deadlineAt) < strtotime(date('Y-m-d H:i:s'))) {
                 return redirect()->back()
                     ->with('error', 'Batas waktu pengumpulan tugas telah berakhir.');
             }
