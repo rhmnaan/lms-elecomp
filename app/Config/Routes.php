@@ -171,6 +171,19 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('program/update/(:num)', 'DashboardPengajar::programUpdate/$1');
         $routes->post('program/delete/(:num)', 'DashboardPengajar::programDelete/$1');
 
+        // Akses aplikasi per peserta
+        $routes->get(
+            'dashboard/pengajar/peserta/akses/(:num)',
+            'DashboardPengajar::pesertaGetAkses/$1'   // sesuaikan nama controller kamu
+        );
+        $routes->post(
+            'dashboard/pengajar/peserta/akses/simpan',
+            'DashboardPengajar::pesertaSimpanAkses'   // sesuaikan nama controller kamu
+        );
+        $routes->post('peserta/akses/simpan', 'DashboardPengajar::pesertaSimpanAkses');
+        $routes->get('peserta/akses/(:num)', 'DashboardPengajar::pesertaGetAkses/$1');
+        
+
         // ═══════════════════════════════════════════════════════════════════
         //VOUCHER
         // ═══════════════════════════════════════════════════════════════════

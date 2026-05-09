@@ -1362,4 +1362,24 @@ public function submitTugas()
             'redirect' => $redirect,
         ]);
     }
+    // =========================================================
+    //  APLIKASI PENDUKUNG
+    // =========================================================
+    public function aplikasi()
+    {
+        $db = \Config\Database::connect();
+
+        $aplikasi = $db->table('aplikasi_user au')
+            ->select('ap.id_aplikasi, ap.nama_aplikasi, ap.link_aplikasi')
+            ->join('aplikasi_pendukung ap', 'ap.id_aplikasi = au.id_aplikasi')
+            ->where('au.id_users', $this->idUsers)
+            ->orderBy('ap.nama_aplikasi')
+            ->get()
+            ->getResultArray();
+
+        return view('Dashboard/Peserta/aplikasi_pendukung', [
+            'title'    => 'Aplikasi Pendukung',
+            'aplikasi' => $aplikasi,
+        ]);
+    }
 }

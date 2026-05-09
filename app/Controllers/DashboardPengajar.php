@@ -1526,84 +1526,68 @@ class DashboardPengajar extends BaseController
             ->orderBy('k.nama_kelas')
             ->get()->getResultObject();
 
-        $pesertaArr   = (array) $peserta;
-        $totalPeserta = count($pesertaArr);
+        $totalPeserta = count((array) $peserta);
+
+        $aplikasiSemua = $db->table('aplikasi_pendukung')
+            ->orderBy('nama_aplikasi')
+            ->get()
+            ->getResultArray();
 
         return view('Dashboard/Pengajar/peserta', [
-            'title'        => 'Daftar Peserta',
-            'peserta'      => $peserta,
-            'kelasList'    => $kelasList,
-            'totalPeserta' => $totalPeserta,
+            'title'         => 'Daftar Peserta',
+            'peserta'       => $peserta,
+            'kelasList'     => $kelasList,
+            'totalPeserta'  => $totalPeserta,
+            'aplikasiSemua' => $aplikasiSemua,
         ]);
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  PRIVATE HELPERS
+    //  AKSES APLIKASI — GET
+    //  GET /dashboard/pengajar/peserta/akses/(:num)
     // ══════════════════════════════════════════════════════════════════════
-    private function isMyKelas(KelasModel $model, int $idKelas): bool
+    public function pesertaGetAkses(int $idUsers)
     {
-        $kelas = $model->withDeleted()->find($idKelas);
-        return $kelas && (int) $kelas['id_users'] === $this->myId();
+        if ($r = $this->guardPengajar()) return $r;
+
+        $db  = \Config\Database::connect();
+        $ids = $db->table('aplikasi_user')
+            ->select('id_aplikasi')
+            ->where('id_users', $idUsers)
+            ->get()
+            ->getResultArray();
+
+        return $this->response->setJSON([
+            'success' => true,
+            'akses'   => array_map(fn($r) => (int) $r['id_aplikasi'], $ids),
+        ]);
     }
 
-    private function isMyModul(int $idModul): bool
+    // ══════════════════════════════════════════════════════════════════════
+    //  AKSES APLIKASI — SIMPAN
+    //  POST /dashboard/pengajar/peserta/akses/simpan
+    // ══════════════════════════════════════════════════════════════════════
+    public function pesertaSimpanAkses()
     {
-        $row = \Config\Database::connect()
-            ->table('modul m')
-            ->select('k.id_users')
-            ->join('kelas k', 'k.id_kelas = m.id_kelas')
-            ->where('m.id_modul', $idModul)
-            ->where('m.deleted_at IS NULL')
-            ->get()->getRowArray();
+        if ($r = $this->guardPengajar()) return $r;
 
-        return $row && (int) $row['id_users'] === $this->myId();
-    }
+        $json    = $this->request->getJSON(true);
+        $idUsers = (int) ($json['id_users'] ?? 0);
+        $newIds  = array_map('intval', $json['aplikasi'] ?? []);
 
-    private function getMyVoucher(int $idVoucher): ?array
-    {
+        if ($idUsers <= 0) {
+            return $this->response->setJSON(['success' => false, 'message' => 'User tidak valid.']);
+        }
+
         $db = \Config\Database::connect();
-        return $db->query("
-            SELECT v.* FROM voucher v
-            JOIN kelas k ON k.id_kelas = v.id_kelas
-            WHERE v.id_voucher = {$idVoucher}
-              AND k.id_users   = {$this->myId()}
-              AND v.deleted_at IS NULL
-        ")->getRowArray() ?: null;
-    }
+        $db->table('aplikasi_user')->where('id_users', $idUsers)->delete();
 
-    private function buildQuizJsonFor(string $field): ?string
-    {
-        $rawQuiz = $this->request->getPost($field);
-        if (empty($rawQuiz) || ! is_array($rawQuiz)) {
-            return null;
+        if (!empty($newIds)) {
+            $db->table('aplikasi_user')->insertBatch(
+                array_map(fn($id) => ['id_aplikasi' => $id, 'id_users' => $idUsers], $newIds)
+            );
         }
 
-        $soalList = [];
-        foreach ($rawQuiz as $item) {
-            $pertanyaan = trim($item['pertanyaan'] ?? '');
-            $pilihan    = $item['pilihan'] ?? [];
-            $jawaban    = (int) ($item['jawaban_benar'] ?? 0);
-            if ($pertanyaan === '' || count($pilihan) < 2) {
-                continue;
-            }
-
-            $soalList[] = [
-                'pertanyaan'    => $pertanyaan,
-                'pilihan'       => array_values($pilihan),
-                'jawaban_benar' => $jawaban,
-            ];
-        }
-
-        return count($soalList) > 0
-            ? json_encode($soalList, JSON_UNESCAPED_UNICODE)
-            : null;
-    }
-
-    /**
-     * @deprecated Gunakan buildQuizJsonFor('post_test') sebagai gantinya.
-     */
-    private function buildQuizJson(): ?string
-    {
-        return $this->buildQuizJsonFor('post_test');
+        return $this->response->setJSON(['success' => true, 'message' => 'Akses berhasil disimpan.']);
     }
 }
