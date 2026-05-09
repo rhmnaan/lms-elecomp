@@ -54,7 +54,8 @@ class AplikasiPendukung extends BaseController
             'link_aplikasi' => $this->request->getPost('link_aplikasi'),
         ]);
 
-        return redirect()->to('/aplikasi-pendukung')
+        // store()
+        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
             ->with('success', 'Aplikasi berhasil ditambahkan');
     }
 
@@ -70,7 +71,8 @@ class AplikasiPendukung extends BaseController
             'link_aplikasi' => $this->request->getPost('link_aplikasi'),
         ]);
 
-        return redirect()->to('/aplikasi-pendukung')
+        // update()
+        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
             ->with('success', 'Aplikasi berhasil diperbarui');
     }
 
@@ -83,7 +85,8 @@ class AplikasiPendukung extends BaseController
     {
         $this->aplikasiModel->delete($id);
 
-        return redirect()->to('/aplikasi-pendukung')
+        // delete()
+        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
             ->with('success', 'Aplikasi berhasil dihapus');
     }
 
