@@ -182,6 +182,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         );
         $routes->post('peserta/akses/simpan', 'DashboardPengajar::pesertaSimpanAkses');
         $routes->get('peserta/akses/(:num)', 'DashboardPengajar::pesertaGetAkses/$1');
+
+        $routes->get( 'dashboard/pengajar/aplikasi-pendukung/akses/(:num)', 'Pengajar::aplikasiGetAkses/$1');
+        $routes->post('dashboard/pengajar/aplikasi-pendukung/akses/simpan', 'Pengajar::aplikasiSimpanAkses');
         
 
         // ═══════════════════════════════════════════════════════════════════
