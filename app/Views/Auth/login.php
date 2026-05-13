@@ -307,25 +307,106 @@
 
     .logo-area {
         text-align: center;
-        padding: 20px 0;
+        padding: 16px 0 20px;
+        position: relative;
     }
 
     .logo-mark {
-        display: flex;
+        display: inline-flex;
         justify-content: center;
         align-items: center;
+        position: relative;
+    }
+
+    /* Wrapper untuk efek shine */
+    .logo-shine-wrap {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+        border-radius: 8px;
     }
 
     .logo-image {
         max-width: 300px;
         height: auto;
         width: 100%;
+        display: block;
+        animation: logoEntrance .8s cubic-bezier(.16, 1, .3, 1) .2s both,
+            logoFloat 4s ease-in-out 1s infinite;
+        filter: drop-shadow(0 4px 16px rgba(3, 170, 222, .35));
+        transition: filter .3s;
     }
 
-    /* Responsive untuk mobile */
+    /* Efek kilat/shine yang menyapu */
+    .logo-shine-wrap::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -75%;
+        width: 50%;
+        height: 200%;
+        background: linear-gradient(105deg,
+                transparent 30%,
+                rgba(255, 255, 255, .55) 50%,
+                transparent 70%);
+        transform: skewX(-15deg);
+        animation: logoShine 3.5s ease-in-out 1.2s infinite;
+        pointer-events: none;
+    }
+
+    .logo-image:hover {
+        filter: drop-shadow(0 6px 24px rgba(3, 170, 222, .6));
+    }
+
+    @keyframes logoEntrance {
+        from {
+            opacity: 0;
+            transform: translateY(-16px) scale(.92);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes logoFloat {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+
+    @keyframes logoShine {
+        0% {
+            left: -75%;
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 1;
+        }
+
+        40% {
+            left: 125%;
+            opacity: 1;
+        }
+
+        41%,
+        100% {
+            left: 125%;
+            opacity: 0;
+        }
+    }
+
     @media (max-width: 768px) {
         .logo-image {
-            max-width: 200px;
+            max-width: 130px;
         }
     }
 
