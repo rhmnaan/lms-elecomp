@@ -15,7 +15,7 @@ class RealtimeDatabaseMonitoring extends BaseController
     public function attendanceStream()
     {
         $fp    = $_COOKIE['device_fp'] ?? '';
-        $email = session()->get('email') ?? '';
+        $email = session()->get('email_users') ?? '';
 
         session()->close();
 
@@ -35,13 +35,15 @@ class RealtimeDatabaseMonitoring extends BaseController
         $this->startSSEHeaders();
 
         $startTime    = time();
-        $maxDuration  = 1; // ✅ diperpanjang dari 5 → 25 detik
-        $pollInterval = 1;
+        $maxDuration  = 5; // 
+        $pollInterval = 2;  // 
 
         while ((time() - $startTime) < $maxDuration) {
             if (connection_aborted()) return;
 
+            // ✅ Cek apakah ada perubahan fingerprint (berarti ada device baru login)
             if ($this->isSessionHijacked($fp, $email)) {
+                // Event sudah dikirim, tutup stream
                 return;
             }
 
@@ -71,6 +73,9 @@ class RealtimeDatabaseMonitoring extends BaseController
 
     /**
      * Cek apakah fingerprint di DB sudah BERBEDA dari cookie tab ini.
+     * 
+     * LOGIKA: Jika fingerprint DB ≠ fingerprint tab ini, 
+     * artinya ada login baru dari device lain → tab ini harus logout
      *
      * @return bool  true = event sudah dikirim, loop boleh dihentikan
      */
@@ -88,19 +93,17 @@ class RealtimeDatabaseMonitoring extends BaseController
         $dbFP   = $user['fingerprint_device'];
         $action = $user['action'];
 
-        // Hanya trigger jika:
-        // 1. FP berbeda, DAN
-        // 2. action adalah 'switched' atau 'keep' atau 'other'
-        //    (bukan null — null artinya login normal, bukan hijack)
+        // ✅ PERBAIKAN: Trigger logout HANYA berdasarkan perbedaan fingerprint
+        // Tidak peduli apa nilai 'action' nya
         if (
-            $dbFP !== null && $dbFP !== '' &&
-            $dbFP !== $fp &&
-            $action !== null  // ← tambah ini
+            $dbFP !== null && 
+            $dbFP !== '' &&
+            $dbFP !== $fp  // ← fingerprint berbeda = ada device baru login
         ) {
             $payload = json_encode([
                 'email_users'        => $user['email_users'],
                 'fingerprint_device' => $dbFP,
-                'action'             => $action,
+                'action'             => $action ?? 'switched',
             ]);
 
             echo "event: updated_attendances\ndata: {$payload}\n\n";

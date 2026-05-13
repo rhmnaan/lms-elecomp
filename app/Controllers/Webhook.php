@@ -76,6 +76,7 @@ class Webhook extends BaseController
         $emailDB = $user['email_users'];
         $dbFP    = $user['fingerprint_device'];
 
+        // ✅ Fingerprint sama = device yang sama login lagi
         if ($fp === $dbFP && $dbFP !== null) {
             return $this->response->setJSON([
                 'status' => 'sama',
@@ -84,6 +85,7 @@ class Webhook extends BaseController
             ]);
         }
 
+        // ✅ Belum pernah login / fingerprint masih kosong
         if ($dbFP === null || $dbFP === '') {
             $model->where('email_users', $emailDB)
                 ->set([
@@ -99,10 +101,12 @@ class Webhook extends BaseController
             ]);
         }
 
+        // ✅ User pilih "Tetap gunakan di sini" (keep)
+        // Device LAMA akan logout otomatis karena FP DB berubah
         if ($action === 'keep') {
             $model->where('email_users', $emailDB)
                 ->set([
-                    'fingerprint_device' => $fp,
+                    'fingerprint_device' => $fp,  // ← FP baru disimpan
                     'action'             => 'keep',
                 ])
                 ->update();
@@ -114,21 +118,25 @@ class Webhook extends BaseController
             ]);
         }
 
+        // ✅ User pilih "Gunakan di perangkat lain"
+        // Tab INI yang akan logout (tidak mengupdate FP)
         if ($action === 'other') {
+            // Tidak update fingerprint_device, biarkan FP lama tetap di DB
+            // Hanya update action sebagai marker
             $model->where('email_users', $emailDB)
                 ->set([
-                    'fingerprint_device' => $fp,
-                    'action'             => 'other',
+                    'action' => 'other',
                 ])
                 ->update();
 
             return $this->response->setJSON([
                 'status' => 'switched',
-                'valid'  => true,
-                'login'  => base_url('auth/authenticate'),
+                'valid'  => false,  // ← tab ini tidak boleh login
+                'message' => 'Silakan gunakan perangkat lain yang sudah login.',
             ]);
         }
 
+        // ✅ Fingerprint berbeda, belum ada action = tampilkan modal
         return $this->response->setJSON([
             'status' => 'beda',
             'valid'  => false,
