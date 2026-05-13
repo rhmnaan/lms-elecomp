@@ -81,15 +81,6 @@ body {
     color: #0d8de3;
 }
 
-.logo-tagline {
-    font-size: 9.5px;
-    color: #9ca3af;
-    font-weight: 600;
-    letter-spacing: .6px;
-    margin: 2px 0 0 46px;
-    text-transform: uppercase;
-}
-
 .menu-label {
     font-size: 10px;
     font-weight: 700;
@@ -1144,3 +1135,18 @@ body {
         font-size: 13px;
     }
 }
+
+/* Ganti dua aturan .logo-image yang lama dengan ini */
+.logo-image {
+    height: 28px;   /* ukuran logo — sesuaikan sesuka hati */
+    width: 28px;
+}
+
+.logo-tagline {
+        font-size: 9.5px;
+        color: #9ca3af;
+        font-weight: 600;
+        letter-spacing: .6px;
+        margin: 2px 0 0 0;
+        text-transform: uppercase;
+    }

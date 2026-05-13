@@ -44,11 +44,8 @@
         <!-- ── SIDEBAR ── -->
         <aside class="sidebar">
             <div class="sidebar-logo">
-                <div class="logo-mark">
-                    <div class="logo-icon"><i class="fas fa-bolt"></i></div>
-                    <span class="logo-name">
-                        <span class="ele">Ele</span><span class="comp">comp</span>
-                    </span>
+                <div class="logo-mark d-flex align-items-center">
+                    <img src="<?= base_url('logo/image.png') ?>" alt="Elecomp LMS" class="logo-image mr-2">
                 </div>
                 <p class="logo-tagline">Learning Management System</p>
             </div>
