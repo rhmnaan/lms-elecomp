@@ -98,6 +98,37 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('aplikasi-pendukung', 'DashboardPeserta::aplikasiPendukung');
         $routes->get('aplikasi', 'DashboardPeserta::aplikasi');
 
+        $routes->get('content-plan', 'Peserta\Aplikasi\ContentPlan::index');
+
+        // Semua POST berada di sub-group 'content-plan'
+        // ── Content Plan ──────────────────────────────────────────
+        $routes->group('content-plan', ['namespace' => 'App\Controllers\Peserta\Aplikasi'], function ($routes) {
+
+            // GET index
+            $routes->get('/', 'ContentPlan::index');
+            $routes->get('',  'ContentPlan::index');
+
+            // Content Plan CRUD
+            $routes->post('store',         'ContentPlan::store');
+            $routes->post('update/(:num)', 'ContentPlan::update/$1');
+            $routes->post('delete/(:num)', 'ContentPlan::delete/$1');
+
+            // Master: Jenis Konten
+            $routes->post('master/jenis/store',         'ContentPlan::jenisStore');
+            $routes->post('master/jenis/update/(:num)', 'ContentPlan::jenisUpdate/$1');
+            $routes->post('master/jenis/delete/(:num)', 'ContentPlan::jenisDelete/$1');
+
+            // Master: Platform
+            $routes->post('master/platform/store',         'ContentPlan::platformStore');
+            $routes->post('master/platform/update/(:num)', 'ContentPlan::platformUpdate/$1');
+            $routes->post('master/platform/delete/(:num)', 'ContentPlan::platformDelete/$1');
+
+            // Master: Tipe Konten
+            $routes->post('master/type/store',         'ContentPlan::typeStore');
+            $routes->post('master/type/update/(:num)', 'ContentPlan::typeUpdate/$1');
+            $routes->post('master/type/delete/(:num)', 'ContentPlan::typeDelete/$1');
+        });
+
         // KELAS SAYA
         $routes->get('kelas/program', 'Peserta\KelasPeserta::program');
         $routes->get('kelas/program/(:num)', 'Peserta\KelasPeserta::kelasByProgram/$1');

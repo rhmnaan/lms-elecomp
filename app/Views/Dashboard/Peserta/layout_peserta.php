@@ -106,9 +106,11 @@
                         <?php endif; ?>
                     </a>
                 </li>
-                <li <?php echo str_starts_with(uri_string(), 'dashboard/peserta/aplikasi') ? 'class="active"' : '' ?>>
-                    <a href="<?php echo base_url('dashboard/peserta/aplikasi') ?>">
-                        <i class="bi bi-grid-fill"></i> Aplikasi Pendukung
+                <li class="<?= str_starts_with(uri_string(), 'dashboard/peserta/aplikasi') ? 'active' : '' ?>">
+                    <a href="<?= base_url('dashboard/peserta/aplikasi') ?>">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>Aplikasi Pendukung</span>
+
                         <?php if (str_starts_with(uri_string(), 'dashboard/peserta/aplikasi')): ?>
                         <span class="dot"></span>
                         <?php endif; ?>
