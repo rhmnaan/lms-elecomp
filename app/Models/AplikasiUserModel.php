@@ -23,4 +23,13 @@ class AplikasiUserModel extends Model
             ->where('au.id_users', $idUsers)
             ->get()->getResultArray();
     }
+
+     // Relasi dengan tabel users
+    public function getUserAplikasi($userId)
+    {
+        return $this->select('aplikasi_pendukung.*')
+                    ->join('aplikasi_pendukung', 'aplikasi_pendukung.id_aplikasi = aplikasi_user.id_aplikasi')
+                    ->where('aplikasi_user.id_users', $userId)
+                    ->findAll();
+    }
 }

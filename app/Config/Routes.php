@@ -69,40 +69,46 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('kelas/tugas/(:num)', 'DashboardPeserta::kelasTugas/$1');
         $routes->get('kelas-tugas', 'DashboardPeserta::kelasTugas');
         $routes->get('tugas-riwayat/(:num)', 'DashboardPeserta::tugasRiwayat/$1');
-        
+
+        // ── Halaman utama kalkulator ──
+        $routes->get('kalkulator', 'KalkulatorPeserta::index');
+
+        // ── AJAX: satuan & state ──
+        $routes->post('kalkulator/satuan/upsert-json', 'KalkulatorPeserta::upsertSatuanJson');
+        $routes->post('kalkulator/state/save', 'KalkulatorPeserta::saveState');
+        $routes->get('kalkulator/state/load', 'KalkulatorPeserta::loadState');
+
+        // ── Exwork ──
+        $routes->post('kalkulator/exwork/save-all', 'KalkulatorPeserta::saveAllExwork');
+        $routes->get('kalkulator/exwork/delete/(:num)', 'KalkulatorPeserta::deleteExwork/$1');
+
+        // ── FOB ──
+        $routes->post('kalkulator/fob/save-all', 'KalkulatorPeserta::saveAllFob');
+        $routes->get('kalkulator/fob/delete/(:num)', 'KalkulatorPeserta::deleteFob/$1');
+
+        // ── CFR ──
+        $routes->post('kalkulator/cfr/save-all', 'KalkulatorPeserta::saveAllCfr');
+        $routes->get('kalkulator/cfr/delete/(:num)', 'KalkulatorPeserta::deleteCfr/$1');
+
+        // ── CIF ──
+        $routes->post('kalkulator/cif/save-all', 'KalkulatorPeserta::saveAllCif');
+        $routes->get('kalkulator/cif/delete/(:num)', 'KalkulatorPeserta::deleteCif/$1');
+
+        // APLIKASI PENDUKUNG PESERTA
+        $routes->get('aplikasi-pendukung', 'DashboardPeserta::aplikasiPendukung');
         $routes->get('aplikasi', 'DashboardPeserta::aplikasi');
 
-        // =====================
         // KELAS SAYA
-        // =====================
-        // =========================
-        // TEMUKAN KELAS
-        // =========================
         $routes->get('kelas/program', 'Peserta\KelasPeserta::program');
         $routes->get('kelas/program/(:num)', 'Peserta\KelasPeserta::kelasByProgram/$1');
-
-        // tugas
         $routes->get('tugas/(:num)', 'Peserta\Tugas::index/$1');
-
-        // =========================
-        // DETAIL & VOUCHER
-        // =========================
         $routes->get('kelas/detail/(:num)', 'Peserta\KelasPeserta::detail/$1');
-
-        // =========================
-        // VOUCHER CLAIM
-        // =========================
         $routes->post('voucher/claim', 'VoucherController::claim');
-
-        // =========================
-        // KELAS SAYA
-        // =========================
         $routes->get('kelas-saya', 'Peserta\KelasPeserta::kelasSaya');
 
         // Pre Test & Post Test
         $routes->get('pretest/(:num)', 'Peserta\Pretest::index/$1');
         $routes->post('pretest/submit', 'Peserta\Pretest::submit');
-
         $routes->get('posttest/(:num)', 'Peserta\Posttest::index/$1');
         $routes->post('posttest/submit', 'Peserta\Posttest::submit');
 
@@ -172,24 +178,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('program/delete/(:num)', 'DashboardPengajar::programDelete/$1');
 
         // Akses aplikasi per peserta
-        $routes->get(
-            'dashboard/pengajar/peserta/akses/(:num)',
-            'DashboardPengajar::pesertaGetAkses/$1'   // sesuaikan nama controller kamu
-        );
-        $routes->post(
-            'dashboard/pengajar/peserta/akses/simpan',
-            'DashboardPengajar::pesertaSimpanAkses'   // sesuaikan nama controller kamu
-        );
-        $routes->post('peserta/akses/simpan', 'DashboardPengajar::pesertaSimpanAkses');
         $routes->get('peserta/akses/(:num)', 'DashboardPengajar::pesertaGetAkses/$1');
+        $routes->post('peserta/akses/simpan', 'DashboardPengajar::pesertaSimpanAkses');
 
-        $routes->get( 'dashboard/pengajar/aplikasi-pendukung/akses/(:num)', 'Pengajar::aplikasiGetAkses/$1');
-        $routes->post('dashboard/pengajar/aplikasi-pendukung/akses/simpan', 'Pengajar::aplikasiSimpanAkses');
-        
-
-        // ═══════════════════════════════════════════════════════════════════
-        //VOUCHER
-        // ═══════════════════════════════════════════════════════════════════
+        // VOUCHER
         $routes->get('voucher', 'DashboardPengajar::voucher');
         $routes->post('voucher/store', 'DashboardPengajar::voucherStore');
         $routes->post('voucher/update/(:num)', 'DashboardPengajar::voucherUpdate/$1');
@@ -204,21 +196,25 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('profil/edit', 'ProfilController::edit');
         $routes->post('profil/update', 'ProfilController::update');
 
-        // ═══════════════════════════════════════════════
-        //  VIDEO ENKRIPSI — manajemen video (pengajar)
-        // ═══════════════════════════════════════════════
+        // VIDEO ENKRIPSI — manajemen video (pengajar)
         $routes->get('video/upload', 'VideoStream::uploadPage');
         $routes->post('video/upload', 'VideoStream::doUpload');
         $routes->get('video/list', 'VideoStream::listVideos');
         $routes->post('video/delete/(:segment)', 'VideoStream::deleteVideo/$1');
 
+        // ═══════════════════════════════════════════════
+        // APLIKASI PENDUKUNG (LENGKAP DENGAN AJAX)
+        // ═══════════════════════════════════════════════
         $routes->get('aplikasi-pendukung', 'AplikasiPendukung::index');
         $routes->post('aplikasi-pendukung/store', 'AplikasiPendukung::store');
         $routes->post('aplikasi-pendukung/update/(:num)', 'AplikasiPendukung::update/$1');
         $routes->post('aplikasi-pendukung/delete/(:num)', 'AplikasiPendukung::delete/$1');
-
+        
+        // AJAX Routes untuk manajemen akses
+        $routes->get('aplikasi-pendukung/akses/(:num)', 'AplikasiPendukung::getAkses/$1');
+        $routes->post('aplikasi-pendukung/akses/simpan', 'AplikasiPendukung::simpanAkses');
+        
         $routes->get('aplikasi-pendukung/manajemen', 'AplikasiPendukung::manajemen');
-        $routes->post('aplikasi-pendukung/simpan-akses', 'AplikasiPendukung::simpanAkses');
     });
 });
 

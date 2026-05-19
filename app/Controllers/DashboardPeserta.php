@@ -9,6 +9,8 @@ use App\Models\ModulModel;
 use App\Models\TugasModel;
 use App\Models\TugasPengumpulanModel;
 use App\Models\UserMateriProgressModel;
+use App\Models\AplikasiPendukungModel;
+use App\Models\AplikasiUserModel;
 
 class DashboardPeserta extends BaseController
 {
@@ -17,9 +19,13 @@ class DashboardPeserta extends BaseController
     protected ModulModel $modulModel;
     protected MateriModel $materiModel;
     protected $userMateriProgressModel;
-
+    protected $aplikasiModel;
+    protected $aplikasiUserModel;
+    
     public function __construct()
     {
+        $this->aplikasiModel = new AplikasiPendukungModel();
+        $this->aplikasiUserModel = new AplikasiUserModel();
         $this->kelasPesertaModel       = new KelasPesertaModel();
         $this->modulModel              = new ModulModel();
         $this->materiModel             = new MateriModel();
@@ -1351,19 +1357,28 @@ public function submitTugas()
     // =========================================================
     public function aplikasi()
     {
-        $db = \Config\Database::connect();
-
-        $aplikasi = $db->table('aplikasi_user au')
-            ->select('ap.id_aplikasi, ap.nama_aplikasi, ap.link_aplikasi')
-            ->join('aplikasi_pendukung ap', 'ap.id_aplikasi = au.id_aplikasi')
-            ->where('au.id_users', $this->idUsers)
-            ->orderBy('ap.nama_aplikasi')
-            ->get()
-            ->getResultArray();
-
-        return view('Dashboard/Peserta/aplikasi_pendukung', [
-            'title'    => 'Aplikasi Pendukung',
-            'aplikasi' => $aplikasi,
+        $userId = session()->get('id_users');
+        
+        // Ambil aplikasi yang diizinkan untuk user ini
+        $aplikasi = $this->aplikasiUserModel
+            ->select('aplikasi_pendukung.*')
+            ->join('aplikasi_pendukung', 'aplikasi_pendukung.id_aplikasi = aplikasi_user.id_aplikasi')
+            ->where('aplikasi_user.id_users', $userId)
+            ->findAll();
+        
+        // Jika tidak ada akses spesifik, tampilkan semua aplikasi
+        if (empty($aplikasi)) {
+            $aplikasi = $this->aplikasiModel->findAll();
+        }
+        
+        return view('dashboard/peserta/aplikasi_pendukung', [
+            'title' => 'Aplikasi Pendukung',
+            'aplikasi' => $aplikasi
         ]);
+    }
+
+    public function aplikasiPendukung()
+    {
+        return $this->aplikasi();
     }
 }

@@ -20,106 +20,147 @@ class AplikasiPendukung extends BaseController
         $this->userModel         = new Users();
     }
 
-    /**
-     * ============================
-     * HALAMAN DAFTAR APLIKASI
-     * ============================
-     */
-    public function index()
+    private function formatUrl($url)
     {
-        return view('Dashboard/Pengajar/aplikasi_pendukung', [
-            'title'    => 'Aplikasi Pendukung',
-            'aplikasi' => $this->aplikasiModel->findAll()
-        ]);
-    }
+        $url = trim($url);
+        if (empty($url)) return '';
 
-    /**
-     * ============================
-     * SIMPAN APLIKASI BARU
-     * ============================
-     */
-    public function store()
-    {
-        if (!$this->validate([
-            'nama_aplikasi' => 'required',
-            'link_aplikasi' => 'required|valid_url'
-        ])) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Data tidak valid');
+        $url = str_replace('\\', '/', $url);
+
+        // Local aplikasi (kalkulator, absensi, dll)
+        if (strpos($url, '/') === 0 || !preg_match('/\./', $url)) {
+            return ltrim($url, '/');
         }
 
-        $this->aplikasiModel->save([
-            'nama_aplikasi' => $this->request->getPost('nama_aplikasi'),
-            'link_aplikasi' => $this->request->getPost('link_aplikasi'),
+        // External link
+        if (preg_match('/^https?:\/\//i', $url)) {
+            return $url;
+        }
+
+        return 'http://' . $url;   // ← Pakai HTTP
+    }
+
+    public function index()
+    {
+        $aplikasi = $this->aplikasiModel->findAll();
+        
+        foreach ($aplikasi as &$app) {
+            $app['akses_count'] = $this->aplikasiUserModel
+                ->where('id_aplikasi', $app['id_aplikasi'])
+                ->countAllResults();
+        }
+        
+        $users = $this->userModel->findAll();
+        $formattedPeserta = [];
+
+        foreach ($users as $user) {
+            $id = $user['id_users'] ?? $user['id'] ?? 0;
+            if ($id > 0) {
+                $formattedPeserta[] = [
+                    'id'    => (int)$id,
+                    'nama'  => $user['nama_users'] ?? $user['nama_lengkap'] ?? 'Tanpa Nama',
+                    'email' => $user['email'] ?? ''
+                ];
+            }
+        }
+
+        return view('Dashboard/Pengajar/aplikasi_pendukung', [
+            'title'    => 'Aplikasi Pendukung',
+            'aplikasi' => $aplikasi,
+            'peserta'  => $formattedPeserta
         ]);
-
-        // store()
-        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
-            ->with('success', 'Aplikasi berhasil ditambahkan');
     }
 
-    /**
-     * ============================
-     * UPDATE APLIKASI
-     * ============================
-     */
-    public function update($id)
+    public function getAkses($idAplikasi)
     {
-        $this->aplikasiModel->update($id, [
-            'nama_aplikasi' => $this->request->getPost('nama_aplikasi'),
-            'link_aplikasi' => $this->request->getPost('link_aplikasi'),
-        ]);
-
-        // update()
-        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
-            ->with('success', 'Aplikasi berhasil diperbarui');
-    }
-
-    /**
-     * ============================
-     * HAPUS APLIKASI
-     * ============================
-     */
-    public function delete($id)
-    {
-        $this->aplikasiModel->delete($id);
-
-        // delete()
-        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
-            ->with('success', 'Aplikasi berhasil dihapus');
-    }
-
-    /**
-     * =====================================
-     * MANAJEMEN AKSES USER (TETAP)
-     * =====================================
-     */
-    public function manajemen()
-    {
-        return view('Dashboard/Pengajar/manajemen_aplikasi', [
-            'title'    => 'Manajemen Akses Aplikasi',
-            'users'    => $this->userModel->findAll(),
-            'aplikasi' => $this->aplikasiModel->findAll()
+        $akses = $this->aplikasiUserModel->where('id_aplikasi', $idAplikasi)->findAll();
+        return $this->response->setJSON([
+            'success' => true,
+            'akses'   => array_column($akses, 'id_users')
         ]);
     }
 
     public function simpanAkses()
     {
-        $idUsers = $this->request->getPost('id_users');
-        $aplikasiDipilih = $this->request->getPost('aplikasi') ?? [];
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Invalid request']);
+        }
 
-        $this->aplikasiUserModel
-            ->where('id_users', $idUsers)
-            ->delete();
+        $json = $this->request->getJSON(true);
+        $idAplikasi = $json['id_aplikasi'] ?? null;
+        $userIds = $json['user_ids'] ?? [];
 
-        foreach ($aplikasiDipilih as $idAplikasi) {
+        if (!$idAplikasi) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Aplikasi tidak ditemukan']);
+        }
+
+        $this->aplikasiUserModel->where('id_aplikasi', $idAplikasi)->delete();
+
+        foreach ($userIds as $uid) {
             $this->aplikasiUserModel->insert([
-                'id_users'    => $idUsers,
+                'id_users'    => $uid,
                 'id_aplikasi' => $idAplikasi
             ]);
         }
 
-        return redirect()->back()->with('success', 'Akses aplikasi berhasil diperbarui');
+        return $this->response->setJSON([
+            'success'   => true,
+            'message'   => 'Akses berhasil disimpan',
+            'csrf_hash' => csrf_hash()
+        ]);
+    }
+
+    public function store()
+    {
+        $link = $this->formatUrl($this->request->getPost('link_aplikasi'));
+        $_POST['link_aplikasi'] = $link;
+
+        $rules = [
+            'nama_aplikasi' => 'required|min_length[3]',
+            'link_aplikasi' => 'required|min_length[2]'
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('error', 'Data tidak valid: ' . implode(', ', $this->validator->getErrors()));
+        }
+
+        $this->aplikasiModel->save([
+            'nama_aplikasi' => $this->request->getPost('nama_aplikasi'),
+            'link_aplikasi' => $link,
+        ]);
+
+        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
+            ->with('success', 'Aplikasi berhasil ditambahkan');
+    }
+
+    public function update($id)
+    {
+        $link = $this->formatUrl($this->request->getPost('link_aplikasi'));
+        $_POST['link_aplikasi'] = $link;
+
+        $rules = [
+            'nama_aplikasi' => 'required|min_length[3]',
+            'link_aplikasi' => 'required|min_length[2]'
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('error', 'Data tidak valid');
+        }
+
+        $this->aplikasiModel->update($id, [
+            'nama_aplikasi' => $this->request->getPost('nama_aplikasi'),
+            'link_aplikasi' => $link,
+        ]);
+
+        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
+            ->with('success', 'Aplikasi berhasil diperbarui');
+    }
+
+    public function delete($id)
+    {
+        $this->aplikasiUserModel->where('id_aplikasi', $id)->delete();
+        $this->aplikasiModel->delete($id);
+        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
+            ->with('success', 'Aplikasi berhasil dihapus');
     }
 }

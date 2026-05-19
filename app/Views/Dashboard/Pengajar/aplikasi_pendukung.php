@@ -513,11 +513,17 @@
 .p-row:last-child { border-bottom: none; }
 .p-row:hover { background: #f8fafc; }
 .p-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
+    width: 36px; height: 36px;
+    border-radius: 50%;
     background: linear-gradient(135deg, #ede9fe, #dbeafe);
-    color: #6d28d9; font-size: 12px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; letter-spacing: -.5px;
+    color: #6d28d9;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: -.5px;
 }
 .p-name  { font-size: 13px; font-weight: 600; color: #1e293b; }
 .p-email { font-size: 11px; color: #94a3b8; margin-top: 1px; }
@@ -562,6 +568,7 @@
         <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
     </div>
     <?php endif; ?>
+
     <?php if (session()->getFlashdata('error')): ?>
     <div class="flash-alert error">
         <i class="bi bi-exclamation-circle-fill"></i>
@@ -583,7 +590,7 @@
         <?php endif; ?>
     </div>
 
-    <!-- Grid -->
+    <!-- Grid Aplikasi -->
     <?php if (empty($aplikasi)): ?>
     <div class="empty-wrap">
         <div class="empty-icon"><i class="bi bi-grid-3x3-gap"></i></div>
@@ -599,11 +606,8 @@
         ?>
         <div class="app-item" data-name="<?= strtolower(esc($app['nama_aplikasi'])) ?>">
             <div class="app-card">
-
-                <!-- Pita gradien atas -->
                 <div class="card-ribbon"></div>
 
-                <!-- Ikon + nama -->
                 <div class="card-hero">
                     <div class="card-icon-wrap">
                         <div class="card-icon">
@@ -613,8 +617,7 @@
                     </div>
                     <div class="card-text">
                         <div class="card-app-name"><?= esc($app['nama_aplikasi']) ?></div>
-                        <a href="<?= esc($app['link_aplikasi']) ?>" target="_blank"
-                           rel="noopener" class="card-app-url">
+                        <a href="<?= esc($app['link_aplikasi']) ?>" target="_blank" rel="noopener" class="card-app-url">
                             <i class="bi bi-link-45deg"></i>
                             <?= esc($domain) ?>
                         </a>
@@ -623,7 +626,6 @@
 
                 <div class="card-divider"></div>
 
-                <!-- Strip akses -->
                 <div class="card-akses <?= $hasAkses ? 'has-akses' : 'no-akses' ?>">
                     <div class="akses-left">
                         <div class="akses-icon-wrap">
@@ -638,18 +640,14 @@
                         data-bs-target="#modalAkses"
                         data-id="<?= $app['id_aplikasi'] ?>"
                         data-nama="<?= esc($app['nama_aplikasi']) ?>">
-                        <i class="bi bi-<?= $hasAkses ? 'gear-fill' : 'plus-lg' ?>"
-                           style="font-size:11px"></i>
+                        <i class="bi bi-<?= $hasAkses ? 'gear-fill' : 'plus-lg' ?>"></i>
                         <?= $hasAkses ? 'Kelola' : 'Beri Akses' ?>
                     </button>
                 </div>
 
-                <!-- Action bar -->
                 <div class="card-actions">
-                    <a href="<?= esc($app['link_aplikasi']) ?>" target="_blank"
-                       rel="noopener" class="btn-open-new">
-                        <i class="bi bi-box-arrow-up-right" style="font-size:11px"></i>
-                        Buka Aplikasi
+                    <a href="<?= esc($app['link_aplikasi']) ?>" target="_blank" rel="noopener" class="btn-open-new">
+                        <i class="bi bi-box-arrow-up-right"></i> Buka Aplikasi
                     </a>
                     <button class="btn-icon-sm btn-edit" title="Edit"
                         data-bs-toggle="modal" data-bs-target="#modalEdit"
@@ -658,29 +656,27 @@
                         data-link="<?= esc($app['link_aplikasi']) ?>">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
-                    <form action="<?= base_url('dashboard/pengajar/aplikasi-pendukung/delete/'.$app['id_aplikasi']) ?>"
-                          method="post"
-                          onsubmit="return confirm('Hapus aplikasi \'<?= esc($app['nama_aplikasi']) ?>\'?')">
+                    <form action="<?= base_url('dashboard/pengajar/aplikasi-pendukung/delete/'.$app['id_aplikasi']) ?>" 
+                          method="post" onsubmit="return confirm('Hapus aplikasi ini?')">
                         <?= csrf_field() ?>
                         <button type="submit" class="btn-icon-sm btn-del" title="Hapus">
                             <i class="bi bi-trash3-fill"></i>
                         </button>
                     </form>
                 </div>
-
             </div>
         </div>
         <?php endforeach; ?>
     </div>
     <?php endif; ?>
 
-</div><!-- /ap-page -->
+</div>
 
 
 <!-- ═══════════════════ MODAL TAMBAH ═══════════════════ -->
 <div class="modal fade" id="modalTambah" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered" style="max-width:440px">
-        <form action="<?= base_url('dashboard/pengajar/aplikasi-pendukung/store') ?>"
+        <form id="formTambah" action="<?= base_url('dashboard/pengajar/aplikasi-pendukung/store') ?>"
               method="post" class="modal-content">
             <?= csrf_field() ?>
             <div class="modal-header">
@@ -701,7 +697,7 @@
                     <label class="f-label">Link Aplikasi</label>
                     <div class="input-prefix">
                         <div class="input-prefix-icon"><i class="bi bi-link-45deg"></i></div>
-                        <input type="url" name="link_aplikasi" class="f-input"
+                        <input type="text" name="link_aplikasi" id="tambahLink" class="f-input"
                             placeholder="https://aplikasi.contoh.com"
                             value="<?= old('link_aplikasi') ?>" required>
                     </div>
@@ -740,7 +736,7 @@
                     <label class="f-label">Link Aplikasi</label>
                     <div class="input-prefix">
                         <div class="input-prefix-icon"><i class="bi bi-link-45deg"></i></div>
-                        <input type="url" name="link_aplikasi" id="editLink" class="f-input" required>
+                        <input type="text" name="link_aplikasi" id="editLink" class="f-input" required>
                     </div>
                 </div>
             </div>
@@ -802,15 +798,37 @@
 
 
 <script>
-const SEMUA_PESERTA = <?= json_encode(
-    array_values(array_map(function ($p) {
-        return [
-            'id'    => (int) $p['id_users'],
-            'nama'  => $p['nama'],
-            'email' => $p['email'] ?? '',
-        ];
-    }, $peserta ?? []))
-) ?>;
+<?php
+// Persiapan data peserta dengan aman
+$safePeserta = [];
+if (!empty($peserta) && is_array($peserta)) {
+    foreach ($peserta as $p) {
+        if (is_array($p)) {
+            $id = $p['id'] ?? $p['id_users'] ?? $p['user_id'] ?? 0;
+            $nama = $p['nama'] ?? $p['nama_users'] ?? $p['nama_lengkap'] ?? $p['username'] ?? 'Tanpa Nama';
+            $email = $p['email'] ?? '';
+            
+            if ($id > 0) {
+                $safePeserta[] = [
+                    'id' => (int) $id,
+                    'nama' => (string) $nama,
+                    'email' => (string) $email
+                ];
+            }
+        }
+    }
+}
+?>
+
+const SEMUA_PESERTA = <?= json_encode($safePeserta) ?>;
+
+// Debug: Cek data peserta
+console.log('Jumlah peserta:', SEMUA_PESERTA.length);
+if (SEMUA_PESERTA.length > 0) {
+    console.log('Contoh peserta:', SEMUA_PESERTA[0]);
+} else {
+    console.warn('Tidak ada data peserta! Periksa database.');
+}
 
 const BASE_URL        = '<?= base_url() ?>';
 const CSRF_TOKEN_NAME = '<?= csrf_token() ?>';
@@ -820,30 +838,42 @@ let currentAppId = null;
 let aksesState   = {};
 
 function getInitials(nama) {
+    if (!nama || nama === 'Tanpa Nama') return '?';
     return nama.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
 }
+
 function escHtml(str) {
+    if (!str) return '';
     return String(str)
         .replace(/&/g,'&amp;').replace(/</g,'&lt;')
         .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
 function updateCountLabel() {
     const count = Object.values(aksesState).filter(Boolean).length;
-    document.getElementById('aksesCountLabel').textContent =
-        count === 0 ? 'Belum ada peserta dipilih' : `${count} peserta dipilih`;
+    const label = document.getElementById('aksesCountLabel');
+    if (label) {
+        label.textContent = count === 0 ? 'Belum ada peserta dipilih' : `${count} peserta dipilih`;
+    }
 }
+
 function renderListPeserta(query = '') {
-    const q        = query.toLowerCase();
-    const filtered = SEMUA_PESERTA.filter(p =>
-        p.nama.toLowerCase().includes(q) || p.email.toLowerCase().includes(q)
+    const q = query.toLowerCase();
+    const filtered = SEMUA_PESERTA.filter(p => 
+        (p.nama && p.nama.toLowerCase().includes(q)) || 
+        (p.email && p.email.toLowerCase().includes(q))
     );
     updateCountLabel();
+    
+    const container = document.getElementById('listPesertaAkses');
+    if (!container) return;
+    
     if (filtered.length === 0) {
-        document.getElementById('listPesertaAkses').innerHTML =
-            '<p style="text-align:center;color:#94a3b8;font-size:13px;padding:2rem">Tidak ada peserta ditemukan.</p>';
+        container.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:13px;padding:2rem">Tidak ada peserta ditemukan.</p>';
         return;
     }
-    document.getElementById('listPesertaAkses').innerHTML = filtered.map(p => `
+    
+    container.innerHTML = filtered.map(p => `
         <div class="p-row">
             <div style="display:flex;align-items:center;gap:10px">
                 <div class="p-avatar">${getInitials(p.nama)}</div>
@@ -860,88 +890,204 @@ function renderListPeserta(query = '') {
         </div>
     `).join('');
 }
+
 function setSemuaAkses(val) {
     SEMUA_PESERTA.forEach(p => aksesState[p.id] = val);
-    renderListPeserta(document.getElementById('searchPesertaAkses').value);
+    renderListPeserta(document.getElementById('searchPesertaAkses')?.value || '');
 }
 
-document.getElementById('modalAkses').addEventListener('show.bs.modal', function (e) {
-    const btn    = e.relatedTarget;
-    currentAppId = btn.dataset.id;
-    document.getElementById('aksesNamaApp').textContent = btn.dataset.nama;
-    document.getElementById('searchPesertaAkses').value = '';
-    aksesState = {};
-    document.getElementById('listPesertaAkses').innerHTML = `
-        <div class="akses-loading">
-            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-            Memuat data...
-        </div>`;
-    fetch(`${BASE_URL}dashboard/pengajar/aplikasi-pendukung/akses/${currentAppId}`)
+// ============================================
+// VALIDASI FORM EDIT - CEgah error "Data tidak valid"
+// ============================================
+
+// Validasi form edit sebelum submit
+const formEdit = document.getElementById('formEdit');
+if (formEdit) {
+    formEdit.addEventListener('submit', function(e) {
+        const namaInput = document.getElementById('editNama');
+        const linkInput = document.getElementById('editLink');
+        
+        // Validasi nama tidak boleh kosong
+        if (!namaInput.value.trim()) {
+            alert('Nama aplikasi tidak boleh kosong!');
+            e.preventDefault();
+            return false;
+        }
+        
+        // Validasi link tidak boleh kosong
+        let link = linkInput.value.trim();
+        if (!link) {
+            alert('Link aplikasi tidak boleh kosong!');
+            e.preventDefault();
+            return false;
+        }
+        
+        // Format link otomatis - tambahkan https:// jika tidak ada protocol
+        if (!link.match(/^https?:\/\//i) && !link.match(/^\//)) {
+            link = 'https://' + link;
+            linkInput.value = link;
+            console.log('Link diformat menjadi:', link);
+        }
+        
+        // Validasi format URL sederhana
+        if (!link.match(/^https?:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}/) && !link.match(/^\//)) {
+            if (!confirm('Link yang dimasukkan mungkin tidak valid. Lanjutkan tetap?')) {
+                e.preventDefault();
+                return false;
+            }
+        }
+        
+        return true;
+    });
+}
+
+// Validasi form tambah
+const formTambah = document.getElementById('formTambah');
+if (formTambah) {
+    formTambah.addEventListener('submit', function(e) {
+        const namaInput = this.querySelector('input[name="nama_aplikasi"]');
+        const linkInput = this.querySelector('input[name="link_aplikasi"]');
+        
+        if (!namaInput.value.trim()) {
+            alert('Nama aplikasi tidak boleh kosong!');
+            e.preventDefault();
+            return false;
+        }
+        
+        let link = linkInput.value.trim();
+        if (!link) {
+            alert('Link aplikasi tidak boleh kosong!');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!link.match(/^http?:\/\//i) && !link.match(/^\//)) {
+            link = 'http://' + link;
+            linkInput.value = link;
+        }
+        
+        return true;
+    });
+}
+
+// Event listeners untuk modal akses
+const modalAkses = document.getElementById('modalAkses');
+if (modalAkses) {
+    modalAkses.addEventListener('show.bs.modal', function (e) {
+        const btn = e.relatedTarget;
+        if (!btn) return;
+        
+        currentAppId = btn.dataset.id;
+        const namaAppSpan = document.getElementById('aksesNamaApp');
+        if (namaAppSpan) namaAppSpan.textContent = btn.dataset.nama || '';
+        
+        const searchInput = document.getElementById('searchPesertaAkses');
+        if (searchInput) searchInput.value = '';
+        
+        aksesState = {};
+        
+        const listContainer = document.getElementById('listPesertaAkses');
+        if (listContainer) {
+            listContainer.innerHTML = `
+                <div class="akses-loading">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    Memuat data...
+                </div>`;
+        }
+        
+        fetch(`${BASE_URL}dashboard/pengajar/aplikasi-pendukung/akses/${currentAppId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.akses) {
+                    data.akses.forEach(id => aksesState[id] = true);
+                }
+                renderListPeserta();
+            })
+            .catch(() => {
+                if (listContainer) {
+                    listContainer.innerHTML = '<p style="text-align:center;color:#ef4444;font-size:13px;padding:2rem">Gagal memuat data akses.</p>';
+                }
+            });
+    });
+}
+
+const searchPeserta = document.getElementById('searchPesertaAkses');
+if (searchPeserta) {
+    searchPeserta.addEventListener('input', function () {
+        renderListPeserta(this.value);
+    });
+}
+
+const btnSimpan = document.getElementById('btnSimpanAkses');
+if (btnSimpan) {
+    btnSimpan.addEventListener('click', function () {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+        
+        const userIds = Object.keys(aksesState).filter(id => aksesState[id]).map(Number);
+        
+        fetch(`${BASE_URL}dashboard/pengajar/aplikasi-pendukung/akses/simpan`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({
+                [CSRF_TOKEN_NAME]: CSRF_HASH,
+                id_aplikasi: parseInt(currentAppId),
+                user_ids: userIds,
+            }),
+        })
         .then(r => r.json())
         .then(data => {
-            if (data.success) data.akses.forEach(id => aksesState[id] = true);
-            renderListPeserta();
+            if (data.success) {
+                if (data.csrf_hash) CSRF_HASH = data.csrf_hash;
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalAkses'));
+                if (modal) modal.hide();
+                location.reload();
+            } else {
+                alert(data.message || 'Gagal menyimpan akses.');
+            }
         })
-        .catch(() => {
-            document.getElementById('listPesertaAkses').innerHTML =
-                '<p style="text-align:center;color:#ef4444;font-size:13px;padding:2rem">Gagal memuat data akses.</p>';
+        .catch(() => alert('Terjadi kesalahan jaringan.'))
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> Simpan Akses';
         });
-});
+    });
+}
 
-document.getElementById('searchPesertaAkses').addEventListener('input', function () {
-    renderListPeserta(this.value);
-});
-
-document.getElementById('btnSimpanAkses').addEventListener('click', function () {
-    const btn     = this;
-    btn.disabled  = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
-    const userIds = Object.keys(aksesState).filter(id => aksesState[id]).map(Number);
-    fetch(`${BASE_URL}dashboard/pengajar/aplikasi-pendukung/akses/simpan`, {
-        method  : 'POST',
-        headers : { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        body    : JSON.stringify({
-            [CSRF_TOKEN_NAME] : CSRF_HASH,
-            id_aplikasi       : parseInt(currentAppId),
-            user_ids          : userIds,
-        }),
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            if (data.csrf_hash) CSRF_HASH = data.csrf_hash;
-            bootstrap.Modal.getInstance(document.getElementById('modalAkses')).hide();
-            location.reload();
-        } else {
-            alert(data.message || 'Gagal menyimpan akses.');
+const modalEditEl = document.getElementById('modalEdit');
+if (modalEditEl) {
+    modalEditEl.addEventListener('show.bs.modal', function (e) {
+        const btn = e.relatedTarget;
+        if (!btn) return;
+        
+        const editNama = document.getElementById('editNama');
+        const editLink = document.getElementById('editLink');
+        const formEditEl = document.getElementById('formEdit');
+        
+        if (editNama) editNama.value = btn.dataset.nama || '';
+        if (editLink) editLink.value = btn.dataset.link || '';
+        if (formEditEl && btn.dataset.id) {
+            formEditEl.action = `${BASE_URL}dashboard/pengajar/aplikasi-pendukung/update/${btn.dataset.id}`;
         }
-    })
-    .catch(() => alert('Terjadi kesalahan jaringan.'))
-    .finally(() => {
-        btn.disabled  = false;
-        btn.innerHTML = '<i class="bi bi-check-lg"></i> Simpan Akses';
     });
-});
+}
 
-document.getElementById('modalEdit').addEventListener('show.bs.modal', function (e) {
-    const btn = e.relatedTarget;
-    document.getElementById('editNama').value = btn.dataset.nama;
-    document.getElementById('editLink').value = btn.dataset.link;
-    document.getElementById('formEdit').action =
-        `${BASE_URL}dashboard/pengajar/aplikasi-pendukung/update/${btn.dataset.id}`;
-});
-
-document.getElementById('searchAplikasi')?.addEventListener('input', function () {
-    const q     = this.value.toLowerCase();
-    let visible = 0;
-    document.querySelectorAll('#appGrid .app-item').forEach(item => {
-        const show = item.dataset.name.includes(q);
-        item.style.display = show ? '' : 'none';
-        if (show) visible++;
+const searchAplikasi = document.getElementById('searchAplikasi');
+if (searchAplikasi) {
+    searchAplikasi.addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        let visible = 0;
+        const items = document.querySelectorAll('#appGrid .app-item');
+        items.forEach(item => {
+            const name = item.dataset.name || '';
+            const show = name.includes(q);
+            item.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        const badge = document.getElementById('countBadge');
+        if (badge) badge.textContent = visible + ' aplikasi';
     });
-    const badge = document.getElementById('countBadge');
-    if (badge) badge.textContent = visible + ' aplikasi';
-});
+}
 </script>
-
 <?= $this->endSection() ?>

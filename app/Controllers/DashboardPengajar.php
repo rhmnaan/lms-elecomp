@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
@@ -14,8 +15,9 @@ use App\Models\AplikasiPendukungModel;
 class DashboardPengajar extends BaseController
 {
     // ══════════════════════════════════════════════════════════════════════
-    //  HELPER
+    //  HELPER METHODS
     // ══════════════════════════════════════════════════════════════════════
+
     private function guardPengajar()
     {
         if (session()->get('role') !== 'pengajar') {
@@ -27,6 +29,59 @@ class DashboardPengajar extends BaseController
     private function myId(): int
     {
         return (int) session()->get('id_users');
+    }
+
+    /**
+     * Cek apakah kelas milik pengajar yang sedang login
+     */
+    private function isMyKelas(KelasModel $model, int $idKelas): bool
+    {
+        if ($idKelas <= 0) {
+            return false;
+        }
+
+        $kelas = $model
+            ->where('id_users', $this->myId())
+            ->where('id_kelas', $idKelas)
+            ->where('deleted_at IS NULL')
+            ->first();
+
+        return $kelas !== null;
+    }
+
+    /**
+     * Cek apakah modul milik pengajar yang sedang login
+     */
+    private function isMyModul(int $idModul): bool
+    {
+        if ($idModul <= 0) {
+            return false;
+        }
+
+        $db = \Config\Database::connect();
+        $count = $db->table('modul m')
+            ->join('kelas k', 'k.id_kelas = m.id_kelas')
+            ->where('m.id_modul', $idModul)
+            ->where('k.id_users', $this->myId())
+            ->where('m.deleted_at IS NULL')
+            ->where('k.deleted_at IS NULL')
+            ->countAllResults();
+
+        return $count > 0;
+    }
+
+    /**
+     * Ambil data voucher milik pengajar yang login
+     */
+    private function getMyVoucher(int $idVoucher)
+    {
+        $db = \Config\Database::connect();
+        return $db->table('voucher v')
+            ->join('kelas k', 'k.id_kelas = v.id_kelas')
+            ->where('v.id_voucher', $idVoucher)
+            ->where('k.id_users', $this->myId())
+            ->where('v.deleted_at IS NULL')
+            ->get()->getRowArray();
     }
 
     private function jsonResponse(array $data, int $status = 200)
@@ -270,10 +325,6 @@ class DashboardPengajar extends BaseController
         ]);
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    //  kelasStore — DIUBAH: upload gambar ke public/uploads/kelas/
-    //  hanya nama file yang disimpan di kolom gambar_kelas
-    // ──────────────────────────────────────────────────────────────────────
     public function kelasStore()
     {
         if ($r = $this->guardPengajar()) {
@@ -299,7 +350,6 @@ class DashboardPengajar extends BaseController
         $finalHarga = ($harga !== '') ? $harga : null;
         $finalLynkUrl = ($lynkUrl !== '') ? $lynkUrl : null;
 
-        // Handle gambar upload
         $gambarPath = null;
         if ($gambar = $this->request->getFile('gambar_kelas')) {
             if ($gambar->isValid() && !$gambar->hasMoved()) {
@@ -322,10 +372,6 @@ class DashboardPengajar extends BaseController
         return redirect()->to('/dashboard/pengajar/kelas')->with('success', 'Kelas berhasil dibuat.');
     }
 
-    // ──────────────────────────────────────────────────────────────────────
-    //  kelasUpdate — DIUBAH: upload gambar ke public/uploads/kelas/
-    //  hapus file lama otomatis jika upload gambar baru
-    // ──────────────────────────────────────────────────────────────────────
     public function kelasUpdate(int $id)
     {
         if ($r = $this->guardPengajar()) {
@@ -356,12 +402,10 @@ class DashboardPengajar extends BaseController
         $finalHarga = ($harga !== '') ? $harga : null;
         $finalLynkUrl = ($lynkUrl !== '') ? $lynkUrl : null;
 
-        // Handle gambar upload
         $gambarPath = null;
         $existing = $model->find($id);
         if ($gambar = $this->request->getFile('gambar_kelas')) {
             if ($gambar->isValid() && !$gambar->hasMoved()) {
-                // Hapus gambar lama jika ada
                 if (!empty($existing['gambar_kelas'])) {
                     $oldPath = FCPATH . 'uploads/kelas/' . $existing['gambar_kelas'];
                     if (file_exists($oldPath)) {
@@ -373,7 +417,6 @@ class DashboardPengajar extends BaseController
                 $gambarPath = $newName;
             }
         } else {
-            // Jika tidak ada gambar baru, gunakan yang lama
             $gambarPath = $existing['gambar_kelas'] ?? null;
         }
 
@@ -400,7 +443,6 @@ class DashboardPengajar extends BaseController
             return redirect()->to('/dashboard/pengajar/kelas')->with('error', 'Kelas tidak ditemukan.');
         }
 
-        // Hapus file gambar dari public jika ada
         $existing = $model->withDeleted()->find($id);
         if (!empty($existing['gambar_kelas'])) {
             $imgPath = FCPATH . 'uploads/kelas/' . $existing['gambar_kelas'];
@@ -413,6 +455,9 @@ class DashboardPengajar extends BaseController
         return redirect()->to('/dashboard/pengajar/kelas')->with('success', 'Kelas berhasil dihapus.');
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    //  TUGAS PENGUMPULAN & KOMENTAR
+    // ══════════════════════════════════════════════════════════════════════
     public function tugasPengumpulan(int $id)
     {
         if ($r = $this->guardPengajar()) {
@@ -426,7 +471,6 @@ class DashboardPengajar extends BaseController
             return redirect()->to('/dashboard/pengajar/tugas')->with('error', 'Tugas tidak ditemukan.');
         }
 
-        // Ambil nama kelas & modul untuk banner
         $db = \Config\Database::connect();
         $extra = $db->table('tugas t')
             ->select('t.*, k.nama_kelas, m.judul_modul')
@@ -435,7 +479,6 @@ class DashboardPengajar extends BaseController
             ->where('t.id_tugas', $id)
             ->get()->getRowArray();
 
-        // Semua pengumpulan untuk tugas ini (seluruh peserta, terbaru per peserta)
         $pengumpulan = $db->table('tugas_pengumpulan tp')
             ->select('tp.*, u.nama_users, u.email_users AS email')
             ->join('users u', 'u.id_users = tp.id_users')
@@ -443,7 +486,6 @@ class DashboardPengajar extends BaseController
             ->orderBy('tp.created_at', 'DESC')
             ->get()->getResultArray();
 
-        // Sertakan komentar untuk tiap pengumpulan
         $komentarModel = new TugasKomentarModel();
         foreach ($pengumpulan as &$item) {
             $item['komentar'] = $komentarModel->getByPengumpulan($item['id_pengumpulan']);
@@ -456,10 +498,6 @@ class DashboardPengajar extends BaseController
         ]);
     }
 
-    /**
-     * Simpan komentar pengajar ke pengumpulan peserta
-     * URL: dashboard/pengajar/tugas/komentar/simpan  (POST)
-     */
     public function simpanKomentar()
     {
         if ($r = $this->guardPengajar()) {
@@ -487,7 +525,7 @@ class DashboardPengajar extends BaseController
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  KELAS PESERTA — AJAX endpoints
+    //  KELAS PESERTA (AJAX)
     // ══════════════════════════════════════════════════════════════════════
     public function kelasPesertaList(int $idKelas)
     {
@@ -705,19 +743,12 @@ class DashboardPengajar extends BaseController
         }
 
         $modulModel = new ModulModel();
-        $modul = $modulModel->find($id);
-
-        if (!$modul) {
-            return redirect()->to('/dashboard/pengajar/modul')->with('error', 'Modul tidak ditemukan.');
-        }
-
         $modulModel->delete($id);
         return redirect()->to('/dashboard/pengajar/modul')->with('success', 'Modul berhasil dihapus.');
     }
 
-
     // ══════════════════════════════════════════════════════════════════════
-    //  Tugas
+    //  TUGAS
     // ══════════════════════════════════════════════════════════════════════
     public function tugas()
     {
@@ -728,7 +759,6 @@ class DashboardPengajar extends BaseController
         $db = \Config\Database::connect();
         $uid = $this->myId();
 
-        // PROGRAM
         $programList = $db->table('program p')
             ->join('kelas k', 'k.id_program = p.id_program')
             ->where('k.id_users', $uid)
@@ -736,13 +766,11 @@ class DashboardPengajar extends BaseController
             ->groupBy('p.id_program')
             ->get()->getResultArray();
 
-        // KELAS
         $kelasList = (new KelasModel())
             ->where('id_users', $uid)
             ->where('deleted_at IS NULL')
             ->findAll();
 
-        // MODUL
         $modulList = $db->table('modul m')
             ->select('m.id_modul, m.judul_modul, m.id_kelas')
             ->join('kelas k', 'k.id_kelas = m.id_kelas')
@@ -751,7 +779,6 @@ class DashboardPengajar extends BaseController
             ->orderBy('m.id_kelas, m.urutan_modul')
             ->get()->getResultArray();
 
-        // TUGAS
         $tugasList = $db->table('tugas t')
             ->select('t.*, k.nama_kelas, m.judul_modul, k.id_program')
             ->join('kelas k', 'k.id_kelas = t.id_kelas')
@@ -768,6 +795,7 @@ class DashboardPengajar extends BaseController
             'tugas' => $tugasList,
         ]);
     }
+
     public function tugasStore()
     {
         if ($r = $this->guardPengajar()) {
@@ -827,7 +855,7 @@ class DashboardPengajar extends BaseController
 
     // ══════════════════════════════════════════════════════════════════════
     //  MATERI
-    // ══════════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════════════
     private function getMateriFilterData(int $uid): array
     {
         $db = \Config\Database::connect();
@@ -981,7 +1009,6 @@ class DashboardPengajar extends BaseController
                 return redirect()->back()->withInput()
                     ->with('error', 'Ukuran file maksimal 20 MB.');
             }
-            // Hapus file lama
             if ($materi['file_materi'] && file_exists(FCPATH . $materi['file_materi'])) {
                 @unlink(FCPATH . $materi['file_materi']);
             }
@@ -1023,105 +1050,6 @@ class DashboardPengajar extends BaseController
 
         $materiModel->delete($id);
         return redirect()->to('/dashboard/pengajar/materi')->with('success', 'Materi berhasil dihapus.');
-    }
-
-    public function materiList()
-    {
-        if ($r = $this->guardPengajar()) {
-            return $r;
-        }
-
-        $db = \Config\Database::connect();
-        $uid = $this->myId();
-
-        $materi = $db->table('materi mt')
-            ->select('mt.*, m.judul_modul, k.nama_kelas, k.id_kelas, k.id_program,
-                      (mt.post_test IS NOT NULL AND mt.post_test != "") AS has_post_test,
-                      (mt.pre_test  IS NOT NULL AND mt.pre_test  != "") AS has_pre_test')
-            ->join('modul m', 'm.id_modul = mt.id_modul')
-            ->join('kelas k', 'k.id_kelas = m.id_kelas')
-            ->where('k.id_users', $uid)
-            ->where('mt.deleted_at IS NULL')
-            ->orderBy('k.id_kelas, m.urutan_modul, mt.id_materi')
-            ->get()->getResultArray();
-
-        $filter = $this->getMateriFilterData($uid);
-
-        return view('Dashboard/Pengajar/materi', [
-            'materi' => $materi,
-            'modul' => $filter['modul'],
-            'program' => $filter['program'],
-            'kelas' => $filter['kelas'],
-            'search' => null,
-            'materi_list' => $materi,
-            'total' => count($materi),
-        ]);
-    }
-
-    // ══════════════════════════════════════════════════════════════════════
-    //  VIDEO
-    // ══════════════════════════════════════════════════════════════════════
-    public function video()
-    {
-        if ($r = $this->guardPengajar()) {
-            return $r;
-        }
-
-        return view('Dashboard/Pengajar/video_upload');
-    }
-
-    public function videoList()
-    {
-        if (!session()->get('id_users')) {
-            return $this->jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
-        }
-
-        $db = \Config\Database::connect();
-        $uid = (int) session()->get('id_users');
-
-        $videos = $db->table('video_encrypted')
-            ->where('id_users', $uid)
-            ->where('deleted_at IS NULL')
-            ->orderBy('created_at', 'DESC')
-            ->get()->getResultArray();
-
-        return $this->jsonResponse(['success' => true, 'data' => $videos]);
-    }
-
-    public function videoDelete($videoId = null)
-    {
-        if (!session()->get('id_users')) {
-            return $this->jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
-        }
-
-        if (empty($videoId)) {
-            return $this->jsonResponse(['success' => false, 'message' => 'Video ID diperlukan.'], 400);
-        }
-
-        $videoId = preg_replace('/[^a-zA-Z0-9_\\-.]/', '', $videoId);
-        $db = \Config\Database::connect();
-        $uid = (int) session()->get('id_users');
-
-        $row = $db->table('video_encrypted')
-            ->where('video_id', $videoId)
-            ->where('id_users', $uid)
-            ->where('deleted_at IS NULL')
-            ->get()->getRowArray();
-
-        if (!$row) {
-            return $this->jsonResponse(['success' => false, 'message' => 'Video tidak ditemukan.'], 404);
-        }
-
-        $encFile = WRITEPATH . 'uploads/encrypted/' . $videoId . '.enc';
-        if (file_exists($encFile)) {
-            @unlink($encFile);
-        }
-
-        $db->table('video_encrypted')
-            ->where('video_id', $videoId)
-            ->update(['deleted_at' => date('Y-m-d H:i:s')]);
-
-        return $this->jsonResponse(['success' => true, 'message' => 'Video berhasil dihapus.']);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -1202,7 +1130,7 @@ class DashboardPengajar extends BaseController
             'tanggal_mulai' => 'required|valid_date[Y-m-d]',
             'tanggal_berakhir' => 'required|valid_date[Y-m-d]',
             'durasi_hari' => 'permit_empty|is_natural_no_zero',
-            'durasi_tugas' => 'permit_empty|is_natural_no_zero', // ✅
+            'durasi_tugas' => 'permit_empty|is_natural_no_zero',
             'kuota' => 'permit_empty|is_natural',
             'deskripsi' => 'permit_empty|max_length[500]',
         ];
@@ -1220,15 +1148,12 @@ class DashboardPengajar extends BaseController
         $kuota = $this->request->getPost('kuota');
         $mulai = $this->request->getPost('tanggal_mulai');
         $durasi = $this->request->getPost('durasi_hari');
-        $durasiTugas = $this->request->getPost('durasi_tugas'); // ✅
+        $durasiTugas = $this->request->getPost('durasi_tugas');
 
         $tanggalBerakhir = $this->request->getPost('tanggal_berakhir');
 
         if ($durasi) {
-            $tanggalBerakhir = date(
-                'Y-m-d',
-                strtotime("+{$durasi} days", strtotime($mulai))
-            );
+            $tanggalBerakhir = date('Y-m-d', strtotime("+{$durasi} days", strtotime($mulai)));
         }
 
         (new VoucherModel())->insert([
@@ -1239,7 +1164,7 @@ class DashboardPengajar extends BaseController
             'tanggal_mulai' => $mulai,
             'tanggal_berakhir' => $tanggalBerakhir,
             'durasi_hari' => $durasi ?: null,
-            'durasi_tugas' => $durasiTugas ?: null, // ✅
+            'durasi_tugas' => $durasiTugas ?: null,
             'kuota' => $kuota !== '' ? (int) $kuota : null,
             'is_active' => 1,
             'created_at' => date('Y-m-d H:i:s'),
@@ -1262,15 +1187,12 @@ class DashboardPengajar extends BaseController
 
         $mulai = $this->request->getPost('tanggal_mulai');
         $durasi = $this->request->getPost('durasi_hari');
-        $durasiTugas = $this->request->getPost('durasi_tugas'); // ✅
+        $durasiTugas = $this->request->getPost('durasi_tugas');
 
         $tanggalBerakhir = $this->request->getPost('tanggal_berakhir');
 
         if ($durasi) {
-            $tanggalBerakhir = date(
-                'Y-m-d',
-                strtotime("+{$durasi} days", strtotime($mulai))
-            );
+            $tanggalBerakhir = date('Y-m-d', strtotime("+{$durasi} days", strtotime($mulai)));
         }
 
         $rules = [
@@ -1278,7 +1200,7 @@ class DashboardPengajar extends BaseController
             'tanggal_mulai' => 'required|valid_date[Y-m-d]',
             'tanggal_berakhir' => 'required|valid_date[Y-m-d]',
             'durasi_hari' => 'permit_empty|is_natural_no_zero',
-            'durasi_tugas' => 'permit_empty|is_natural_no_zero', // ✅
+            'durasi_tugas' => 'permit_empty|is_natural_no_zero',
             'kuota' => 'permit_empty|is_natural',
             'deskripsi' => 'permit_empty|max_length[500]',
         ];
@@ -1296,7 +1218,7 @@ class DashboardPengajar extends BaseController
             'tanggal_mulai' => $mulai,
             'tanggal_berakhir' => $tanggalBerakhir,
             'durasi_hari' => $durasi ?: null,
-            'durasi_tugas' => $durasiTugas ?: null, // ✅
+            'durasi_tugas' => $durasiTugas ?: null,
             'kuota' => $kuota !== '' ? (int) $kuota : null,
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
@@ -1424,7 +1346,6 @@ class DashboardPengajar extends BaseController
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
-            // ✅ Simpan deadline tugas jika durasi_tugas diisi
             if ($durasiTugas > 0) {
                 $deadlineTugas = date('Y-m-d H:i:s', strtotime($tanggalMulai . " +{$durasiTugas} days"));
                 $tugasDeadlineModel = new \App\Models\TugasDeadlinePesertaModel();
@@ -1489,137 +1410,118 @@ class DashboardPengajar extends BaseController
         return redirect()->to('/dashboard/pengajar/profil')->with('success', 'Profil berhasil diperbarui.');
     }
 
-// ══════════════════════════════════════════════════════════════════════
-//  PESERTA
-// ══════════════════════════════════════════════════════════════════════
-public function peserta()
-{
-    if ($r = $this->guardPengajar()) {
-        return $r;
-    }
+    // ══════════════════════════════════════════════════════════════════════
+    //  PESERTA & APLIKASI PENDUKUNG
+    // ══════════════════════════════════════════════════════════════════════
+    public function peserta()
+    {
+        if ($r = $this->guardPengajar()) {
+            return $r;
+        }
 
-    $pengajarId = $this->myId();
-    $db         = \Config\Database::connect();
+        $pengajarId = $this->myId();
+        $db         = \Config\Database::connect();
 
-    $peserta = $db->table('kelas_peserta kp')
-        ->select('
-            u.id_users,
-            u.nama_users,
-            u.email_users,
-            k.id_kelas,
-            k.nama_kelas,
-            kp.tanggal_daftar_kelas_peserta
-        ')
-        ->join('kelas k', 'k.id_kelas = kp.id_kelas')
-        ->join('users u', 'u.id_users = kp.id_users')
-        ->where('k.id_users', $pengajarId)
-        ->where('u.role_users', 'peserta')
-        ->orderBy('k.id_kelas, u.nama_users')
-        ->get()
-        ->getResultObject();
+        $peserta = $db->table('kelas_peserta kp')
+            ->select('
+                u.id_users,
+                u.nama_users,
+                u.email_users,
+                k.id_kelas,
+                k.nama_kelas,
+                kp.tanggal_daftar_kelas_peserta
+            ')
+            ->join('kelas k', 'k.id_kelas = kp.id_kelas')
+            ->join('users u', 'u.id_users = kp.id_users')
+            ->where('k.id_users', $pengajarId)
+            ->where('u.role_users', 'peserta')
+            ->orderBy('k.id_kelas, u.nama_users')
+            ->get()
+            ->getResultObject();
 
-    $kelasList = $db->table('kelas k')
-        ->select('k.id_kelas, k.nama_kelas, COUNT(kp.id_kelas_peserta) AS jumlah_peserta')
-        ->join('kelas_peserta kp', 'kp.id_kelas = k.id_kelas', 'left')
-        ->join('users u', "u.id_users = kp.id_users AND u.role_users = 'peserta'", 'left')
-        ->where('k.id_users', $pengajarId)
-        ->groupBy('k.id_kelas')
-        ->orderBy('k.nama_kelas')
-        ->get()->getResultObject();
+        $kelasList = $db->table('kelas k')
+            ->select('k.id_kelas, k.nama_kelas, COUNT(kp.id_kelas_peserta) AS jumlah_peserta')
+            ->join('kelas_peserta kp', 'kp.id_kelas = k.id_kelas', 'left')
+            ->join('users u', "u.id_users = kp.id_users AND u.role_users = 'peserta'", 'left')
+            ->where('k.id_users', $pengajarId)
+            ->groupBy('k.id_kelas')
+            ->orderBy('k.nama_kelas')
+            ->get()->getResultObject();
 
-    $totalPeserta = count((array) $peserta);
+        $totalPeserta = count((array) $peserta);
 
-    $aplikasiSemua = $db->table('aplikasi_pendukung')
-        ->orderBy('nama_aplikasi')
-        ->get()
-        ->getResultArray();
+        $aplikasiSemua = $db->table('aplikasi_pendukung')
+            ->orderBy('nama_aplikasi')
+            ->get()
+            ->getResultArray();
 
-    return view('Dashboard/Pengajar/peserta', [
-        'title'         => 'Daftar Peserta',
-        'peserta'       => $peserta,
-        'kelasList'     => $kelasList,
-        'totalPeserta'  => $totalPeserta,
-        'aplikasiSemua' => $aplikasiSemua,
-    ]);
-}
-
-// ══════════════════════════════════════════════════════════════════════
-//  AKSES APLIKASI — GET (dari sisi peserta, return id_aplikasi)
-//  GET /dashboard/pengajar/peserta/akses/(:num)
-// ══════════════════════════════════════════════════════════════════════
-public function pesertaGetAkses(int $idUsers)
-{
-    if ($r = $this->guardPengajar()) return $r;
-
-    $db  = \Config\Database::connect();
-    $ids = $db->table('aplikasi_user')
-        ->select('id_aplikasi')
-        ->where('id_users', $idUsers)
-        ->get()
-        ->getResultArray();
-
-    return $this->response->setJSON([
-        'success' => true,
-        'akses'   => array_map(fn($r) => (int) $r['id_aplikasi'], $ids),
-    ]);
-}
-
-// ══════════════════════════════════════════════════════════════════════
-//  AKSES APLIKASI — SIMPAN (dari sisi peserta, simpan id_aplikasi)
-//  POST /dashboard/pengajar/peserta/akses/simpan
-// ══════════════════════════════════════════════════════════════════════
-public function pesertaSimpanAkses()
-{
-    if ($r = $this->guardPengajar()) return $r;
-
-    $json    = $this->request->getJSON(true);
-    $idUsers = (int) ($json['id_users'] ?? 0);
-    $newIds  = array_map('intval', $json['aplikasi'] ?? []);
-
-    if ($idUsers <= 0) {
-        return $this->response->setJSON([
-            'success' => false,
-            'message' => 'User tidak valid.',
+        return view('Dashboard/Pengajar/peserta', [
+            'title'         => 'Daftar Peserta',
+            'peserta'       => $peserta,
+            'kelasList'     => $kelasList,
+            'totalPeserta'  => $totalPeserta,
+            'aplikasiSemua' => $aplikasiSemua,
         ]);
     }
 
-    $db = \Config\Database::connect();
-    $db->table('aplikasi_user')->where('id_users', $idUsers)->delete();
+    public function pesertaGetAkses(int $idUsers)
+    {
+        if ($r = $this->guardPengajar()) return $r;
 
-    if (!empty($newIds)) {
-        $db->table('aplikasi_user')->insertBatch(
-            array_map(fn($id) => ['id_aplikasi' => $id, 'id_users' => $idUsers], $newIds)
-        );
+        $db  = \Config\Database::connect();
+        $ids = $db->table('aplikasi_user')
+            ->select('id_aplikasi')
+            ->where('id_users', $idUsers)
+            ->get()
+            ->getResultArray();
+
+        return $this->response->setJSON([
+            'success' => true,
+            'akses'   => array_map(fn($r) => (int) $r['id_aplikasi'], $ids),
+        ]);
     }
 
-    return $this->response->setJSON([
-        'success'   => true,
-        'message'   => 'Akses berhasil disimpan.',
-        'csrf_hash' => csrf_hash(),
-    ]);
-}
+    public function pesertaSimpanAkses()
+    {
+        if ($r = $this->guardPengajar()) return $r;
 
-// ══════════════════════════════════════════════════════════════════════
-//  APLIKASI PENDUKUNG — HALAMAN
-//  GET /dashboard/pengajar/aplikasi-pendukung
-// ══════════════════════════════════════════════════════════════════════
-public function aplikasiPendukung()
+        $json    = $this->request->getJSON(true);
+        $idUsers = (int) ($json['id_users'] ?? 0);
+        $newIds  = array_map('intval', $json['aplikasi'] ?? []);
+
+        if ($idUsers <= 0) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'User tidak valid.',
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+        $db->table('aplikasi_user')->where('id_users', $idUsers)->delete();
+
+        if (!empty($newIds)) {
+            $db->table('aplikasi_user')->insertBatch(
+                array_map(fn($id) => ['id_aplikasi' => $id, 'id_users' => $idUsers], $newIds)
+            );
+        }
+
+        return $this->response->setJSON([
+            'success'   => true,
+            'message'   => 'Akses berhasil disimpan.',
+            'csrf_hash' => csrf_hash(),
+        ]);
+    }
+
+   public function aplikasiPendukung()
 {
     if ($r = $this->guardPengajar()) return $r;
 
-    $pengajarId = $this->myId();
-    $db         = \Config\Database::connect();
+    $pengajarId = session()->get('id_users');
 
-    // Semua aplikasi + jumlah peserta yang punya akses
-    $aplikasi = $db->table('aplikasi_pendukung ap')
-        ->select('ap.*, COUNT(au.id_users) AS akses_count')
-        ->join('aplikasi_user au', 'au.id_aplikasi = ap.id_aplikasi', 'left')
-        ->groupBy('ap.id_aplikasi')
-        ->orderBy('ap.nama_aplikasi')
-        ->get()
-        ->getResultArray();
+    dd($pengajarId);
 
-    // Semua peserta milik pengajar ini (dari semua kelas)
+    $db = \Config\Database::connect();
+
     $peserta = $db->table('kelas_peserta kp')
         ->select('DISTINCT u.id_users, u.nama_users AS nama, u.email_users AS email')
         ->join('kelas k', 'k.id_kelas = kp.id_kelas')
@@ -1631,122 +1533,99 @@ public function aplikasiPendukung()
         ->getResultArray();
 
     return view('Dashboard/Pengajar/aplikasi_pendukung', [
-        'aplikasi' => $aplikasi,
-        'peserta'  => $peserta,
+        'peserta' => $peserta,
     ]);
 }
 
-// ══════════════════════════════════════════════════════════════════════
-//  APLIKASI PENDUKUNG — STORE
-//  POST /dashboard/pengajar/aplikasi-pendukung/store
-// ══════════════════════════════════════════════════════════════════════
-public function aplikasiStore()
-{
-    if ($r = $this->guardPengajar()) return $r;
+    public function aplikasiStore()
+    {
+        if ($r = $this->guardPengajar()) return $r;
 
-    $db = \Config\Database::connect();
-    $db->table('aplikasi_pendukung')->insert([
-        'nama_aplikasi' => $this->request->getPost('nama_aplikasi'),
-        'link_aplikasi' => $this->request->getPost('link_aplikasi'),
-    ]);
-
-    return redirect()->to(base_url('dashboard/pengajar/aplikasi-pendukung'))
-        ->with('success', 'Aplikasi berhasil ditambahkan.');
-}
-
-// ══════════════════════════════════════════════════════════════════════
-//  APLIKASI PENDUKUNG — UPDATE
-//  POST /dashboard/pengajar/aplikasi-pendukung/update/(:num)
-// ══════════════════════════════════════════════════════════════════════
-public function aplikasiUpdate(int $id)
-{
-    if ($r = $this->guardPengajar()) return $r;
-
-    $db = \Config\Database::connect();
-    $db->table('aplikasi_pendukung')
-        ->where('id_aplikasi', $id)
-        ->update([
+        $db = \Config\Database::connect();
+        $db->table('aplikasi_pendukung')->insert([
             'nama_aplikasi' => $this->request->getPost('nama_aplikasi'),
             'link_aplikasi' => $this->request->getPost('link_aplikasi'),
         ]);
 
-    return redirect()->to(base_url('dashboard/pengajar/aplikasi-pendukung'))
-        ->with('success', 'Aplikasi berhasil diperbarui.');
-}
+        return redirect()->to(base_url('dashboard/pengajar/aplikasi-pendukung'))
+            ->with('success', 'Aplikasi berhasil ditambahkan.');
+    }
 
-// ══════════════════════════════════════════════════════════════════════
-//  APLIKASI PENDUKUNG — DELETE
-//  POST /dashboard/pengajar/aplikasi-pendukung/delete/(:num)
-// ══════════════════════════════════════════════════════════════════════
-public function aplikasiDelete(int $id)
-{
-    if ($r = $this->guardPengajar()) return $r;
+    public function aplikasiUpdate(int $id)
+    {
+        if ($r = $this->guardPengajar()) return $r;
 
-    $db = \Config\Database::connect();
+        $db = \Config\Database::connect();
+        $db->table('aplikasi_pendukung')
+            ->where('id_aplikasi', $id)
+            ->update([
+                'nama_aplikasi' => $this->request->getPost('nama_aplikasi'),
+                'link_aplikasi' => $this->request->getPost('link_aplikasi'),
+            ]);
 
-    // Hapus semua akses terkait dulu
-    $db->table('aplikasi_user')->where('id_aplikasi', $id)->delete();
+        return redirect()->to(base_url('dashboard/pengajar/aplikasi-pendukung'))
+            ->with('success', 'Aplikasi berhasil diperbarui.');
+    }
 
-    // Hapus aplikasinya
-    $db->table('aplikasi_pendukung')->where('id_aplikasi', $id)->delete();
+    public function aplikasiDelete(int $id)
+    {
+        if ($r = $this->guardPengajar()) return $r;
 
-    return redirect()->to(base_url('dashboard/pengajar/aplikasi-pendukung'))
-        ->with('success', 'Aplikasi berhasil dihapus.');
-}
+        $db = \Config\Database::connect();
+        $db->table('aplikasi_user')->where('id_aplikasi', $id)->delete();
+        $db->table('aplikasi_pendukung')->where('id_aplikasi', $id)->delete();
 
-// ══════════════════════════════════════════════════════════════════════
-//  AKSES APLIKASI — GET (dari sisi aplikasi, return id_users)
-//  GET /dashboard/pengajar/aplikasi-pendukung/akses/(:num)
-// ══════════════════════════════════════════════════════════════════════
-public function aplikasiGetAkses(int $idAplikasi)
-{
-    if ($r = $this->guardPengajar()) return $r;
+        return redirect()->to(base_url('dashboard/pengajar/aplikasi-pendukung'))
+            ->with('success', 'Aplikasi berhasil dihapus.');
+    }
 
-    $db  = \Config\Database::connect();
-    $ids = $db->table('aplikasi_user')
-        ->select('id_users')
-        ->where('id_aplikasi', $idAplikasi)
-        ->get()
-        ->getResultArray();
+    public function aplikasiGetAkses(int $idAplikasi)
+    {
+        if ($r = $this->guardPengajar()) return $r;
 
-    return $this->response->setJSON([
-        'success' => true,
-        'akses'   => array_map(fn($r) => (int) $r['id_users'], $ids),
-    ]);
-}
+        $db  = \Config\Database::connect();
+        $ids = $db->table('aplikasi_user')
+            ->select('id_users')
+            ->where('id_aplikasi', $idAplikasi)
+            ->get()
+            ->getResultArray();
 
-// ══════════════════════════════════════════════════════════════════════
-//  AKSES APLIKASI — SIMPAN (dari sisi aplikasi, simpan id_users)
-//  POST /dashboard/pengajar/aplikasi-pendukung/akses/simpan
-// ══════════════════════════════════════════════════════════════════════
-public function aplikasiSimpanAkses()
-{
-    if ($r = $this->guardPengajar()) return $r;
-
-    $json       = $this->request->getJSON(true);
-    $idAplikasi = (int) ($json['id_aplikasi'] ?? 0);
-    $userIds    = array_map('intval', $json['user_ids'] ?? []);
-
-    if ($idAplikasi <= 0) {
         return $this->response->setJSON([
-            'success' => false,
-            'message' => 'Aplikasi tidak valid.',
+            'success' => true,
+            'akses'   => array_map(fn($r) => (int) $r['id_users'], $ids),
         ]);
     }
 
-    $db = \Config\Database::connect();
-    $db->table('aplikasi_user')->where('id_aplikasi', $idAplikasi)->delete();
+    public function aplikasiSimpanAkses()
+    {
+        if ($r = $this->guardPengajar()) return $r;
 
-    if (!empty($userIds)) {
-        $db->table('aplikasi_user')->insertBatch(
-            array_map(fn($id) => ['id_aplikasi' => $idAplikasi, 'id_users' => $id], $userIds)
-        );
+        $json       = $this->request->getJSON(true);
+        $idAplikasi = (int) ($json['id_aplikasi'] ?? 0);
+        $userIds    = array_map('intval', $json['user_ids'] ?? []);
+
+        if ($idAplikasi <= 0) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Aplikasi tidak valid.',
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+        $db->table('aplikasi_user')->where('id_aplikasi', $idAplikasi)->delete();
+
+        if (!empty($userIds)) {
+            $db->table('aplikasi_user')->insertBatch(
+                array_map(fn($id) => ['id_aplikasi' => $idAplikasi, 'id_users' => $id], $userIds)
+            );
+        }
+
+        return $this->response->setJSON([
+            'success'   => true,
+            'message'   => 'Akses berhasil disimpan.',
+            'csrf_hash' => csrf_hash(),
+        ]);
     }
 
-    return $this->response->setJSON([
-        'success'   => true,
-        'message'   => 'Akses berhasil disimpan.',
-        'csrf_hash' => csrf_hash(),
-    ]);
-}
+    // Note: Method buildQuizJsonFor() kemungkinan ada di BaseController
 }
