@@ -94,13 +94,18 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('kalkulator/cif/save-all', 'KalkulatorPeserta::saveAllCif');
         $routes->get('kalkulator/cif/delete/(:num)', 'KalkulatorPeserta::deleteCif/$1');
 
+        // ── Riset Pasar Ekspor ──
+        $routes->get('riset-ekspor',              'RisetEkspor::index');
+        $routes->post('riset-ekspor/simpan',      'RisetEkspor::simpan');
+        $routes->get('riset-ekspor/hasil',        'RisetEkspor::hasil');
+        $routes->post('riset-ekspor/hapus/(:num)', 'RisetEkspor::hapus/$1');
+
         // APLIKASI PENDUKUNG PESERTA
         $routes->get('aplikasi-pendukung', 'DashboardPeserta::aplikasiPendukung');
         $routes->get('aplikasi', 'DashboardPeserta::aplikasi');
 
         $routes->get('content-plan', 'Peserta\Aplikasi\ContentPlan::index');
 
-        // Semua POST berada di sub-group 'content-plan'
         // ── Content Plan ──────────────────────────────────────────
         $routes->group('content-plan', ['namespace' => 'App\Controllers\Peserta\Aplikasi'], function ($routes) {
 
