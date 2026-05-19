@@ -1,5 +1,5 @@
-<?= $this->extend('Dashboard/Peserta/layout_peserta') ?>
-<?= $this->section('content') ?>
+<?php echo $this->extend('Dashboard/Peserta/layout_peserta') ?>
+<?php echo $this->section('content') ?>
 
 <style>
 :root {
@@ -23,7 +23,6 @@
     --cp-sh-md: 0 8px 32px rgba(0, 0, 0, .12);
 }
 
-/* STATS */
 .cp-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -82,7 +81,6 @@
     font-weight: 500
 }
 
-/* CARD */
 .cp-card {
     background: var(--cp-white);
     border-radius: 20px;
@@ -91,7 +89,6 @@
     overflow: hidden
 }
 
-/* TOOLBAR */
 .cp-toolbar {
     display: flex;
     align-items: center;
@@ -161,7 +158,6 @@
     border-color: var(--cp-blue)
 }
 
-/* BUTTONS */
 .cpb {
     padding: 7px 14px;
     border: none;
@@ -221,7 +217,6 @@
     border-radius: 7px
 }
 
-/* MANAGE ROW */
 .cp-manage {
     display: flex;
     align-items: center;
@@ -241,7 +236,6 @@
     margin-right: 4px
 }
 
-/* LEGEND */
 .cp-legend {
     display: flex;
     align-items: center;
@@ -274,7 +268,11 @@
     background: var(--cp-orange)
 }
 
-/* VIEW TOGGLE */
+/* TAMBAH INI setelah .cp-leg-dot.draft */
+.cp-leg-dot.acc {
+    background: #1d4ed8;
+}
+
 .cp-toggle-wrap {
     display: flex;
     gap: 3px;
@@ -302,7 +300,6 @@
     box-shadow: 0 1px 4px rgba(0, 0, 0, .08)
 }
 
-/* CALENDAR */
 .cp-cal-head {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -348,8 +345,21 @@
     pointer-events: none
 }
 
+.cp-day.past {
+    background: #fafbfd;
+    cursor: pointer
+}
+
+.cp-day.past .cp-day-num {
+    color: var(--cp-muted)
+}
+
 .cp-day:not(.empty):hover {
     background: var(--cp-blue-l)
+}
+
+.cp-day.past:hover {
+    background: #f1f2f6
 }
 
 .cp-day.today .cp-day-num {
@@ -360,6 +370,10 @@
 
 .cp-day.we .cp-day-num {
     color: #ef4444
+}
+
+.cp-day.past.we .cp-day-num {
+    color: #fca5a5
 }
 
 .cp-day-num {
@@ -403,6 +417,16 @@
     color: #c2410c
 }
 
+/* TAMBAH INI setelah .cp-epill.draft */
+.cp-epill.acc {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.cp-epill.past-pill {
+    opacity: .55
+}
+
 .cp-more {
     font-size: 10px;
     font-weight: 700;
@@ -423,11 +447,24 @@
     transition: opacity .15s
 }
 
-.cp-day:not(.empty):hover .cp-add-hint {
+.cp-day:not(.empty):not(.past):hover .cp-add-hint {
     opacity: 1
 }
 
-/* LIST */
+.cp-lock-hint {
+    position: absolute;
+    bottom: 5px;
+    right: 6px;
+    font-size: 9px;
+    color: var(--cp-muted);
+    opacity: 0;
+    transition: opacity .15s
+}
+
+.cp-day.past:hover .cp-lock-hint {
+    opacity: 1
+}
+
 .cp-ltbl {
     width: 100%;
     border-collapse: collapse
@@ -461,7 +498,6 @@
     background: var(--cp-blue-l)
 }
 
-/* BADGE */
 .cp-badge {
     font-size: 11px;
     font-weight: 700;
@@ -479,7 +515,11 @@
     color: var(--cp-orange)
 }
 
-/* MODAL */
+.cp-badge.acc {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
 .cp-back {
     position: fixed;
     inset: 0;
@@ -576,7 +616,6 @@
     }
 }
 
-/* FORM */
 .cp-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -652,7 +691,6 @@ textarea.cp-inp {
     color: var(--cp-blue)
 }
 
-/* DETAIL */
 .cp-det-empty {
     text-align: center;
     padding: 24px 0;
@@ -722,7 +760,6 @@ textarea.cp-inp {
     font-weight: 500
 }
 
-/* MASTER TABLE */
 .cp-mtbl {
     width: 100%;
     border-collapse: collapse
@@ -783,19 +820,6 @@ textarea.cp-inp {
     background: var(--cp-muted)
 }
 
-/* SECTION DIVIDER in master */
-.cp-sect {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--cp-muted);
-    letter-spacing: .6px;
-    text-transform: uppercase;
-    padding: 10px 0 6px;
-    border-bottom: 1px solid var(--cp-border);
-    margin-bottom: 10px
-}
-
-/* CONFIRM */
 .cp-conf-icon {
     width: 52px;
     height: 52px;
@@ -809,7 +833,6 @@ textarea.cp-inp {
     margin: 0 auto 14px
 }
 
-/* TOAST */
 #cp-toast {
     position: fixed;
     bottom: 24px;
@@ -855,7 +878,68 @@ textarea.cp-inp {
     }
 }
 
-/* RESPONSIVE */
+.cp-asset-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px
+}
+
+.cp-asset-plat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--cp-blue);
+    margin: 10px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px
+}
+
+.cp-asset-add {
+    font-size: 11.5px;
+    color: var(--cp-blue);
+    background: var(--cp-blue-l);
+    border: 1.5px solid var(--cp-blue-m);
+    border-radius: 7px;
+    padding: 3px 9px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px
+}
+
+.cp-asset-add:hover {
+    opacity: .8
+}
+
+.cp-asset-del {
+    width: 26px;
+    height: 26px;
+    background: var(--cp-red-l);
+    color: var(--cp-red);
+    border: 1.5px solid #fecaca;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0
+}
+
+.cp-asset-del:hover {
+    background: #fee2e2
+}
+
+/* past row di list */
+.cp-ltbl tr.past-row td {
+    color: var(--cp-muted)
+}
+
 @media(max-width:768px) {
     .cp-stats {
         grid-template-columns: 1fr 1fr
@@ -893,75 +977,15 @@ textarea.cp-inp {
         grid-template-columns: 1fr
     }
 }
-
-.cp-asset-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 6px;
-}
-
-.cp-asset-plat-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--cp-blue);
-    margin: 10px 0 4px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.cp-asset-add {
-    font-size: 11.5px;
-    color: var(--cp-blue);
-    background: var(--cp-blue-l);
-    border: 1.5px solid var(--cp-blue-m);
-    border-radius: 7px;
-    padding: 3px 9px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-}
-
-.cp-asset-add:hover {
-    opacity: .8;
-}
-
-.cp-asset-del {
-    width: 26px;
-    height: 26px;
-    background: var(--cp-red-l);
-    color: var(--cp-red);
-    border: 1.5px solid #fecaca;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    flex-shrink: 0;
-}
-
-.cp-asset-del:hover {
-    background: #fee2e2;
-}
 </style>
 
-<!-- ═══════════════════════════════════
-     DATA BRIDGE PHP → JS
-════════════════════════════════════ -->
+<!-- DATA BRIDGE PHP → JS -->
 <script>
-/* Base URL includes the full prefix so routes match */
-const BASE_URL = '<?= rtrim(base_url(), '/') ?>/dashboard/peserta/content-plan';
-const CSRF_NAME = '<?= csrf_token() ?>';
-let CSRF_HASH = '<?= csrf_hash() ?>';
+const BASE_URL = '<?php echo rtrim(base_url(), '/') ?>/dashboard/peserta/content-plan';
+const CSRF_NAME = '<?php echo csrf_token() ?>';
+let CSRF_HASH = '<?php echo csrf_hash() ?>';
 
-const RAW_CONTENTS = <?= json_encode(array_map(fn($c) => [
+const RAW_CONTENTS = <?php echo json_encode(array_map(fn($c) => [
     'id'          => $c['id'],
     'judul'       => $c['judul_konten'],
     'deskripsi'   => $c['deskripsi'] ?? '',
@@ -972,33 +996,30 @@ const RAW_CONTENTS = <?= json_encode(array_map(fn($c) => [
     'type'        => $c['nama_type']     ?? '-',
     'platform'    => $c['platform']      ?? '-',
     'platform_ids'=> array_map('intval', $c['platform_ids'] ?? []),
-    'assets'      => $c['assets']        ?? [],   // ← tambah ini
+    'assets'      => !empty($c['assets']) ? (object)$c['assets'] : new stdClass(),
     'status'      => strtolower($c['status']),
 ], $contents ?? [])) ?>;
 
-const RAW_PLATFORMS = <?= json_encode(array_map(fn($p) => [
+const RAW_PLATFORMS = <?php echo json_encode(array_map(fn($p) => [
     'id'           => (int)$p['id'],
     'nama_platform'=> $p['nama_platform'],
     'status'       => $p['status'] ?? 'aktif',
 ], $platforms ?? [])) ?>;
 
-const RAW_JENIS = <?= json_encode(array_map(fn($j) => [
+const RAW_JENIS = <?php echo json_encode(array_map(fn($j) => [
     'id'         => (int)$j['id'],
     'nama_jenis' => $j['nama_jenis'],
     'keterangan' => $j['keterangan'] ?? '',
 ], $jenis ?? [])) ?>;
 
-const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
+const RAW_TYPES = <?php echo json_encode(array_map(fn($t) => [
     'id'       => (int)$t['id'],
     'nama_type'=> $t['nama_type'],
 ], $contentTypes ?? [])) ?>;
 </script>
 
-<!-- ═══════════════════════════════════
-     HTML
-════════════════════════════════════ -->
+<!-- HTML -->
 <div class="container-fluid">
-
     <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
         <div>
             <h4 class="fw-bold mb-0" style="font-size:20px;letter-spacing:-.3px">📅 Content Plan</h4>
@@ -1033,8 +1054,6 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
 
     <!-- CALENDAR CARD -->
     <div class="cp-card">
-
-        <!-- Toolbar -->
         <div class="cp-toolbar">
             <div class="cp-cal-nav">
                 <button class="cp-nav-btn" id="cp-prev"><i class="bi bi-chevron-left"></i></button>
@@ -1043,9 +1062,9 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
             </div>
             <div class="cp-filters">
                 <select class="cp-sel" id="cp-msel">
-                    <?php foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i=>$m): ?>
-                    <option value="<?=$i?>"><?=$m?></option>
-                    <?php endforeach ?>
+                    <?php foreach (['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'] as $i => $m): ?>
+                    <option value="<?php echo $i?>"><?php echo $m?></option>
+                    <?php endforeach?>
                 </select>
                 <select class="cp-sel" id="cp-ysel" style="width:86px"></select>
                 <button class="cpb cpb-out" id="cp-today"><i class="bi bi-calendar-check"></i> Hari Ini</button>
@@ -1056,26 +1075,29 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
             </div>
         </div>
 
-        <!-- Manage Row -->
         <div class="cp-manage">
             <span class="cp-manage-lbl">Kelola:</span>
             <button class="cpb cpb-out cpb-sm" onclick="openMaster('platform')"><i class="bi bi-display"></i>
                 Platform</button>
-            <button class="cpb cpb-out cpb-sm" onclick="openMaster('jenis')"><i class="bi bi-tag"></i> Jenis
-                Konten</button>
-            <button class="cpb cpb-out cpb-sm" onclick="openMaster('type')"><i class="bi bi-layers"></i> Tipe
-                Konten</button>
+            <button class="cpb cpb-out cpb-sm" onclick="openMaster('jenis')"><i class="bi bi-tag"></i>Content
+                Type</button>
+            <button class="cpb cpb-out cpb-sm" onclick="openMaster('type')"><i class="bi bi-layers"></i> Content
+                Pillar</button>
         </div>
 
-        <!-- Legend -->
         <div class="cp-legend">
             <div class="cp-leg-item"><span class="cp-leg-dot published"></span> Published</div>
+            <div class="cp-leg-item"><span class="cp-leg-dot acc"></span> Acc</div>
             <div class="cp-leg-item"><span class="cp-leg-dot draft"></span> Draft</div>
-            <span style="margin-left:auto;font-size:12px;color:var(--cp-muted)"><i class="bi bi-hand-index"></i> Klik
-                tanggal untuk lihat / tambah konten</span>
+            <div class="cp-leg-item" style="margin-left:6px">
+                <i class="bi bi-lock-fill" style="font-size:9px;color:var(--cp-muted)"></i>
+                <span style="font-size:11px;color:var(--cp-muted)">Tanggal lampau (read-only)</span>
+            </div>
+            <span style="margin-left:auto;font-size:12px;color:var(--cp-muted)">
+                <i class="bi bi-hand-index"></i> Klik tanggal untuk lihat / tambah konten
+            </span>
         </div>
 
-        <!-- Calendar -->
         <div id="v-cal">
             <div class="cp-cal-head">
                 <div class="cp-cal-head-cell">MIN</div>
@@ -1089,7 +1111,6 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
             <div class="cp-cal-body" id="cal-body"></div>
         </div>
 
-        <!-- List -->
         <div id="v-lst" style="display:none">
             <table class="cp-ltbl">
                 <thead>
@@ -1108,7 +1129,7 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
     </div>
 </div>
 
-<!-- ═══ MODAL: DETAIL TANGGAL ═══ -->
+<!-- MODAL: DETAIL TANGGAL -->
 <div class="cp-back" id="m-detail">
     <div class="cp-modal" style="max-width:560px">
         <div class="cp-mh">
@@ -1121,12 +1142,14 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
         <div class="cp-mb" id="m-det-body"></div>
         <div class="cp-mf">
             <button class="cpb cpb-out" onclick="cls('m-detail')">Tutup</button>
-            <button class="cpb cpb-pri" onclick="openAdd(curDate)"><i class="bi bi-plus-lg"></i> Tambah Konten</button>
+            <button class="cpb cpb-pri" id="m-det-add-btn" onclick="openAdd(curDate)">
+                <i class="bi bi-plus-lg"></i> Tambah Konten
+            </button>
         </div>
     </div>
 </div>
 
-<!-- ═══ MODAL: FORM ADD/EDIT ═══ -->
+<!-- MODAL: FORM ADD/EDIT -->
 <div class="cp-back" id="m-form">
     <div class="cp-modal" style="max-width:620px">
         <div class="cp-mh">
@@ -1153,41 +1176,42 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
             </div>
             <div class="cp-row">
                 <div class="cp-field">
-                    <label>Tanggal Publish <span style="color:var(--cp-red)">*</span></label>
+                    <label>Tanggal Publish <span style="color:var(--cp-muted);font-size:11px;font-weight:500">(otomatis
+                            dari kalender)</span></label>
                     <input type="date" class="cp-inp" id="f-tgl">
                 </div>
                 <div class="cp-field">
                     <label>Status <span style="color:var(--cp-red)">*</span></label>
+                    <!-- GANTI JADI -->
                     <select class="cp-inp" id="f-status">
-                        <option value="draft">Draft</option>
+                        <option value="draft">Draft (Perencanaan)</option>
+                        <option value="acc">Acc (Disetujui)</option>
                         <option value="published">Published</option>
                     </select>
                 </div>
             </div>
             <div class="cp-row">
                 <div class="cp-field">
-                    <label>Jenis Konten</label>
+                    <label>Content Type</label>
                     <select class="cp-inp" id="f-jenis">
-                        <option value="">-- Pilih Jenis --</option>
+                        <option value="">-- Pilih Content Type --</option>
                     </select>
                 </div>
                 <div class="cp-field">
-                    <label>Tipe Konten</label>
+                    <label>Content Pillar</label>
                     <select class="cp-inp" id="f-type">
-                        <option value="">-- Pilih Tipe --</option>
+                        <option value="">-- Pilih Content Pillar --</option>
                     </select>
                 </div>
             </div>
             <div class="cp-field">
                 <label>Platform</label>
                 <div class="cp-plat-wrap" id="f-plats">
-                    <span style="font-size:12px;color:var(--cp-muted)">Belum ada platform — tambahkan di menu Kelola
-                        Platform</span>
+                    <span style="font-size:12px;color:var(--cp-muted)">Belum ada platform</span>
                 </div>
             </div>
-            <!-- Asset / Link per Platform -->
             <div class="cp-field" style="margin-top:14px">
-                <label>Link / Asset per Platform</label>
+                <label>Link Desain</label>
                 <div id="f-assets-wrap">
                     <span style="font-size:12px;color:var(--cp-muted)">Pilih platform terlebih dahulu</span>
                 </div>
@@ -1201,7 +1225,7 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
     </div>
 </div>
 
-<!-- ═══ MODAL: MASTER DATA (Platform / Jenis / Tipe) ═══ -->
+<!-- MODAL: MASTER DATA -->
 <div class="cp-back" id="m-master">
     <div class="cp-modal" style="max-width:520px">
         <div class="cp-mh">
@@ -1212,9 +1236,7 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
             <button class="cp-mcls" onclick="cls('m-master')"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="cp-mb">
-            <!-- existing items table -->
             <div id="mm-tbl"></div>
-            <!-- add new form -->
             <div style="margin-top:16px;padding-top:14px;border-top:1.5px solid var(--cp-border)">
                 <div class="cp-madd-label">Tambah Baru</div>
                 <div class="cp-madd">
@@ -1235,7 +1257,7 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
     </div>
 </div>
 
-<!-- ═══ MODAL: CONFIRM DELETE ═══ -->
+<!-- MODAL: CONFIRM DELETE -->
 <div class="cp-back" id="m-confirm">
     <div class="cp-modal" style="max-width:360px">
         <div class="cp-mb" style="text-align:center;padding:28px 24px">
@@ -1254,9 +1276,6 @@ const RAW_TYPES = <?= json_encode(array_map(fn($t) => [
 
 <div id="cp-toast"></div>
 
-<!-- ═══════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════ -->
 <script>
 /* ══ GLOBALS ══ */
 const MN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober',
@@ -1274,10 +1293,15 @@ let LP = [...RAW_PLATFORMS];
 let LJ = [...RAW_JENIS];
 let LT = [...RAW_TYPES];
 
-/* ══ API HELPER ══
-   BASE_URL sudah = .../dashboard/peserta/content-plan
-   tinggal append: /store, /master/jenis/store, dst
-*/
+/* ══ HELPER: apakah tanggal sudah lewat (sebelum hari ini)? ══
+   Hari ini sendiri masih BISA diaksi (isPast → false).
+   Kemarin ke belakang → true → read-only.                       */
+function isPast(ds) {
+    if (!ds) return false;
+    return ds < TODAY.toISOString().slice(0, 10); // string compare YYYY-MM-DD
+}
+
+/* ══ API ══ */
 function hdr() {
     return {
         'Content-Type': 'application/json',
@@ -1301,7 +1325,7 @@ function toast(msg, type = 'success') {
     el.className = 'cp-toast ' + type;
     el.innerHTML = `<i class="bi bi-${type==='success'?'check-circle':'exclamation-circle'}-fill"></i> ${msg}`;
     document.getElementById('cp-toast').appendChild(el);
-    setTimeout(() => el.remove(), 3000);
+    setTimeout(() => el.remove(), 3200);
 }
 
 /* ══ MODAL ══ */
@@ -1323,7 +1347,7 @@ document.addEventListener('keydown', e => {
 
 /* ══ HELPERS ══ */
 function esc(s) {
-    if (!s || s === '-') return s || '-';
+    if (!s || s === '-') return s || '';
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
@@ -1341,6 +1365,12 @@ function isOk(d) {
     return d && (d.status === 'ok' || d.success === true);
 }
 
+function statusClass(s) {
+    if (s === 'published') return 'published';
+    if (s === 'acc') return 'acc';
+    return 'draft';
+}
+
 function buildMap() {
     const m = {};
     LC.forEach(c => {
@@ -1356,24 +1386,23 @@ function buildMap() {
 function rfStats() {
     document.getElementById('s-total').textContent = LC.length;
     document.getElementById('s-draft').textContent = LC.filter(c => c.status === 'draft').length;
-    document.getElementById('s-pub').textContent = LC.filter(c => ['publish', 'published'].includes(c.status)).length;
+    document.getElementById('s-pub').textContent = LC.filter(c => c.status === 'published').length;
 }
 
-/* ══ YEAR SELECT ══ */
+/* ══ YEAR SELECT — hanya tahun sekarang s/d +3 ══ */
 function buildYears() {
     const sel = document.getElementById('cp-ysel');
-    const ys = new Set([TODAY.getFullYear()]);
-    LC.forEach(c => {
-        if (c.tanggal) ys.add(new Date(c.tanggal).getFullYear());
-    });
-    for (let y = TODAY.getFullYear() - 2; y <= TODAY.getFullYear() + 3; y++) ys.add(y);
     sel.innerHTML = '';
-    [...ys].sort().forEach(y => {
+    const start = TODAY.getFullYear();
+    const end = start + 3; // contoh: 2026–2029
+    for (let y = start; y <= end; y++) {
         const o = document.createElement('option');
         o.value = y;
         o.textContent = y;
         sel.appendChild(o);
-    });
+    }
+    // Jika cY di luar rentang, paksa ke start
+    if (cY < start || cY > end) cY = start;
     sel.value = cY;
 }
 
@@ -1385,13 +1414,14 @@ function syncSel() {
 /* ══ RENDER CALENDAR ══ */
 function rfCal() {
     const map = buildMap();
+    const todS = TODAY.toISOString().slice(0, 10);
     document.getElementById('cp-mlbl').textContent = MN[cM] + ' ' + cY;
     syncSel();
     const body = document.getElementById('cal-body');
     body.innerHTML = '';
     const first = new Date(cY, cM, 1).getDay();
     const days = new Date(cY, cM + 1, 0).getDate();
-    const todS = TODAY.toISOString().slice(0, 10);
+
     for (let i = 0; i < first; i++) {
         const c = document.createElement('div');
         c.className = 'cp-day empty';
@@ -1401,19 +1431,26 @@ function rfCal() {
         const ds = cY + '-' + String(cM + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
         const evs = map[ds] || [];
         const dow = new Date(cY, cM, d).getDay();
+        const past = isPast(ds);
+
         const cell = document.createElement('div');
-        cell.className = 'cp-day' + (ds === todS ? ' today' : '') + (dow === 6 ? ' we' : '') + (evs.length ? ' has-c' :
-            '');
+        cell.className = 'cp-day' +
+            (ds === todS ? ' today' : '') +
+            (dow === 6 ? ' we' : '') +
+            (past ? ' past' : '') +
+            (evs.length ? ' has-c' : '');
+
         const num = document.createElement('div');
         num.className = 'cp-day-num';
         num.textContent = d;
         cell.appendChild(num);
+
         if (evs.length) {
             const ew = document.createElement('div');
             ew.className = 'cp-day-evs';
             evs.slice(0, 2).forEach(ev => {
                 const p = document.createElement('div');
-                p.className = 'cp-epill ' + (ev.status === 'published' ? 'published' : 'draft');
+                p.className = 'cp-epill ' + statusClass(ev.status) + (past ? ' past-pill' : '');
                 p.textContent = ev.judul;
                 ew.appendChild(p);
             });
@@ -1425,10 +1462,20 @@ function rfCal() {
             }
             cell.appendChild(ew);
         }
-        const hint = document.createElement('span');
-        hint.className = 'cp-add-hint';
-        hint.innerHTML = '<i class="bi bi-plus-circle-fill"></i>';
-        cell.appendChild(hint);
+
+        if (past) {
+            /* kunci — klik tetap bisa LIHAT, tapi tidak bisa aksi */
+            const lh = document.createElement('span');
+            lh.className = 'cp-lock-hint';
+            lh.innerHTML = '<i class="bi bi-lock-fill"></i> read-only';
+            cell.appendChild(lh);
+        } else {
+            const hint = document.createElement('span');
+            hint.className = 'cp-add-hint';
+            hint.innerHTML = '<i class="bi bi-plus-circle-fill"></i>';
+            cell.appendChild(hint);
+        }
+
         cell.addEventListener('click', () => openDay(ds));
         body.appendChild(cell);
     }
@@ -1443,65 +1490,119 @@ function rfList() {
         const dt = new Date(c.tanggal);
         return dt.getFullYear() === cY && dt.getMonth() === cM;
     }).sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+
     if (!fl.length) {
         tb.innerHTML =
             '<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--cp-muted)">Tidak ada konten di bulan ini</td></tr>';
         return;
     }
     fl.forEach(c => {
-        const sc = c.status === 'published' ? 'published' : 'draft';
+        const sc = statusClass(c.status);
+        const past = isPast(c.tanggal ? c.tanggal.slice(0, 10) : '');
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td style="font-weight:600">${esc(c.judul)}</td><td>${esc(c.platform)}</td><td>${esc(c.jenis)}</td><td>${fdt(c.tanggal)}</td>
-        <td><span class="cp-badge ${sc}">${cap(c.status)}</span></td>
-        <td><div style="display:flex;gap:5px">
-            <button class="cpb cpb-out cpb-sm" onclick="openEdit(${c.id})"><i class="bi bi-pencil"></i></button>
-            <button class="cpb cpb-dan cpb-sm" onclick="confirmDel(${c.id},'${esc(c.judul)}','content')"><i class="bi bi-trash3"></i></button>
-        </div></td>`;
+        if (past) tr.classList.add('past-row');
+
+        const aksiHtml = past ?
+            `<span style="font-size:11px;color:var(--cp-muted);padding:4px 8px;background:var(--cp-bg);border-radius:6px;display:inline-flex;align-items:center;gap:4px">
+                   <i class="bi bi-lock-fill" style="font-size:10px"></i> Read-only
+               </span>` :
+            `<div style="display:flex;gap:5px">
+                   <button class="cpb cpb-out cpb-sm" onclick="openEdit(${c.id})"><i class="bi bi-pencil"></i></button>
+                   <button class="cpb cpb-dan cpb-sm" onclick="confirmDel(${c.id},'${esc(c.judul)}','content')"><i class="bi bi-trash3"></i></button>
+               </div>`;
+
+        tr.innerHTML = `
+            <td style="font-weight:600">${esc(c.judul)}</td>
+            <td>${esc(c.platform)}</td>
+            <td>${esc(c.jenis)}</td>
+            <td>${fdt(c.tanggal)}</td>
+            <td><span class="cp-badge ${sc}">${cap(c.status)}</span></td>
+            <td>${aksiHtml}</td>`;
         tb.appendChild(tr);
     });
 }
 
+/* ══ OPEN DAY ══ */
 function openDay(ds) {
     curDate = ds;
     const items = buildMap()[ds] || [];
     const dt = new Date(ds + 'T00:00:00');
+    const past = isPast(ds);
+
     document.getElementById('m-det-title').textContent =
         DN[dt.getDay()] + ', ' + dt.getDate() + ' ' + MN[dt.getMonth()] + ' ' + dt.getFullYear();
     document.getElementById('m-det-sub').textContent =
-        items.length ? items.length + ' konten dijadwalkan' : 'Belum ada konten';
+        (past ? '🔒 Read-only · ' : '') +
+        (items.length ? items.length + ' konten dijadwalkan' : 'Belum ada konten');
+
+    /* Tombol Tambah Konten di footer — nonaktif jika lampau */
+    const addBtn = document.getElementById('m-det-add-btn');
+    addBtn.disabled = past;
+    addBtn.title = past ? 'Tidak dapat menambah konten di tanggal yang sudah lewat' : '';
+    addBtn.style.opacity = past ? '.4' : '';
+    addBtn.style.cursor = past ? 'not-allowed' : '';
+    addBtn.style.pointerEvents = past ? 'none' : '';
 
     const body = document.getElementById('m-det-body');
     body.innerHTML = '';
 
     if (!items.length) {
         body.innerHTML = `<div class="cp-det-empty">
-            <i class="bi bi-calendar-plus"></i>
-            <div style="font-weight:600">Belum ada konten untuk tanggal ini</div>
-            <div style="font-size:12px;margin-top:4px;color:var(--cp-muted)">Klik "Tambah Konten" untuk membuat jadwal baru</div>
+            <i class="bi bi-${past?'lock':'calendar-plus'}"></i>
+            <div style="font-weight:600">${past?'Tidak ada konten di tanggal ini':'Belum ada konten untuk tanggal ini'}</div>
+            <div style="font-size:12px;margin-top:4px;color:var(--cp-muted)">
+                ${past?'Tanggal sudah lewat — tidak dapat ditambahkan konten baru.':'Klik "Tambah Konten" untuk membuat jadwal baru'}
+            </div>
         </div>`;
     } else {
         items.forEach(c => {
-            const sc = c.status === 'published' ? 'published' : 'draft';
+            const sc = statusClass(c.status);
+            console.log('=== KONTEN:', c.judul);
+            console.log('assets raw:', c.assets);
+            console.log('assets type:', typeof c.assets);
+            console.log('assets keys:', c.assets ? Object.keys(c.assets) : 'NULL');
 
-            // Render asset links per platform
+            /* Asset links — skip nilai null / kosong / hanya "-" */
+            // BARU
             let assetHtml = '';
-            if (c.assets && Object.keys(c.assets).length) {
-                Object.entries(c.assets).forEach(([pid, arr]) => {
-                    const plat = LP.find(p => p.id == pid);
-                    const platName = plat ? plat.nama_platform : 'Platform';
-                    arr.forEach(a => {
-                        if (!a.asset_link) return;
-                        assetHtml += `<a href="${esc(a.asset_link)}" target="_blank" rel="noopener"
-                            style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;
-                                   color:var(--cp-blue);background:var(--cp-blue-l);
-                                   border:1.5px solid var(--cp-blue-m);border-radius:7px;
-                                   padding:3px 9px;margin:3px 4px 0 0;text-decoration:none;font-weight:600">
-                            <i class="bi bi-link-45deg"></i>
-                            ${esc(a.asset_nama || platName)}
-                        </a>`;
-                    });
+            const assetSrc = c.assets || {};
+            Object.entries(assetSrc).forEach(([pid, arr]) => {
+                if (!Array.isArray(arr)) return;
+                const plat = LP.find(p => p.id == pid);
+                const platName = plat ? plat.nama_platform : 'Platform';
+                arr.forEach(a => {
+                    // support dua kemungkinan nama field: asset_link / link
+                    const link = (a.asset_link || a.link || '').toString().trim();
+                    const nama = (a.asset_nama || a.nama || '').toString().trim();
+                    if (!link || link === '-') return;
+                    const label = (nama && nama !== '-') ? nama : platName;
+                    const safeHref = link.replace(/"/g, '%22');
+                    assetHtml += `<a href="${safeHref}" target="_blank" rel="noopener"
+                        style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;
+                            color:var(--cp-blue);background:var(--cp-blue-l);
+                            border:1.5px solid var(--cp-blue-m);border-radius:7px;
+                            padding:3px 9px;margin:3px 4px 0 0;text-decoration:none;font-weight:600">
+                        <i class="bi bi-link-45deg"></i>${esc(label)}
+                    </a>`;
                 });
-            }
+            });
+
+            /* Tombol aksi — nonaktif jika lampau, tapi asset link tetap tampil */
+            const editBtn = past ?
+                `<button class="cpb cpb-out cpb-sm" disabled title="Tanggal sudah lewat" style="opacity:.35;cursor:not-allowed">
+                    <i class="bi bi-pencil"></i>
+                </button>` :
+                `<button class="cpb cpb-out cpb-sm" onclick="openEdit(${c.id})">
+                    <i class="bi bi-pencil"></i>
+                </button>`;
+
+            const delBtn = past ?
+                `<button class="cpb cpb-dan cpb-sm" disabled title="Tanggal sudah lewat" style="opacity:.35;cursor:not-allowed">
+                    <i class="bi bi-trash3"></i>
+                </button>` :
+                `<button class="cpb cpb-dan cpb-sm" onclick="confirmDel(${c.id},'${esc(c.judul)}','content')">
+                    <i class="bi bi-trash3"></i>
+                </button>`;
 
             const div = document.createElement('div');
             div.className = 'cp-ci';
@@ -1510,75 +1611,61 @@ function openDay(ds) {
                 <div class="cp-ci-title">${esc(c.judul)}</div>
                 <div class="cp-ci-acts">
                     <span class="cp-badge ${sc}">${cap(c.status)}</span>
-                    <button class="cpb cpb-out cpb-sm" onclick="openEdit(${c.id})"><i class="bi bi-pencil"></i></button>
-                    <button class="cpb cpb-dan cpb-sm" onclick="confirmDel(${c.id},'${esc(c.judul)}','content')"><i class="bi bi-trash3"></i></button>
+                    ${past ? `<span style="font-size:10px;color:var(--cp-muted);background:var(--cp-bg);border:1px solid var(--cp-border);border-radius:6px;padding:3px 7px;display:inline-flex;align-items:center;gap:3px"><i class="bi bi-lock-fill" style="font-size:9px"></i> Read-only</span>` : ''}
+                    ${editBtn}
+                    ${delBtn}
                 </div>
             </div>
-            ${c.deskripsi ? `<p style="font-size:12px;color:var(--cp-muted);margin:0 0 7px;line-height:1.55">
-                ${esc(c.deskripsi.slice(0, 120))}${c.deskripsi.length > 120 ? '…' : ''}</p>` : ''}
+            ${c.deskripsi ? `<p style="font-size:12px;color:var(--cp-muted);margin:0 0 7px;line-height:1.55">${esc(c.deskripsi.slice(0,120))}${c.deskripsi.length>120?'…':''}</p>` : ''}
             <div class="cp-meta-wrap">
                 <span class="cp-meta-tag"><i class="bi bi-display"></i>${esc(c.platform)}</span>
                 <span class="cp-meta-tag"><i class="bi bi-tag"></i>${esc(c.jenis)}</span>
                 ${c.type && c.type !== '-' ? `<span class="cp-meta-tag"><i class="bi bi-layers"></i>${esc(c.type)}</span>` : ''}
             </div>
             ${assetHtml ? `<div style="margin-top:8px">${assetHtml}</div>` : ''}`;
-
             body.appendChild(div);
         });
     }
     opn('m-detail');
 }
 
-/* ══ ASSET BUILDER ══
-   Dipanggil setelah platform checkbox berubah atau saat open edit.
-   Membuat baris input nama+link per platform yang dicentang.
-*/
+/* ══ ASSET BUILDER ══ */
 function rfAssets(selectedPlatformIds = [], existingAssets = {}) {
     const wrap = document.getElementById('f-assets-wrap');
     wrap.innerHTML = '';
-
     const aktif = LP.filter(p => p.status === 'aktif' && selectedPlatformIds.includes(p.id));
-
     if (!aktif.length) {
         wrap.innerHTML = '<span style="font-size:12px;color:var(--cp-muted)">Pilih platform terlebih dahulu</span>';
         return;
     }
-
     aktif.forEach(p => {
         const key = String(p.id);
         const existing = existingAssets[key] || [];
-
         const section = document.createElement('div');
         section.dataset.pid = p.id;
-
         const lbl = document.createElement('div');
         lbl.className = 'cp-asset-plat-label';
         lbl.innerHTML = `<i class="bi bi-display"></i> ${esc(p.nama_platform)}`;
         section.appendChild(lbl);
-
         const rowsWrap = document.createElement('div');
         rowsWrap.className = 'cp-asset-rows';
         section.appendChild(rowsWrap);
-
-        // Tambah existing rows
         if (existing.length) {
             existing.forEach(a => addAssetRow(rowsWrap, a.asset_nama, a.asset_link, a.keterangan));
         } else {
-            addAssetRow(rowsWrap); // satu row kosong
+            addAssetRow(rowsWrap);
         }
-
         const addBtn = document.createElement('button');
         addBtn.type = 'button';
         addBtn.className = 'cp-asset-add';
         addBtn.innerHTML = '<i class="bi bi-plus-lg"></i> Tambah Link';
         addBtn.addEventListener('click', () => addAssetRow(rowsWrap));
         section.appendChild(addBtn);
-
         wrap.appendChild(section);
     });
 }
 
-function addAssetRow(container, nama = '', link = '', ket = '') {
+function addAssetRow(container, nama = '', link = '') {
     const row = document.createElement('div');
     row.className = 'cp-asset-row';
     row.innerHTML = `
@@ -1587,22 +1674,23 @@ function addAssetRow(container, nama = '', link = '', ket = '') {
         <button type="button" class="cp-asset-del" title="Hapus baris"><i class="bi bi-x-lg"></i></button>`;
     row.querySelector('.cp-asset-del').addEventListener('click', () => {
         row.remove();
-        // Jika tidak ada row tersisa, tambah satu kosong
         if (!container.querySelectorAll('.cp-asset-row').length) addAssetRow(container);
     });
     container.appendChild(row);
 }
 
-/* Baca semua asset dari form → { "platform_id": [{nama,link,ket},...], ... } */
+/* Kumpulkan asset — skip baris kosong / hanya "-" */
 function collectAssets() {
     const result = {};
     document.querySelectorAll('#f-assets-wrap > div[data-pid]').forEach(section => {
         const pid = section.dataset.pid;
         const rows = [];
         section.querySelectorAll('.cp-asset-row').forEach(row => {
-            const nama = row.querySelector('[data-field="nama"]').value.trim();
-            const link = row.querySelector('[data-field="link"]').value.trim();
-            if (nama || link) rows.push({
+            const nama = (row.querySelector('[data-field="nama"]').value || '').trim();
+            const link = (row.querySelector('[data-field="link"]').value || '').trim();
+            // skip jika keduanya kosong atau hanya "-"
+            if ((!nama || nama === '-') && (!link || link === '-')) return;
+            rows.push({
                 nama,
                 link,
                 ket: ''
@@ -1615,45 +1703,43 @@ function collectAssets() {
 
 /* ══ FILL FORM DROPDOWNS ══ */
 function fillForm(selectedPlatIds = [], existingAssets = {}) {
-    // Jenis
     const js = document.getElementById('f-jenis');
-    js.innerHTML = '<option value="">-- Pilih Jenis --</option>';
+    js.innerHTML = '<option value="">-- Pilih Content Type --</option>';
     LJ.forEach(j => {
         const o = document.createElement('option');
         o.value = j.id;
         o.textContent = j.nama_jenis;
         js.appendChild(o);
     });
-    // Type
+
     const ts = document.getElementById('f-type');
-    ts.innerHTML = '<option value="">-- Pilih Tipe --</option>';
+    ts.innerHTML = '<option value="">-- Pilih Content Pillar --</option>';
     LT.forEach(t => {
         const o = document.createElement('option');
         o.value = t.id;
         o.textContent = t.nama_type;
         ts.appendChild(o);
     });
-    // Platform checkboxes
+
     const pw = document.getElementById('f-plats');
     pw.innerHTML = '';
     const aktif = LP.filter(p => p.status === 'aktif');
     if (!aktif.length) {
         pw.innerHTML = '<span style="font-size:12px;color:var(--cp-muted)">Belum ada platform aktif</span>';
-        rfAssets([], {});
+        rfAssets([]);
         return;
     }
     aktif.forEach(p => {
         const lbl = document.createElement('label');
         lbl.className = 'cp-plat-lbl' + (selectedPlatIds.includes(p.id) ? ' on' : '');
         lbl.innerHTML =
-            `<input type="checkbox" value="${p.id}"${selectedPlatIds.includes(p.id) ? ' checked' : ''}> <i class="bi bi-display" style="font-size:11px"></i> ${esc(p.nama_platform)}`;
+            `<input type="checkbox" value="${p.id}"${selectedPlatIds.includes(p.id)?' checked':''}> <i class="bi bi-display" style="font-size:11px"></i> ${esc(p.nama_platform)}`;
         lbl.querySelector('input').addEventListener('change', function() {
             lbl.classList.toggle('on', this.checked);
             rfAssets(getCheckedPlatIds(), collectAssets());
         });
         pw.appendChild(lbl);
     });
-    // Render asset sesuai platform terpilih
     rfAssets(selectedPlatIds, existingAssets);
 }
 
@@ -1661,9 +1747,13 @@ function getCheckedPlatIds() {
     return [...document.querySelectorAll('#f-plats input:checked')].map(i => parseInt(i.value));
 }
 
-
 /* ══ OPEN ADD ══ */
 function openAdd(ds) {
+    /* Guard: tidak bisa tambah ke tanggal lampau */
+    if (isPast(ds)) {
+        toast('Tidak dapat menambah konten di tanggal yang sudah lewat', 'error');
+        return;
+    }
     cls('m-detail');
     fillForm([], {});
     document.getElementById('f-id').value = '';
@@ -1675,29 +1765,37 @@ function openAdd(ds) {
     document.getElementById('f-status').value = 'draft';
     document.getElementById('f-jenis').value = '';
     document.getElementById('f-type').value = '';
+    /* Batasi input tanggal: min = hari ini */
+    const tglInput = document.getElementById('f-tgl');
+    tglInput.setAttribute('readonly', true);
+    tglInput.style.background = 'var(--cp-bg)';
+    tglInput.style.cursor = 'not-allowed';
+    tglInput.removeAttribute('min');
     opn('m-form');
 }
-
 
 /* ══ OPEN EDIT ══ */
 function openEdit(id) {
     const c = LC.find(x => x.id == id);
     if (!c) return;
+    const ds = c.tanggal ? c.tanggal.slice(0, 10) : '';
+    /* Guard: tidak bisa edit konten di tanggal lampau */
+    if (isPast(ds)) {
+        toast('Tidak dapat mengedit konten di tanggal yang sudah lewat', 'error');
+        return;
+    }
     cls('m-detail');
 
-    // assets dari LC sudah berbentuk { "pid": [{asset_nama, asset_link, ...}] }
-    // perlu dikonversi ke key string dan field nama/link
     const existingAssets = {};
     if (c.assets) {
         Object.entries(c.assets).forEach(([pid, arr]) => {
             existingAssets[pid] = arr.map(a => ({
                 asset_nama: a.asset_nama,
                 asset_link: a.asset_link,
-                keterangan: a.keterangan,
+                keterangan: a.keterangan
             }));
         });
     }
-
     fillForm(c.platform_ids, existingAssets);
 
     document.getElementById('f-id').value = c.id;
@@ -1705,10 +1803,11 @@ function openEdit(id) {
     document.getElementById('mf-sub').textContent = 'Tanggal: ' + fdt(c.tanggal);
     document.getElementById('f-judul').value = c.judul;
     document.getElementById('f-desk').value = c.deskripsi || '';
-    document.getElementById('f-tgl').value = c.tanggal ? c.tanggal.slice(0, 10) : '';
+    document.getElementById('f-tgl').value = ds;
     document.getElementById('f-status').value = c.status;
     document.getElementById('f-jenis').value = c.jenis_id || '';
     document.getElementById('f-type').value = c.type_id || '';
+    document.getElementById('f-tgl').min = TODAY.toISOString().slice(0, 10);
     opn('m-form');
 }
 
@@ -1722,7 +1821,7 @@ async function submitForm() {
     const jenisId = document.getElementById('f-jenis').value;
     const typeId = document.getElementById('f-type').value;
     const platIds = getCheckedPlatIds();
-    const assets = collectAssets(); // ← kumpulkan asset
+    const assets = collectAssets();
 
     if (!judul) {
         toast('Judul wajib diisi', 'error');
@@ -1730,6 +1829,11 @@ async function submitForm() {
     }
     if (!tgl) {
         toast('Tanggal wajib diisi', 'error');
+        return;
+    }
+    /* Guard sisi client: jangan submit ke tanggal lampau */
+    if (isPast(tgl)) {
+        toast('Tidak dapat menyimpan ke tanggal yang sudah lewat', 'error');
         return;
     }
 
@@ -1747,25 +1851,19 @@ async function submitForm() {
             jenis_konten_id: jenisId || null,
             content_type_id: typeId || null,
             platform_ids: platIds,
-            assets, // ← kirim ke controller
+            assets,
         });
-
         if (isOk(d)) {
             const newId = d.id || id;
-
-            // Rebuild asset map untuk local state
             const assetMap = {};
             platIds.forEach(pid => {
                 const key = String(pid);
-                if (assets[key]) {
-                    assetMap[pid] = assets[key].map(a => ({
-                        asset_nama: a.nama,
-                        asset_link: a.link,
-                        keterangan: a.ket || '',
-                    }));
-                }
+                if (assets[key]) assetMap[pid] = assets[key].map(a => ({
+                    asset_nama: a.nama,
+                    asset_link: a.link,
+                    keterangan: ''
+                }));
             });
-
             const obj = {
                 id: parseInt(newId),
                 judul,
@@ -1781,14 +1879,12 @@ async function submitForm() {
                 platform: platIds.map(pid => LP.find(p => p.id == pid)?.nama_platform || '').filter(Boolean)
                     .join(', ') || '-',
             };
-
             if (id) {
                 const i = LC.findIndex(c => c.id == id);
                 if (i > -1) LC[i] = obj;
             } else {
                 LC.push(obj);
             }
-
             toast(id ? 'Konten berhasil diperbarui' : 'Konten berhasil ditambahkan');
             cls('m-form');
             rfCal();
@@ -1806,7 +1902,6 @@ async function submitForm() {
     btn.innerHTML = '<i class="bi bi-check-lg"></i> Simpan';
 }
 
-
 /* ══ CONFIRM DELETE ══ */
 function confirmDel(id, label, type) {
     document.getElementById('mc-title').textContent = 'Hapus "' + label + '"?';
@@ -1815,7 +1910,17 @@ function confirmDel(id, label, type) {
     btn.onclick = type === 'content' ? () => doDeleteContent(id) : () => doDeleteMaster(id, type);
     opn('m-confirm');
 }
+
 async function doDeleteContent(id) {
+    /* Guard sisi client */
+    const c = LC.find(x => x.id == id);
+    const ds = c && c.tanggal ? c.tanggal.slice(0, 10) : '';
+    if (isPast(ds)) {
+        toast('Tidak dapat menghapus konten di tanggal yang sudah lewat', 'error');
+        cls('m-confirm');
+        return;
+    }
+
     const btn = document.getElementById('mc-ok');
     btn.disabled = true;
     btn.textContent = 'Menghapus...';
@@ -1836,9 +1941,7 @@ async function doDeleteContent(id) {
     btn.textContent = 'Hapus';
 }
 
-/* ══════════════════════════════════════
-   MASTER DATA — Platform / Jenis / Tipe
-══════════════════════════════════════ */
+/* ══ MASTER DATA ══ */
 const MCFG = {
     platform: {
         title: 'Platform',
@@ -1848,27 +1951,27 @@ const MCFG = {
         deleteUrl: '/master/platform/delete/',
         key: 'nama_platform',
         hasStatus: true,
-        hasKet: false,
+        hasKet: false
     },
     jenis: {
-        title: 'Jenis Konten',
-        sub: 'Kelola kategori jenis konten',
+        title: 'Content Type',
+        sub: 'Kelola kategori Content Type',
         storeUrl: '/master/jenis/store',
         updateUrl: '/master/jenis/update/',
         deleteUrl: '/master/jenis/delete/',
         key: 'nama_jenis',
         hasStatus: false,
-        hasKet: true,
+        hasKet: true
     },
     type: {
-        title: 'Tipe Konten',
-        sub: 'Kelola format/tipe konten',
+        title: 'Content Pillar',
+        sub: 'Kelola kategori Content Pillar',
         storeUrl: '/master/type/store',
         updateUrl: '/master/type/update/',
         deleteUrl: '/master/type/delete/',
         key: 'nama_type',
         hasStatus: false,
-        hasKet: false,
+        hasKet: false
     },
 };
 
@@ -1883,7 +1986,6 @@ function openMaster(t) {
     document.getElementById('mm-sub').textContent = cfg.sub;
     document.getElementById('mm-new').value = '';
     document.getElementById('mm-ket').value = '';
-    // show/hide extra fields
     document.getElementById('mm-ket').style.display = cfg.hasKet ? '' : 'none';
     document.getElementById('mm-status').style.display = cfg.hasStatus ? '' : 'none';
     rfMaster(t);
@@ -1911,13 +2013,11 @@ function rfMaster(t) {
         </td>
         ${cfg.hasKet?`<td style="font-size:12px;color:var(--cp-muted);max-width:140px"><span class="text-truncate d-block">${esc(item.keterangan)||'-'}</span></td>`:''}
         ${cfg.hasStatus?`<td><span class="cp-sdot ${item.status||'aktif'}"></span>${cap(item.status||'aktif')}</td>`:''}
-        <td>
-            <div style="display:flex;gap:4px">
-                <button class="cpb cpb-out cpb-sm" id="mb-e-${item.id}" title="Edit" onclick="startME(${item.id},'${t}')"><i class="bi bi-pencil"></i></button>
-                <button class="cpb cpb-suc cpb-sm" id="mb-s-${item.id}" title="Simpan" style="display:none" onclick="saveME(${item.id},'${t}')"><i class="bi bi-check-lg"></i></button>
-                <button class="cpb cpb-dan cpb-sm" title="Hapus" onclick="confirmDelMaster(${item.id},'${nameVal}','${t}')"><i class="bi bi-trash3"></i></button>
-            </div>
-        </td></tr>`;
+        <td><div style="display:flex;gap:4px">
+            <button class="cpb cpb-out cpb-sm" id="mb-e-${item.id}" onclick="startME(${item.id},'${t}')"><i class="bi bi-pencil"></i></button>
+            <button class="cpb cpb-suc cpb-sm" id="mb-s-${item.id}" style="display:none" onclick="saveME(${item.id},'${t}')"><i class="bi bi-check-lg"></i></button>
+            <button class="cpb cpb-dan cpb-sm" onclick="confirmDelMaster(${item.id},'${nameVal}','${t}')"><i class="bi bi-trash3"></i></button>
+        </div></td></tr>`;
     });
     h += '</tbody></table>';
     wrap.innerHTML = h;
@@ -1930,7 +2030,6 @@ function startME(id, t) {
     document.getElementById('mb-s-' + id).style.display = '';
     document.getElementById('me-' + id).focus();
 }
-
 async function saveME(id, t) {
     const val = document.getElementById('me-' + id).value.trim();
     if (!val) {
@@ -1938,7 +2037,6 @@ async function saveME(id, t) {
         return;
     }
     const cfg = MCFG[t];
-    // payload: jenis pakai 'nama', platform/type pakai 'name'
     const payload = t === 'jenis' ? {
         nama: val
     } : {
@@ -1951,7 +2049,7 @@ async function saveME(id, t) {
             if (item) item[cfg.key] = val;
             toast('Berhasil diperbarui');
             rfMaster(t);
-            fillForm(); // refresh dropdown form
+            fillForm();
         } else toast(d.message || 'Gagal', 'error');
     } catch (e) {
         toast('Koneksi gagal', 'error');
@@ -1959,7 +2057,7 @@ async function saveME(id, t) {
 }
 
 function confirmDelMaster(id, label, t) {
-    confirmDel(id, label, t); // reuse confirm modal, pass type
+    confirmDel(id, label, t);
 }
 async function doDeleteMaster(id, t) {
     const btn = document.getElementById('mc-ok');
@@ -1975,7 +2073,7 @@ async function doDeleteMaster(id, t) {
             toast('Berhasil dihapus');
             cls('m-confirm');
             rfMaster(t);
-            fillForm(); // refresh dropdown
+            fillForm();
         } else toast(d.message || 'Gagal', 'error');
     } catch (e) {
         toast('Koneksi gagal', 'error');
@@ -1983,7 +2081,6 @@ async function doDeleteMaster(id, t) {
     btn.disabled = false;
     btn.textContent = 'Hapus';
 }
-
 async function addMaster() {
     const t = curMaster,
         cfg = MCFG[t];
@@ -1995,7 +2092,6 @@ async function addMaster() {
     }
     const ket = cfg.hasKet ? document.getElementById('mm-ket').value.trim() : null;
     const status = cfg.hasStatus ? document.getElementById('mm-status').value : null;
-    // build payload — jenis pakai key 'nama', platform pakai 'nama', type pakai 'name'
     let payload = t === 'type' ? {
         name: nama
     } : {
@@ -2035,6 +2131,17 @@ function nav(d) {
     if (cM < 0) {
         cM = 11;
         cY--;
+    }
+    /* Clamp cY ke rentang yang diizinkan */
+    const minY = TODAY.getFullYear(),
+        maxY = minY + 3;
+    if (cY < minY) {
+        cY = minY;
+        cM = 0;
+    }
+    if (cY > maxY) {
+        cY = maxY;
+        cM = 11;
     }
     rfCal();
     rfList();
@@ -2082,4 +2189,4 @@ rfCal();
 rfStats();
 </script>
 
-<?= $this->endSection() ?>
+<?php echo $this->endSection() ?>
