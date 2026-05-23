@@ -1359,20 +1359,15 @@ public function submitTugas()
     {
         $userId = session()->get('id_users');
         
-        // Ambil aplikasi yang diizinkan untuk user ini
         $aplikasi = $this->aplikasiUserModel
             ->select('aplikasi_pendukung.*')
             ->join('aplikasi_pendukung', 'aplikasi_pendukung.id_aplikasi = aplikasi_user.id_aplikasi')
             ->where('aplikasi_user.id_users', $userId)
             ->findAll();
         
-        // Jika tidak ada akses spesifik, tampilkan semua aplikasi
-        if (empty($aplikasi)) {
-            $aplikasi = $this->aplikasiModel->findAll();
-        }
-        
+        // Tidak ada fallback — kalau kosong ya kosong, view sudah handle empty state
         return view('dashboard/peserta/aplikasi_pendukung', [
-            'title' => 'Aplikasi Pendukung',
+            'title'    => 'Aplikasi Pendukung',
             'aplikasi' => $aplikasi
         ]);
     }
