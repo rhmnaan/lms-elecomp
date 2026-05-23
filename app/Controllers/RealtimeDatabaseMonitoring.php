@@ -14,6 +14,8 @@ class RealtimeDatabaseMonitoring extends BaseController
      */
     public function attendanceStream()
     {
+
+        while (ob_get_level()) ob_end_clean();
         $fp    = $_COOKIE['device_fp'] ?? '';
         $email = session()->get('email_users') ?? '';
 
@@ -65,10 +67,18 @@ class RealtimeDatabaseMonitoring extends BaseController
 
     private function startSSEHeaders(): void
     {
+        // Buang semua header sebelumnya
+        if (function_exists('header_remove')) {
+            header_remove();
+        }
+
+        http_response_code(200);
         header('Content-Type: text/event-stream');
-        header('Cache-Control: no-cache');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
         header('X-Accel-Buffering: no');
+        header('X-Content-Type-Options: nosniff');
         header('Connection: keep-alive');
+        header('Pragma: no-cache');
     }
 
     /**
@@ -96,7 +106,7 @@ class RealtimeDatabaseMonitoring extends BaseController
         // ✅ PERBAIKAN: Trigger logout HANYA berdasarkan perbedaan fingerprint
         // Tidak peduli apa nilai 'action' nya
         if (
-            $dbFP !== null && 
+            $dbFP !== null &&
             $dbFP !== '' &&
             $dbFP !== $fp  // ← fingerprint berbeda = ada device baru login
         ) {
