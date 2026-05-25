@@ -22,8 +22,6 @@ class DashboardAdmin extends BaseController
         $this->userModel = new Users();
         $this->kelasModel = new KelasModel();
         $this->materiModel = new MateriModel();
-        $this->quizModel = new QuizModel();
-        $this->quizResultsModel = new QuizResultsModel();
     }
     
     private function guardAdmin()

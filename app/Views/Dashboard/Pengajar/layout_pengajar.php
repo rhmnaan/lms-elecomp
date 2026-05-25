@@ -39,10 +39,13 @@
         </div>
     </div>
 
+    <!-- ── SIDEBAR OVERLAY (backdrop mobile) ── -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
     <div class="wrapper">
 
         <!-- ── SIDEBAR ── -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
                 <div class="logo-mark d-flex align-items-center">
                     <img src="<?= base_url('logo/image.png') ?>" alt="Elecomp LMS" class="logo-image mr-2">
@@ -61,7 +64,6 @@
                     </a>
                 </li>
 
-                <!-- ✅ KELAS SAYA dengan submenu dropdown -->
                 <?php $isKelas = str_starts_with(uri_string(), 'dashboard/pengajar/kelas')
                     || str_starts_with(uri_string(), 'dashboard/pengajar/modul')
                     || str_starts_with(uri_string(), 'dashboard/pengajar/materi'); ?>
@@ -73,7 +75,6 @@
                     </a>
                     <ul class="sub-nav">
 
-                        <!-- PROGRAM -->
                         <li
                             <?= (str_starts_with(uri_string(), 'dashboard/pengajar/program')) ? 'class="active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/program') ?>">
@@ -85,7 +86,6 @@
                             </a>
                         </li>
 
-                        <!-- KELAS -->
                         <li
                             <?= (str_starts_with(uri_string(), 'dashboard/pengajar/kelas')) ? 'class="sub-active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/kelas') ?>">
@@ -94,7 +94,6 @@
                             </a>
                         </li>
 
-                        <!-- MODUL -->
                         <li
                             <?= (str_starts_with(uri_string(), 'dashboard/pengajar/modul')) ? 'class="sub-active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/modul') ?>">
@@ -103,7 +102,6 @@
                             </a>
                         </li>
 
-                        <!-- TUGAS -->
                         <li
                             <?= (str_starts_with(uri_string(), 'dashboard/pengajar/tugas')) ? 'class="sub-active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/tugas') ?>">
@@ -112,7 +110,6 @@
                             </a>
                         </li>
 
-                        <!-- MATERI -->
                         <li
                             <?= (str_starts_with(uri_string(), 'dashboard/pengajar/materi')) ? 'class="sub-active"' : '' ?>>
                             <a href="<?= base_url('dashboard/pengajar/materi-list') ?>">
@@ -141,7 +138,7 @@
                             class="dot"></span><?php endif; ?>
                     </a>
                 </li>
-                <!--  MENU VOUCHER -->
+
                 <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/voucher')) ? 'class="active"' : '' ?>>
                     <a href="<?= base_url('dashboard/pengajar/voucher') ?>">
                         <i class="bi bi-ticket-perforated-fill"></i> Voucher
@@ -151,7 +148,6 @@
                     </a>
                 </li>
             </ul>
-
 
             <div class="menu-label" style="margin-top:12px;">Akun</div>
             <ul class="sidebar-nav">
@@ -177,10 +173,23 @@
 
             <!-- TOPBAR -->
             <div class="topbar">
+                <!-- Hamburger (mobile only) -->
+                <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <!-- Mobile brand logo (shows when sidebar is hidden) -->
+                <div class="mobile-brand">
+                    <img src="<?= base_url('logo/image.png') ?>" alt="Elecomp LMS">
+                </div>
+
                 <div class="search-wrap">
                     <i class="bi bi-search"></i>
                     <input type="text" placeholder="Cari kelas, materi, atau peserta...">
                 </div>
+
                 <div class="topbar-right">
                     <div class="notif-btn">
                         <i class="bi bi-bell-fill"></i>
@@ -230,7 +239,9 @@
     </script>
 
     <script src="<?= base_url('js/realtime.js') ?>"></script>
+
     <script>
+    /* ── REALTIME / LOGOUT ── */
     let logoutTriggered = false;
     let monitor;
 
@@ -274,8 +285,46 @@
     });
 
     window.addEventListener('beforeunload', () => monitor.stop());
-    </script>
-    <script>
+
+    /* ── HAMBURGER / MOBILE SIDEBAR ── */
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+        hamburgerBtn.classList.add('active');
+        document.body.style.overflow = 'hidden'; // prevent scroll bleed
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        hamburgerBtn.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    hamburgerBtn.addEventListener('click', () => {
+        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+
+    // Close when tapping the backdrop
+    overlay.addEventListener('click', closeSidebar);
+
+    // Close when a nav link is tapped (mobile UX)
+    sidebar.querySelectorAll('a:not(.has-sub > a)').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) closeSidebar();
+        });
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeSidebar();
+    });
+
+    /* ── SUBMENU TOGGLE ── */
     function toggleSub(el) {
         el.closest('.has-sub').classList.toggle('open');
     }

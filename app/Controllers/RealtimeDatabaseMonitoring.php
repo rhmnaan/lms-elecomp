@@ -14,6 +14,8 @@ class RealtimeDatabaseMonitoring extends BaseController
      */
     public function attendanceStream()
     {
+
+    while (ob_get_level()) ob_end_clean();
         $fp    = $_COOKIE['device_fp'] ?? '';
         $email = session()->get('email_users') ?? '';
 
@@ -63,13 +65,21 @@ class RealtimeDatabaseMonitoring extends BaseController
     // Private helpers
     // ──────────────────────────────────────────────────────────────────
 
-    private function startSSEHeaders(): void
-    {
-        header('Content-Type: text/event-stream');
-        header('Cache-Control: no-cache');
-        header('X-Accel-Buffering: no');
-        header('Connection: keep-alive');
+   private function startSSEHeaders(): void
+{
+    // Buang semua header sebelumnya
+    if (function_exists('header_remove')) {
+        header_remove();
     }
+
+    http_response_code(200);
+    header('Content-Type: text/event-stream');
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('X-Accel-Buffering: no');
+    header('X-Content-Type-Options: nosniff');
+    header('Connection: keep-alive');
+    header('Pragma: no-cache');
+}
 
     /**
      * Cek apakah fingerprint di DB sudah BERBEDA dari cookie tab ini.

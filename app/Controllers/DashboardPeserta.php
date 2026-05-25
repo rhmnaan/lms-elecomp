@@ -1244,7 +1244,7 @@ public function submitTugas()
             ->orderBy('created_at', 'DESC')
             ->get()->getRowArray();
 
-        $redirect = $this->request->getGet('redirect') ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
+        $redirect = $this->request->getGet('redirect') ?? base_url('Dashboard/Peserta/materi-modul/' . $materi['id_modul']);
 
         return view('Dashboard/Peserta/pretest_view', [
             'materi'      => $materi,
@@ -1303,7 +1303,7 @@ public function submitTugas()
             ->orderBy('created_at', 'DESC')
             ->get()->getRowArray();
 
-        $redirect = $this->request->getGet('redirect') ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
+        $redirect = $this->request->getGet('redirect') ?? base_url('Dashboard/Peserta/materi-modul/' . $materi['id_modul']);
 
         return view('Dashboard/Peserta/posttest_view', [
             'materi'       => $materi,
@@ -1359,20 +1359,15 @@ public function submitTugas()
     {
         $userId = session()->get('id_users');
         
-        // Ambil aplikasi yang diizinkan untuk user ini
         $aplikasi = $this->aplikasiUserModel
             ->select('aplikasi_pendukung.*')
             ->join('aplikasi_pendukung', 'aplikasi_pendukung.id_aplikasi = aplikasi_user.id_aplikasi')
             ->where('aplikasi_user.id_users', $userId)
             ->findAll();
         
-        // Jika tidak ada akses spesifik, tampilkan semua aplikasi
-        if (empty($aplikasi)) {
-            $aplikasi = $this->aplikasiModel->findAll();
-        }
-        
-        return view('dashboard/peserta/aplikasi_pendukung', [
-            'title' => 'Aplikasi Pendukung',
+        // Tidak ada fallback — kalau kosong ya kosong, view sudah handle empty state
+        return view('Dashboard/Peserta/aplikasi_pendukung', [
+            'title'    => 'Aplikasi Pendukung',
             'aplikasi' => $aplikasi
         ]);
     }

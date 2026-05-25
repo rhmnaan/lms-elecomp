@@ -41,7 +41,7 @@ class KalkulatorPeserta extends BaseController
     public function index(): string|\CodeIgniter\HTTP\RedirectResponse
     {
         if (!$this->cekAkses()) {
-            return redirect()->to(base_url('dashboard/peserta/aplikasi'))
+            return redirect()->to(base_url('Dashboard/Peserta/aplikasi'))
                              ->with('error', 'Anda belum memiliki akses ke Kalkulator Ekspor.');
         }
 
@@ -56,7 +56,7 @@ class KalkulatorPeserta extends BaseController
         $satuanRow   = $satuanModel->getByUser($userId);
         $labelSatuan = $satuanRow['satuan'] ?? '';
 
-        return view('dashboard/peserta/kalkulator/index', [
+        return view('Dashboard/Peserta/kalkulator/index', [
             'title'           => 'Kalkulator Ekspor',
             'labelSatuan'     => $labelSatuan,
             'ukuranKontainer' => [],
@@ -118,7 +118,7 @@ class KalkulatorPeserta extends BaseController
     public function saveAllExwork(): \CodeIgniter\HTTP\RedirectResponse
     {
         if (!$this->cekAkses()) {
-            return redirect()->to(base_url('dashboard/peserta/aplikasi'))->with('error', 'Akses ditolak.');
+            return redirect()->to(base_url('Dashboard/Peserta/aplikasi'))->with('error', 'Akses ditolak.');
         }
         $userId = $this->userId();
         $model  = new KalkulatorExworkModel();
@@ -136,7 +136,7 @@ class KalkulatorPeserta extends BaseController
                 'biaya'           => (int) ($this->request->getPost('biayaExwork')[$i] ?? 0),
             ]);
         }
-        return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('success', 'Komponen Exwork disimpan.');
+        return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('success', 'Komponen Exwork disimpan.');
     }
 
     public function deleteExwork(int $id): \CodeIgniter\HTTP\RedirectResponse
@@ -145,9 +145,9 @@ class KalkulatorPeserta extends BaseController
         $row   = $model->find($id);
         if ($row && (int)$row['id_users'] === $this->userId()) {
             $model->delete($id);
-            return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('success', 'Komponen dihapus.');
+            return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('success', 'Komponen dihapus.');
         }
-        return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('error', 'Data tidak ditemukan.');
+        return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('error', 'Data tidak ditemukan.');
     }
 
     // ══════════════════════════════════════════════════════════
@@ -156,7 +156,7 @@ class KalkulatorPeserta extends BaseController
     public function saveAllFob(): \CodeIgniter\HTTP\RedirectResponse
     {
         if (!$this->cekAkses()) {
-            return redirect()->to(base_url('dashboard/peserta/aplikasi'))->with('error', 'Akses ditolak.');
+            return redirect()->to(base_url('Dashboard/Peserta/aplikasi'))->with('error', 'Akses ditolak.');
         }
         $userId = $this->userId();
         $model  = new KalkulatorFobModel();
@@ -174,7 +174,7 @@ class KalkulatorPeserta extends BaseController
                 'biaya'        => (int) ($this->request->getPost('biayaFOB')[$i] ?? 0),
             ]);
         }
-        return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('success', 'Komponen FOB disimpan.');
+        return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('success', 'Komponen FOB disimpan.');
     }
 
     public function deleteFob(int $id): \CodeIgniter\HTTP\RedirectResponse
@@ -183,9 +183,9 @@ class KalkulatorPeserta extends BaseController
         $row   = $model->find($id);
         if ($row && (int)$row['id_users'] === $this->userId()) {
             $model->delete($id);
-            return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('success', 'Komponen dihapus.');
+            return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('success', 'Komponen dihapus.');
         }
-        return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('error', 'Data tidak ditemukan.');
+        return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('error', 'Data tidak ditemukan.');
     }
 
     // ══════════════════════════════════════════════════════════
@@ -194,7 +194,7 @@ class KalkulatorPeserta extends BaseController
     public function saveAllCfr(): \CodeIgniter\HTTP\RedirectResponse
     {
         if (!$this->cekAkses()) {
-            return redirect()->to(base_url('dashboard/peserta/aplikasi'))->with('error', 'Akses ditolak.');
+            return redirect()->to(base_url('Dashboard/Peserta/aplikasi'))->with('error', 'Akses ditolak.');
         }
         $userId = $this->userId();
         $model  = new KalkulatorCfrModel();
@@ -212,7 +212,7 @@ class KalkulatorPeserta extends BaseController
                 'biaya'        => (int) ($this->request->getPost('biayaCFR')[$i] ?? 0),
             ]);
         }
-        return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('success', 'Komponen CFR disimpan.');
+        return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('success', 'Komponen CFR disimpan.');
     }
 
     public function deleteCfr(int $id): \CodeIgniter\HTTP\RedirectResponse
@@ -221,9 +221,9 @@ class KalkulatorPeserta extends BaseController
         $row   = $model->find($id);
         if ($row && (int)$row['id_users'] === $this->userId()) {
             $model->delete($id);
-            return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('success', 'Komponen dihapus.');
+            return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('success', 'Komponen dihapus.');
         }
-        return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('error', 'Data tidak ditemukan.');
+        return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('error', 'Data tidak ditemukan.');
     }
 
     // ══════════════════════════════════════════════════════════
@@ -232,7 +232,7 @@ class KalkulatorPeserta extends BaseController
     public function saveAllCif(): \CodeIgniter\HTTP\RedirectResponse
     {
         if (!$this->cekAkses()) {
-            return redirect()->to(base_url('dashboard/peserta/aplikasi'))->with('error', 'Akses ditolak.');
+            return redirect()->to(base_url('Dashboard/Peserta/aplikasi'))->with('error', 'Akses ditolak.');
         }
         $userId = $this->userId();
         $model  = new KalkulatorCifModel();
@@ -250,7 +250,7 @@ class KalkulatorPeserta extends BaseController
                 'biaya'        => (int) ($this->request->getPost('biayaCIF')[$i] ?? 0),
             ]);
         }
-        return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('success', 'Komponen CIF disimpan.');
+        return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('success', 'Komponen CIF disimpan.');
     }
 
     public function deleteCif(int $id): \CodeIgniter\HTTP\RedirectResponse
@@ -259,8 +259,8 @@ class KalkulatorPeserta extends BaseController
         $row   = $model->find($id);
         if ($row && (int)$row['id_users'] === $this->userId()) {
             $model->delete($id);
-            return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('success', 'Komponen dihapus.');
+            return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('success', 'Komponen dihapus.');
         }
-        return redirect()->to(base_url('dashboard/peserta/kalkulator'))->with('error', 'Data tidak ditemukan.');
+        return redirect()->to(base_url('Dashboard/Peserta/kalkulator'))->with('error', 'Data tidak ditemukan.');
     }
 }

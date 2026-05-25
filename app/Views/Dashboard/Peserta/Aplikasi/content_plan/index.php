@@ -25,7 +25,7 @@
 
 .cp-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 14px;
     margin-bottom: 20px
 }
@@ -833,6 +833,31 @@ textarea.cp-inp {
     margin: 0 auto 14px
 }
 
+/* SPINNER */
+.cp-spin {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, .35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: cpSpin .6s linear infinite;
+    vertical-align: middle;
+}
+
+/* Untuk tombol outline (saveME pakai cpb-suc) */
+.cpb-suc .cp-spin,
+.cpb-out .cp-spin {
+    border-color: rgba(0, 0, 0, .15);
+    border-top-color: currentColor;
+}
+
+@keyframes cpSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 #cp-toast {
     position: fixed;
     bottom: 24px;
@@ -949,6 +974,10 @@ textarea.cp-inp {
         grid-column: span 2
     }
 
+    .cp-stats .cp-stat:nth-child(3) {
+        grid-column: span 1
+    }
+
     .cp-day {
         min-height: 56px;
         padding: 5px 4px 4px
@@ -996,7 +1025,11 @@ const RAW_CONTENTS = <?php echo json_encode(array_map(fn($c) => [
     'type'        => $c['nama_type']     ?? '-',
     'platform'    => $c['platform']      ?? '-',
     'platform_ids'=> array_map('intval', $c['platform_ids'] ?? []),
-    'assets'      => !empty($c['assets']) ? (object)$c['assets'] : new stdClass(),
+    'assets' => !empty($c['assets']) 
+    ? (is_string($c['assets']) 
+        ? json_decode($c['assets'], true) 
+        : (array)$c['assets']) 
+    : [],
     'status'      => strtolower($c['status']),
 ], $contents ?? [])) ?>;
 
@@ -1022,8 +1055,23 @@ const RAW_TYPES = <?php echo json_encode(array_map(fn($t) => [
 <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
         <div>
-            <h4 class="fw-bold mb-0" style="font-size:20px;letter-spacing:-.3px">📅 Content Plan</h4>
-            <p class="text-muted mb-0" style="font-size:13px">Kelola dan pantau rencana konten kamu</p>
+            <!-- BARU -->
+            <div style="display:flex;align-items:center;gap:12px">
+                <div
+                    style="width:44px;height:44px;background:linear-gradient(135deg,#2d6cdf,#7c3aed);border-radius:14px;
+        display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(45,108,223,.35);flex-shrink:0">
+                    <i class="bi bi-calendar3" style="font-size:20px;color:#fff"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0" style="font-size:19px;letter-spacing:-.4px;color:#111827;line-height:1.2">
+                        Content Plan
+                    </h4>
+                    <p class="mb-0" style="font-size:12.5px;color:#6b7280;margin-top:2px;font-weight:500">
+                        <i class="bi bi-lightning-charge-fill" style="color:#f59e0b;font-size:11px"></i>
+                        Kelola & pantau rencana konten kamu dalam satu tempat
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1041,6 +1089,14 @@ const RAW_TYPES = <?php echo json_encode(array_map(fn($t) => [
             <div>
                 <div class="cp-stat-val" id="s-draft">0</div>
                 <div class="cp-stat-lbl">Draft</div>
+            </div>
+        </div>
+        <div class="cp-stat">
+            <div class="cp-stat-icon" style="background:#eff6ff;color:#1d4ed8"><i class="bi bi-patch-check-fill"></i>
+            </div>
+            <div>
+                <div class="cp-stat-val" id="s-acc">0</div>
+                <div class="cp-stat-lbl">Acc</div>
             </div>
         </div>
         <div class="cp-stat">
@@ -1386,6 +1442,7 @@ function buildMap() {
 function rfStats() {
     document.getElementById('s-total').textContent = LC.length;
     document.getElementById('s-draft').textContent = LC.filter(c => c.status === 'draft').length;
+    document.getElementById('s-acc').textContent = LC.filter(c => c.status === 'acc').length;
     document.getElementById('s-pub').textContent = LC.filter(c => c.status === 'published').length;
 }
 
@@ -1502,17 +1559,43 @@ function rfList() {
         const tr = document.createElement('tr');
         if (past) tr.classList.add('past-row');
 
+        // BUILD ASSET LINKS
+        let assetHtml = '';
+        const assetSrc = c.assets || {};
+        Object.entries(assetSrc).forEach(([pid, arr]) => {
+            if (!Array.isArray(arr)) return;
+            const plat = LP.find(p => p.id == pid);
+            const platName = plat ? plat.nama_platform : 'Platform';
+            arr.forEach(a => {
+                const link = (a.asset_link || a.link || '').toString().trim();
+                const nama = (a.asset_nama || a.nama || '').toString().trim();
+                if (!link || link === '-') return;
+                const label = (nama && nama !== '-') ? nama : platName;
+                const safeHref = link.replace(/"/g, '%22');
+                assetHtml += `<a href="${safeHref}" target="_blank" rel="noopener"
+                style="display:inline-flex;align-items:center;gap:5px;font-size:11px;
+                    color:var(--cp-blue);background:var(--cp-blue-l);
+                    border:1.5px solid var(--cp-blue-m);border-radius:7px;
+                    padding:2px 8px;margin:2px 3px 0 0;text-decoration:none;font-weight:600">
+                <i class="bi bi-link-45deg"></i>${esc(label)}
+            </a>`;
+            });
+        });
+
         const aksiHtml = past ?
             `<span style="font-size:11px;color:var(--cp-muted);padding:4px 8px;background:var(--cp-bg);border-radius:6px;display:inline-flex;align-items:center;gap:4px">
-                   <i class="bi bi-lock-fill" style="font-size:10px"></i> Read-only
-               </span>` :
+                <i class="bi bi-lock-fill" style="font-size:10px"></i> Read-only
+            </span>` :
             `<div style="display:flex;gap:5px">
-                   <button class="cpb cpb-out cpb-sm" onclick="openEdit(${c.id})"><i class="bi bi-pencil"></i></button>
-                   <button class="cpb cpb-dan cpb-sm" onclick="confirmDel(${c.id},'${esc(c.judul)}','content')"><i class="bi bi-trash3"></i></button>
-               </div>`;
+                <button class="cpb cpb-out cpb-sm" onclick="openEdit(${c.id})"><i class="bi bi-pencil"></i></button>
+                <button class="cpb cpb-dan cpb-sm" onclick="confirmDel(${c.id},'${esc(c.judul)}','content')"><i class="bi bi-trash3"></i></button>
+            </div>`;
 
         tr.innerHTML = `
-            <td style="font-weight:600">${esc(c.judul)}</td>
+            <td style="font-weight:600">
+                ${esc(c.judul)}
+                ${assetHtml ? `<div style="margin-top:5px">${assetHtml}</div>` : ''}
+            </td>
             <td>${esc(c.platform)}</td>
             <td>${esc(c.jenis)}</td>
             <td>${fdt(c.tanggal)}</td>
@@ -1564,6 +1647,7 @@ function openDay(ds) {
 
             /* Asset links — skip nilai null / kosong / hanya "-" */
             // BARU
+            // LAMA - asset html sudah ada tapi pastikan posisinya SEBELUM div.cp-ci dibuat
             let assetHtml = '';
             const assetSrc = c.assets || {};
             Object.entries(assetSrc).forEach(([pid, arr]) => {
@@ -1571,9 +1655,14 @@ function openDay(ds) {
                 const plat = LP.find(p => p.id == pid);
                 const platName = plat ? plat.nama_platform : 'Platform';
                 arr.forEach(a => {
-                    // support dua kemungkinan nama field: asset_link / link
-                    const link = (a.asset_link || a.link || '').toString().trim();
-                    const nama = (a.asset_nama || a.nama || '').toString().trim();
+                    const rawNama = (a.asset_nama || a.nama || '').toString().trim();
+                    const rawLink = (a.asset_link || a.link || '').toString().trim();
+                    // Deteksi mana yang berisi URL
+                    const isUrl = (s) => s.startsWith('http') || s.startsWith('www') || s
+                        .includes('.');
+                    const link = isUrl(rawLink) ? rawLink : (isUrl(rawNama) ? rawNama : '');
+                    const nama = (!isUrl(rawNama) && rawNama && rawNama !== '-') ? rawNama :
+                        (!isUrl(rawLink) && rawLink && rawLink !== '-') ? rawLink : '';
                     if (!link || link === '-') return;
                     const label = (nama && nama !== '-') ? nama : platName;
                     const safeHref = link.replace(/"/g, '%22');
@@ -1691,9 +1780,9 @@ function collectAssets() {
             // skip jika keduanya kosong atau hanya "-"
             if ((!nama || nama === '-') && (!link || link === '-')) return;
             rows.push({
-                nama,
-                link,
-                ket: ''
+                asset_nama: nama, // ← pakai key yang sama dengan DB
+                asset_link: link,
+                keterangan: ''
             });
         });
         if (rows.length) result[pid] = rows;
@@ -1859,8 +1948,8 @@ async function submitForm() {
             platIds.forEach(pid => {
                 const key = String(pid);
                 if (assets[key]) assetMap[pid] = assets[key].map(a => ({
-                    asset_nama: a.nama,
-                    asset_link: a.link,
+                    asset_nama: a.asset_nama || a.nama || '',
+                    asset_link: a.asset_link || a.link || '',
                     keterangan: ''
                 }));
             });
@@ -2001,35 +2090,104 @@ function rfMaster(t) {
             '<div style="text-align:center;color:var(--cp-muted);padding:20px 0;font-size:13px"><i class="bi bi-inbox" style="font-size:28px;display:block;margin-bottom:6px;opacity:.35"></i>Belum ada data</div>';
         return;
     }
-    let h =
-        `<table class="cp-mtbl"><thead><tr><th style="width:36px">#</th><th>Nama</th>${cfg.hasKet?'<th>Keterangan</th>':''}${cfg.hasStatus?'<th>Status</th>':''}<th style="width:90px">Aksi</th></tr></thead><tbody>`;
+
+    let h = `<table class="cp-mtbl"><thead><tr>
+        <th style="width:36px">#</th>
+        <th>Nama</th>
+        ${cfg.hasKet ? '<th>Keterangan</th>' : ''}
+        ${cfg.hasStatus ? '<th style="width:110px">Status</th>' : ''}
+        <th style="width:90px">Aksi</th>
+    </tr></thead><tbody>`;
+
     arr.forEach((item, i) => {
         const nameVal = esc(item[cfg.key]);
+        const ketVal = esc(item.keterangan || '');
+        const stVal = item.status || 'aktif';
+
         h += `<tr id="mr-${item.id}">
-        <td style="color:var(--cp-muted);font-size:12px">${i+1}</td>
-        <td>
-            <span id="mn-${item.id}">${nameVal}</span>
-            <input id="me-${item.id}" type="text" class="cp-inp" value="${nameVal}" style="display:none;padding:5px 9px;font-size:12.5px" onkeydown="if(event.key==='Enter')saveME(${item.id},'${t}')">
-        </td>
-        ${cfg.hasKet?`<td style="font-size:12px;color:var(--cp-muted);max-width:140px"><span class="text-truncate d-block">${esc(item.keterangan)||'-'}</span></td>`:''}
-        ${cfg.hasStatus?`<td><span class="cp-sdot ${item.status||'aktif'}"></span>${cap(item.status||'aktif')}</td>`:''}
-        <td><div style="display:flex;gap:4px">
-            <button class="cpb cpb-out cpb-sm" id="mb-e-${item.id}" onclick="startME(${item.id},'${t}')"><i class="bi bi-pencil"></i></button>
-            <button class="cpb cpb-suc cpb-sm" id="mb-s-${item.id}" style="display:none" onclick="saveME(${item.id},'${t}')"><i class="bi bi-check-lg"></i></button>
-            <button class="cpb cpb-dan cpb-sm" onclick="confirmDelMaster(${item.id},'${nameVal}','${t}')"><i class="bi bi-trash3"></i></button>
-        </div></td></tr>`;
+            <td style="color:var(--cp-muted);font-size:12px">${i+1}</td>
+
+            <!-- NAMA -->
+            <td>
+                <span id="mn-${item.id}">${nameVal}</span>
+                <input id="me-${item.id}" type="text" class="cp-inp"
+                    value="${nameVal}"
+                    style="display:none;padding:5px 9px;font-size:12.5px"
+                    onkeydown="if(event.key==='Enter')saveME(${item.id},'${t}')">
+            </td>
+
+            <!-- KETERANGAN (hanya jenis) -->
+            ${cfg.hasKet ? `
+            <td>
+                <span id="mk-${item.id}" style="font-size:12px;color:var(--cp-muted)">${ketVal || '-'}</span>
+                <input id="mke-${item.id}" type="text" class="cp-inp"
+                    value="${ketVal}"
+                    placeholder="Keterangan..."
+                    style="display:none;padding:5px 9px;font-size:12.5px"
+                    onkeydown="if(event.key==='Enter')saveME(${item.id},'${t}')">
+            </td>` : ''}
+
+            <!-- STATUS (hanya platform) -->
+            ${cfg.hasStatus ? `
+            <td>
+                <span id="mst-${item.id}">
+                    <span class="cp-sdot ${stVal}"></span>${cap(stVal)}
+                </span>
+                <select id="mse-${item.id}" class="cp-inp"
+                    style="display:none;padding:5px 9px;font-size:12.5px;width:100%">
+                    <option value="aktif"   ${stVal==='aktif'   ?'selected':''}>Aktif</option>
+                    <option value="nonaktif"${stVal==='nonaktif'?'selected':''}>Nonaktif</option>
+                </select>
+            </td>` : ''}
+
+            <!-- AKSI -->
+            <td><div style="display:flex;gap:4px">
+                <button class="cpb cpb-out cpb-sm" id="mb-e-${item.id}"
+                    onclick="startME(${item.id},'${t}')">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="cpb cpb-suc cpb-sm" id="mb-s-${item.id}"
+                    style="display:none"
+                    onclick="saveME(${item.id},'${t}')">
+                    <i class="bi bi-check-lg"></i>
+                </button>
+                <button class="cpb cpb-dan cpb-sm"
+                    onclick="confirmDelMaster(${item.id},'${nameVal}','${t}')">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </div></td>
+        </tr>`;
     });
+
     h += '</tbody></table>';
     wrap.innerHTML = h;
 }
 
 function startME(id, t) {
+    const cfg = MCFG[t];
+
+    // nama
     document.getElementById('mn-' + id).style.display = 'none';
     document.getElementById('me-' + id).style.display = 'block';
+
+    // keterangan (jenis)
+    if (cfg.hasKet) {
+        document.getElementById('mk-' + id).style.display = 'none';
+        document.getElementById('mke-' + id).style.display = 'block';
+    }
+
+    // status (platform)
+    if (cfg.hasStatus) {
+        document.getElementById('mst-' + id).style.display = 'none';
+        document.getElementById('mse-' + id).style.display = 'block';
+    }
+
+    // toggle tombol
     document.getElementById('mb-e-' + id).style.display = 'none';
     document.getElementById('mb-s-' + id).style.display = '';
     document.getElementById('me-' + id).focus();
 }
+
 async function saveME(id, t) {
     const val = document.getElementById('me-' + id).value.trim();
     if (!val) {
@@ -2037,22 +2195,46 @@ async function saveME(id, t) {
         return;
     }
     const cfg = MCFG[t];
-    const payload = t === 'jenis' ? {
-        nama: val
-    } : {
-        name: val
-    };
+
+    // Bangun payload sesuai tipe
+    let payload = {};
+    if (t === 'platform') {
+        payload.name = val;
+        payload.status = document.getElementById('mse-' + id).value;
+    } else if (t === 'jenis') {
+        payload.nama = val;
+        payload.ket = document.getElementById('mke-' + id).value.trim();
+    } else {
+        payload.name = val;
+    }
+
+    // Loading state
+    const saveBtn = document.getElementById('mb-s-' + id);
+    const saveBtnOri = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="cp-spin"></span>';
+
     try {
         const d = await api(cfg.updateUrl + id, payload);
         if (isOk(d)) {
             const item = getArr(t).find(x => x.id == id);
-            if (item) item[cfg.key] = val;
+            if (item) {
+                item[cfg.key] = val;
+                if (cfg.hasKet) item.keterangan = payload.ket || '';
+                if (cfg.hasStatus) item.status = payload.status;
+            }
             toast('Berhasil diperbarui');
             rfMaster(t);
             fillForm();
-        } else toast(d.message || 'Gagal', 'error');
+        } else {
+            toast(d.message || 'Gagal', 'error');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = saveBtnOri;
+        }
     } catch (e) {
         toast('Koneksi gagal', 'error');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = saveBtnOri;
     }
 }
 
@@ -2099,6 +2281,12 @@ async function addMaster() {
     };
     if (ket !== null) payload.ket = ket;
     if (status !== null) payload.status = status;
+
+    // LOADING STATE
+    const addBtn = document.querySelector('#m-master .cp-madd .cpb-pri');
+    const addBtnOri = addBtn.innerHTML;
+    addBtn.disabled = true;
+    addBtn.innerHTML = '<span class="cp-spin"></span> Menyimpan...';
     try {
         const d = await api(cfg.storeUrl, payload);
         if (isOk(d)) {
@@ -2119,6 +2307,9 @@ async function addMaster() {
     } catch (e) {
         toast('Koneksi gagal', 'error');
     }
+    // RESET BUTTON
+    addBtn.disabled = false;
+    addBtn.innerHTML = addBtnOri;
 }
 
 /* ══ NAV ══ */

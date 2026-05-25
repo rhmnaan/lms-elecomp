@@ -208,6 +208,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('materi/delete/(:num)', 'DashboardPengajar::materiDelete/$1');
         $routes->get('materi-list', 'DashboardPengajar::materiList');
 
+         // Program
         $routes->get('program', 'DashboardPengajar::program');
         $routes->post('program/store', 'DashboardPengajar::programStore');
         $routes->post('program/update/(:num)', 'DashboardPengajar::programUpdate/$1');
