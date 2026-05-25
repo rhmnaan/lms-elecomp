@@ -1365,9 +1365,13 @@ public function submitTugas()
             ->where('aplikasi_user.id_users', $userId)
             ->findAll();
         
-        // Tidak ada fallback — kalau kosong ya kosong, view sudah handle empty state
-        return view('Dashboard/Peserta/aplikasi_pendukung', [
-            'title'    => 'Aplikasi Pendukung',
+        // Jika tidak ada akses spesifik, tampilkan semua aplikasi
+        if (empty($aplikasi)) {
+            $aplikasi = $this->aplikasiModel->findAll();
+        }
+        
+        return view('dashboard/peserta/aplikasi_pendukung', [
+            'title' => 'Aplikasi Pendukung',
             'aplikasi' => $aplikasi
         ]);
     }

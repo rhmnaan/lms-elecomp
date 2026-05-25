@@ -17,6 +17,12 @@ class DashboardPengajar extends BaseController
     // ══════════════════════════════════════════════════════════════════════
     //  HELPER METHODS
     // ══════════════════════════════════════════════════════════════════════
+    protected $userModel;
+
+    public function __construct()
+    {
+        $this->userModel = new \App\Models\Users();
+    }
 
     private function guardPengajar()
     {
@@ -25,6 +31,8 @@ class DashboardPengajar extends BaseController
         }
         return null;
     }
+
+    
 
     private function myId(): int
     {
@@ -1513,29 +1521,27 @@ class DashboardPengajar extends BaseController
     }
 
    public function aplikasiPendukung()
-{
-    if ($r = $this->guardPengajar()) return $r;
+    {
+        if ($r = $this->guardPengajar()) return $r;
 
-    $pengajarId = session()->get('id_users');
+        $pengajarId = session()->get('id_users');
 
-    dd($pengajarId);
+        $db = \Config\Database::connect();
 
-    $db = \Config\Database::connect();
+        $peserta = $db->table('kelas_peserta kp')
+            ->select('DISTINCT u.id_users, u.nama_users AS nama, u.email_users AS email')
+            ->join('kelas k', 'k.id_kelas = kp.id_kelas')
+            ->join('users u', 'u.id_users = kp.id_users')
+            ->where('k.id_users', $pengajarId)
+            ->where('u.role_users', 'peserta')
+            ->orderBy('u.nama_users')
+            ->get()
+            ->getResultArray();
 
-    $peserta = $db->table('kelas_peserta kp')
-        ->select('DISTINCT u.id_users, u.nama_users AS nama, u.email_users AS email')
-        ->join('kelas k', 'k.id_kelas = kp.id_kelas')
-        ->join('users u', 'u.id_users = kp.id_users')
-        ->where('k.id_users', $pengajarId)
-        ->where('u.role_users', 'peserta')
-        ->orderBy('u.nama_users')
-        ->get()
-        ->getResultArray();
-
-    return view('Dashboard/Pengajar/aplikasi_pendukung', [
-        'peserta' => $peserta,
-    ]);
-}
+        return view('Dashboard/Pengajar/aplikasi_pendukung', [
+            'peserta' => $peserta,
+        ]);
+    }
 
     public function aplikasiStore()
     {
@@ -1624,6 +1630,101 @@ class DashboardPengajar extends BaseController
             'success'   => true,
             'message'   => 'Akses berhasil disimpan.',
             'csrf_hash' => csrf_hash(),
+        ]);
+    }
+    
+    // ══════════════════════════════════════════════════════════
+    // TAMBAHKAN METHOD INI KE DALAM CLASS DashboardPengajar
+    // File: app/Controllers/DashboardPengajar.php
+    // ══════════════════════════════════════════════════════════
+
+    // ── 1. Pastikan Users model sudah di-load di constructor ──
+    // $this->userModel = new \App\Models\Users();
+
+
+    // ── 2. Tambahkan method pesertaVerifikasi ──
+
+    public function pesertaVerifikasi()
+    {
+        $peserta = $this->userModel
+            ->where('role_users', 'peserta')
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        $totalPeserta   = count($peserta);
+        $totalVerified  = count(array_filter($peserta, fn($p) => !empty($p['email_verified']) && $p['email_verified'] == 1));
+        $totalUnverified = $totalPeserta - $totalVerified;
+
+        return view('Dashboard/Pengajar/peserta_verifikasi', [
+            'title'          => 'Manajemen Peserta',
+            'peserta'        => $peserta,
+            'totalPeserta'   => $totalPeserta,
+            'totalVerified'  => $totalVerified,
+            'totalUnverified'=> $totalUnverified,
+        ]);
+    }
+
+
+    // ── 3. Tambahkan method resendVerifikasi (AJAX) ──
+
+    public function resendVerifikasiEmail()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Invalid request']);
+        }
+
+        $json   = $this->request->getJSON(true);
+        $userId = $json['id_users'] ?? null;
+
+        if (!$userId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'User tidak ditemukan']);
+        }
+
+        $user = $this->userModel->find($userId);
+        if (!$user || $user['role_users'] !== 'peserta') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Peserta tidak valid']);
+        }
+
+        if (!empty($user['email_verified']) && $user['email_verified'] == 1) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Email sudah terverifikasi']);
+        }
+
+        // Generate token baru
+        $token     = bin2hex(random_bytes(32));
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+        $this->userModel->update($userId, [
+            'verification_token' => $token,
+            'token_expires_at'   => $expiresAt,
+        ]);
+
+        // Kirim email — sesuaikan dengan library email yang kamu pakai
+        // Contoh menggunakan Email library CodeIgniter bawaan:
+        $email = \Config\Services::email();
+        $email->setFrom('noreply@yourdomain.com', 'Elecomp LMS');
+        $email->setTo($user['email_users']);
+        $email->setSubject('Verifikasi Email Akun Elecomp LMS');
+
+        $verifyUrl = base_url('verify-email/' . $token);
+        $email->setMessage("
+            <h3>Halo, {$user['nama_users']}!</h3>
+            <p>Klik link di bawah untuk memverifikasi email kamu:</p>
+            <p><a href='{$verifyUrl}' style='background:#2563eb;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block'>Verifikasi Email</a></p>
+            <p style='color:#888;font-size:12px'>Link berlaku selama 24 jam.</p>
+        ");
+        $email->setMailType('html');
+
+        if ($email->send()) {
+            return $this->response->setJSON([
+                'success'   => true,
+                'message'   => 'Email verifikasi berhasil dikirim',
+                'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Gagal mengirim email. Periksa konfigurasi email.',
         ]);
     }
 

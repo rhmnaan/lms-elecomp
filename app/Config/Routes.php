@@ -208,7 +208,6 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('materi/delete/(:num)', 'DashboardPengajar::materiDelete/$1');
         $routes->get('materi-list', 'DashboardPengajar::materiList');
 
-         // Program
         $routes->get('program', 'DashboardPengajar::program');
         $routes->post('program/store', 'DashboardPengajar::programStore');
         $routes->post('program/update/(:num)', 'DashboardPengajar::programUpdate/$1');
@@ -252,6 +251,15 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('aplikasi-pendukung/akses/simpan', 'AplikasiPendukung::simpanAkses');
         
         $routes->get('aplikasi-pendukung/manajemen', 'AplikasiPendukung::manajemen');
+
+        // Halaman manajemen peserta & verifikasi
+        $routes->get('peserta/verifikasi', 'DashboardPengajar::pesertaVerifikasi');
+        
+        // AJAX: kirim ulang email verifikasi
+        $routes->post('peserta/resend-verifikasi', 'DashboardPengajar::resendVerifikasiEmail');
+
+        $routes->get('peserta', 'Dashboard\PesertaController::index');
+        $routes->post('peserta/resend-verifikasi', 'Dashboard\PesertaController::resendVerifikasi');
     });
 });
 

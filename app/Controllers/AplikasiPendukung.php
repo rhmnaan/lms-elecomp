@@ -152,7 +152,7 @@ class AplikasiPendukung extends BaseController
             'link_aplikasi' => $link,
         ]);
 
-        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
+        return redirect()->to('/Dashboard/pengajar/aplikasi-pendukung')
             ->with('success', 'Aplikasi berhasil diperbarui');
     }
 
@@ -160,7 +160,7 @@ class AplikasiPendukung extends BaseController
     {
         $this->aplikasiUserModel->where('id_aplikasi', $id)->delete();
         $this->aplikasiModel->delete($id);
-        return redirect()->to('/dashboard/pengajar/aplikasi-pendukung')
+        return redirect()->to('/Dashboard/pengajar/aplikasi-pendukung')
             ->with('success', 'Aplikasi berhasil dihapus');
     }
 }

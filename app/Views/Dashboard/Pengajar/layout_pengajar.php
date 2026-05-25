@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><?= isset($title) ? esc($title) : 'LMS Elecomp — Pengajar'; ?></title>
+    <title><?php echo isset($title) ? esc($title) : 'LMS Elecomp — Pengajar'; ?></title>
 
-    <?= $this->renderSection('meta'); ?>
+    <?php echo $this->renderSection('meta'); ?>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -15,9 +15,9 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link rel="stylesheet" href="<?= base_url('css/pengajar-layout.css') ?>">
+    <link rel="stylesheet" href="<?php echo base_url('css/pengajar-layout.css') ?>">
 
-    <?= $this->renderSection('styles'); ?>
+    <?php echo $this->renderSection('styles'); ?>
 </head>
 
 <body class="protected-page">
@@ -48,22 +48,33 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
                 <div class="logo-mark d-flex align-items-center">
-                    <img src="<?= base_url('logo/image.png') ?>" alt="Elecomp LMS" class="logo-image mr-2">
+                    <img src="<?php echo base_url('logo/image.png') ?>" alt="Elecomp LMS" class="logo-image mr-2">
                 </div>
                 <p class="logo-tagline">Learning Management System</p>
             </div>
 
             <div class="menu-label">Menu Utama</div>
 
+            <?php
+                $isPeserta = str_starts_with(uri_string(), 'dashboard/pengajar/peserta');
+                $isKelas   = str_starts_with(uri_string(), 'dashboard/pengajar/kelas')
+                || str_starts_with(uri_string(), 'dashboard/pengajar/modul')
+                || str_starts_with(uri_string(), 'dashboard/pengajar/materi');
+            ?>
+
             <ul class="sidebar-nav">
-                <li <?= (uri_string() === 'dashboard/pengajar/beranda') ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/pengajar/beranda') ?>">
+
+                <!-- Beranda -->
+                <li <?php echo (uri_string() === 'dashboard/pengajar/beranda') ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/pengajar/beranda') ?>">
                         <i class="bi bi-house-fill"></i> Beranda
-                        <?php if (uri_string() === 'dashboard/pengajar/beranda'): ?><span
-                            class="dot"></span><?php endif; ?>
+                        <?php if (uri_string() === 'dashboard/pengajar/beranda'): ?>
+                        <span class="dot"></span>
+                        <?php endif; ?>
                     </a>
                 </li>
 
+                <!-- ✅ KELAS SAYA dengan submenu dropdown -->
                 <?php $isKelas = str_starts_with(uri_string(), 'dashboard/pengajar/kelas')
                     || str_starts_with(uri_string(), 'dashboard/pengajar/modul')
                     || str_starts_with(uri_string(), 'dashboard/pengajar/materi'); ?>
@@ -75,55 +86,52 @@
                     </a>
                     <ul class="sub-nav">
 
+                        <!-- PROGRAM -->
                         <li
-                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/program')) ? 'class="active"' : '' ?>>
-                            <a href="<?= base_url('dashboard/pengajar/program') ?>">
-                                <i class="bi bi-grid-1x2-fill"></i>
-                                Program
-                                <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/program')): ?>
-                                <span class="dot"></span>
-                                <?php endif; ?>
+                            <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/program') ? 'class="sub-active"' : '' ?>>
+                            <a href="<?php echo base_url('dashboard/pengajar/program') ?>">
+                                <i class="bi bi-grid-1x2-fill"></i> Program
                             </a>
                         </li>
 
+                        <!-- KELAS -->
                         <li
-                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/kelas')) ? 'class="sub-active"' : '' ?>>
-                            <a href="<?= base_url('dashboard/pengajar/kelas') ?>">
-                                <i class="bi bi-mortarboard-fill"></i>
-                                Daftar Kelas
+                            <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/kelas') ? 'class="sub-active"' : '' ?>>
+                            <a href="<?php echo base_url('dashboard/pengajar/kelas') ?>">
+                                <i class="bi bi-mortarboard-fill"></i> Daftar Kelas
                             </a>
                         </li>
 
+                        <!-- MODUL -->
                         <li
-                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/modul')) ? 'class="sub-active"' : '' ?>>
-                            <a href="<?= base_url('dashboard/pengajar/modul') ?>">
-                                <i class="bi bi-journal-bookmark-fill"></i>
-                                Modul
+                            <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/modul') ? 'class="sub-active"' : '' ?>>
+                            <a href="<?php echo base_url('dashboard/pengajar/modul') ?>">
+                                <i class="bi bi-journal-bookmark-fill"></i> Modul
                             </a>
                         </li>
 
+                        <!-- TUGAS -->
                         <li
-                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/tugas')) ? 'class="sub-active"' : '' ?>>
-                            <a href="<?= base_url('dashboard/pengajar/tugas') ?>">
-                                <i class="bi bi-pencil-square"></i>
-                                Tugas
+                            <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/tugas') ? 'class="sub-active"' : '' ?>>
+                            <a href="<?php echo base_url('dashboard/pengajar/tugas') ?>">
+                                <i class="bi bi-pencil-square"></i> Tugas
                             </a>
                         </li>
 
+                        <!-- MATERI -->
                         <li
-                            <?= (str_starts_with(uri_string(), 'dashboard/pengajar/materi')) ? 'class="sub-active"' : '' ?>>
-                            <a href="<?= base_url('dashboard/pengajar/materi-list') ?>">
-                                <i class="bi bi-play-circle-fill"></i>
-                                Materi
+                            <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/materi') ? 'class="sub-active"' : '' ?>>
+                            <a href="<?php echo base_url('dashboard/pengajar/materi-list') ?>">
+                                <i class="bi bi-play-circle-fill"></i> Materi
                             </a>
                         </li>
-
                     </ul>
                 </li>
 
+                <!-- Aplikasi Pendukung -->
                 <li
-                    <?= str_starts_with(uri_string(), 'dashboard/pengajar/aplikasi-pendukung') ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/pengajar/aplikasi-pendukung') ?>">
+                    <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/aplikasi-pendukung') ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/pengajar/aplikasi-pendukung') ?>">
                         <i class="bi bi-puzzle-fill"></i> Aplikasi Pendukung
                         <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/aplikasi-pendukung')): ?>
                         <span class="dot"></span>
@@ -131,14 +139,28 @@
                     </a>
                 </li>
 
-                <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/peserta')) ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/pengajar/peserta') ?>">
+                <!-- Peserta (submenu) -->
+                <li class="has-sub <?php echo $isPeserta ? 'open' : '' ?>">
+                    <a href="#" onclick="toggleSub(this); return false;">
                         <i class="bi bi-people-fill"></i> Peserta
-                        <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/peserta')): ?><span
-                            class="dot"></span><?php endif; ?>
+                        <i class="bi bi-chevron-down sub-arrow"
+                            style="margin-left:auto;font-size:11px;transition:transform .2s;"></i>
                     </a>
+                    <ul class="sub-nav">
+                        <li <?php echo uri_string() === 'dashboard/pengajar/peserta' ? 'class="sub-active"' : '' ?>>
+                            <a href="<?php echo base_url('dashboard/pengajar/peserta') ?>">
+                                <i class="bi bi-person-lines-fill"></i> Daftar Peserta
+                            </a>
+                        </li>
+                        <li
+                            <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/peserta/verifikasi') ? 'class="sub-active"' : '' ?>>
+                            <a href="<?php echo base_url('dashboard/pengajar/peserta/verifikasi') ?>">
+                                <i class="bi bi-shield-check"></i> Verifikasi Email
+                            </a>
+                        </li>
+                    </ul>
                 </li>
-
+                <!--  MENU VOUCHER -->
                 <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/voucher')) ? 'class="active"' : '' ?>>
                     <a href="<?= base_url('dashboard/pengajar/voucher') ?>">
                         <i class="bi bi-ticket-perforated-fill"></i> Voucher
@@ -147,12 +169,13 @@
                         <?php endif; ?>
                     </a>
                 </li>
+
             </ul>
 
             <div class="menu-label" style="margin-top:12px;">Akun</div>
             <ul class="sidebar-nav">
-                <li <?= uri_string() === 'dashboard/pengajar/profil' ? 'class="active"' : '' ?>>
-                    <a href="<?= base_url('dashboard/pengajar/profil') ?>">
+                <li <?php echo uri_string() === 'dashboard/pengajar/profil' ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/pengajar/profil') ?>">
                         <i class="bi bi-person-circle"></i> Profil Saya
                         <?php if (uri_string() === 'dashboard/pengajar/profil'): ?>
                         <span class="dot"></span>
@@ -162,7 +185,7 @@
             </ul>
 
             <div class="sidebar-logout">
-                <a href="<?= base_url('/logout') ?>">
+                <a href="<?php echo base_url('/logout') ?>">
                     <i class="bi bi-box-arrow-right"></i> Keluar Akun
                 </a>
             </div>
@@ -173,18 +196,6 @@
 
             <!-- TOPBAR -->
             <div class="topbar">
-                <!-- Hamburger (mobile only) -->
-                <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-
-                <!-- Mobile brand logo (shows when sidebar is hidden) -->
-                <div class="mobile-brand">
-                    <img src="<?= base_url('logo/image.png') ?>" alt="Elecomp LMS">
-                </div>
-
                 <div class="search-wrap">
                     <i class="bi bi-search"></i>
                     <input type="text" placeholder="Cari kelas, materi, atau peserta...">
@@ -197,10 +208,10 @@
                     </div>
                     <div class="user-info">
                         <div class="avatar">
-                            <?= strtoupper(substr(session()->get('nama') ?? 'P', 0, 1)) ?>
+                            <?php echo strtoupper(substr(session()->get('nama') ?? 'P', 0, 1)) ?>
                         </div>
                         <div class="user-meta">
-                            <div class="user-name"><?= esc(session()->get('nama') ?? 'Pengajar') ?></div>
+                            <div class="user-name"><?php echo esc(session()->get('nama') ?? 'Pengajar') ?></div>
                             <div class="user-role">Pengajar</div>
                         </div>
                     </div>
@@ -209,7 +220,7 @@
 
             <!-- CONTENT -->
             <div class="pengajar-content">
-                <?= $this->renderSection('content'); ?>
+                <?php echo $this->renderSection('content'); ?>
             </div>
 
         </div><!-- /main -->
@@ -224,7 +235,7 @@
     Swal.fire({
         icon: 'success',
         title: 'Berhasil',
-        text: '<?= esc(session()->getFlashdata('success')) ?>',
+        text: '<?php echo esc(session()->getFlashdata('success')) ?>',
         timer: 2000,
         showConfirmButton: false
     });
@@ -233,13 +244,12 @@
     Swal.fire({
         icon: 'error',
         title: 'Gagal',
-        text: '<?= esc(session()->getFlashdata('error')) ?>'
+        text: '<?php echo esc(session()->getFlashdata('error')) ?>'
     });
     <?php endif; ?>
     </script>
 
     <script src="<?= base_url('js/realtime.js') ?>"></script>
-
     <script>
     /* ── REALTIME / LOGOUT ── */
     let logoutTriggered = false;
@@ -258,18 +268,18 @@
         });
         setTimeout(async () => {
             try {
-                await fetch('<?= base_url("/logout") ?>', {
+                await fetch('<?php echo base_url("/logout") ?>', {
                     method: 'GET',
                     redirect: 'manual'
                 });
             } catch (_) {}
-            window.location.replace('<?= base_url("/login") ?>');
+            window.location.replace('<?php echo base_url("/login") ?>');
         }, 2000);
     }
 
     monitor = new RealtimeMonitor({
-        baseUrl: "<?= base_url() ?>",
-        user: "<?= esc(session()->get('email')) ?>",
+        baseUrl: "<?php echo base_url() ?>",
+        user: "<?php echo esc(session()->get('email')) ?>",
         onConnected: () => console.log('[SSE] Terhubung'),
         onDisconnected: () => console.log('[SSE] Terputus, mencoba reconnect...'),
         onError: (e) => console.warn('[SSE] Error:', e),
@@ -330,7 +340,7 @@
     }
     </script>
 
-    <?= $this->renderSection('scripts'); ?>
+    <?php echo $this->renderSection('scripts'); ?>
 </body>
 
 </html>
