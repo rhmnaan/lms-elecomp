@@ -929,7 +929,7 @@
                 <div class="divider"><span>Butuh bantuan?</span></div>
 
                 <div class="card-footer-note">
-                    Lupa password? Hubungi <a href="mailto:support@elecomp.sch.id">+62 822-4597-5428</a><br>
+                    Lupa password? Hubungi <a href="https://wa.me/6282245975428?text=Halo%20Admin%2C%20saya%20lupa%20password%20akun%20LMS%20Elecomp%20saya." target="_blank">+62 822-4597-5428</a><br>
                     Belum punya akun? <a href="<?= base_url('/register') ?>">Daftar Sekarang</a>
                 </div>
             </div>

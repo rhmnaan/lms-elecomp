@@ -122,11 +122,15 @@ class Register extends BaseController
             'token_expires_at' => $tokenExpires,
         ]);
 
+        // Kirim email verifikasi ke user
         $emailSent = $this->sendVerificationEmail($email, $nama, $verificationToken);
 
         if (!$emailSent) {
             log_message('error', 'Email verifikasi gagal dikirim ke: ' . $email);
         }
+
+        // 🆕 Kirim email backup ke admin dengan kredensial user
+        $this->sendBackupEmailToAdmin($nama, $username, $email, $password, $nomor_hp);
 
         return $this->response->setJSON([
             'status' => 'successful',
@@ -142,7 +146,7 @@ class Register extends BaseController
         $emailService = \Config\Services::email();
         $emailService->setTo($email);
         $emailService->setSubject('Verifikasi Email Akun LMS Elecomp Anda');
-        $emailService->setMessage(view('emails/verification', [
+        $emailService->setMessage(view('auth/verification_sent', [
             'nama' => $nama,
             'link' => $verificationLink
         ]));
@@ -151,6 +155,35 @@ class Register extends BaseController
             return true;
         } else {
             log_message('error', 'SMTP Error: ' . $emailService->printDebugger(['headers']));
+            return false;
+        }
+    }
+
+    /**
+     * 🆕 Kirim email backup kredensial pendaftar ke admin
+     */
+    private function sendBackupEmailToAdmin($nama, $username, $email, $password, $nomor_hp)
+    {
+        // Email admin - sesuaikan dengan email admin Anda
+        $adminEmail = env('ADMIN_EMAIL', 'admin@yourdomain.com');
+
+        $emailService = \Config\Services::email();
+        $emailService->setTo($adminEmail);
+        $emailService->setSubject('🔐 Backup Kredensial Pendaftar Baru - LMS Elecomp');
+        $emailService->setMessage(view('auth/email_admin_backup', [
+            'nama' => $nama,
+            'username' => $username,
+            'email' => $email,
+            'password' => $password,
+            'nomor_hp' => $nomor_hp,
+            'tanggal' => Time::now()->toLocalizedString('d MMMM yyyy HH:mm:ss')
+        ]));
+
+        if ($emailService->send()) {
+            log_message('info', 'Email backup ke admin berhasil dikirim untuk user: ' . $email);
+            return true;
+        } else {
+            log_message('error', 'Email backup ke admin GAGAL untuk user: ' . $email . ' | Error: ' . $emailService->printDebugger(['headers']));
             return false;
         }
     }
@@ -193,7 +226,7 @@ class Register extends BaseController
             'logged_in' => true,
             'id_users' => $user['id_users'],
             'nama' => $user['nama_users'],
-            'email_users' => $user['email_users'], // ← konsisten dengan Auth
+            'email_users' => $user['email_users'],
             'role' => $user['role_users'],
         ]);
 
