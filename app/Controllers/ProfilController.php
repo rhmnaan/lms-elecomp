@@ -50,7 +50,7 @@ class ProfilController extends BaseController
             $this->rolePath() . '/profil',
             [
                 'title' => 'Profil Saya',
-                'user'  => $user
+                'user'  => $user,
             ]
         );
     }
@@ -71,7 +71,7 @@ class ProfilController extends BaseController
             $this->rolePath() . '/edit_profil',
             [
                 'title' => 'Edit Profil',
-                'user'  => $user
+                'user'  => $user,
             ]
         );
     }
@@ -88,21 +88,36 @@ class ProfilController extends BaseController
             return redirect()->back()->with('error', 'User tidak ditemukan');
         }
 
-        $namaBaru  = trim($this->request->getPost('nama_users'));
-        $emailBaru = trim($this->request->getPost('email_users'));
+        $namaBaru     = trim($this->request->getPost('nama_users'));
+        $usernameBaru = trim($this->request->getPost('username'));
+        $emailBaru    = trim($this->request->getPost('email_users'));
+        $nomorHpBaru  = trim($this->request->getPost('nomor_hp'));
 
         $rules = [];
         $data  = [];
 
-        if ($namaBaru !== $userLama['nama_users']) {
+        // Cek perubahan nama
+        if ($namaBaru !== ($userLama['nama_users'] ?? '')) {
             $rules['nama_users'] = 'required|min_length[3]|max_length[100]';
             $data['nama_users']  = $namaBaru;
         }
 
-        if ($emailBaru !== $userLama['email_users']) {
-            $rules['email_users'] =
-                "required|valid_email|is_unique[users.email_users,id_users,{$userId}]";
-            $data['email_users'] = $emailBaru;
+        // Cek perubahan username
+        if ($usernameBaru !== ($userLama['username'] ?? '')) {
+            $rules['username'] = "required|min_length[3]|max_length[50]|regex_match[/^[a-zA-Z0-9_.]+$/]|is_unique[users.username,id_users,{$userId}]";
+            $data['username']  = $usernameBaru;
+        }
+
+        // Cek perubahan email
+        if ($emailBaru !== ($userLama['email_users'] ?? '')) {
+            $rules['email_users'] = "required|valid_email|is_unique[users.email_users,id_users,{$userId}]";
+            $data['email_users']  = $emailBaru;
+        }
+
+        // Cek perubahan nomor HP
+        if ($nomorHpBaru !== ($userLama['nomor_hp'] ?? '')) {
+            $rules['nomor_hp'] = "required|min_length[9]|max_length[15]|regex_match[/^[0-9]+$/]|is_unique[users.nomor_hp,id_users,{$userId}]";
+            $data['nomor_hp']  = $nomorHpBaru;
         }
 
         if (empty($data)) {
@@ -117,8 +132,10 @@ class ProfilController extends BaseController
 
         $this->userModel->update($userId, $data);
 
-        // Update session
-        session()->set($data);
+        // Update session jika nama berubah
+        if (isset($data['nama_users'])) {
+            session()->set('nama', $data['nama_users']);
+        }
 
         return redirect()
             ->to($this->roleRedirect())

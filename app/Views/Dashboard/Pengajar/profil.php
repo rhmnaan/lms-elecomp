@@ -48,6 +48,8 @@
         </div>
 
         <div class="row g-4">
+
+            <!-- Nama Lengkap -->
             <div class="col-md-6">
                 <div class="info-item">
                     <div class="info-label">Nama Lengkap</div>
@@ -57,6 +59,21 @@
                 </div>
             </div>
 
+            <!-- Username -->
+            <div class="col-md-6">
+                <div class="info-item">
+                    <div class="info-label">Username</div>
+                    <div class="info-value">
+                        <?php if (!empty($user['username'])): ?>
+                            <span class="text-muted" style="font-size:13px;">@</span><?php echo esc($user['username']) ?>
+                        <?php else: ?>
+                            <span class="text-muted fst-italic" style="font-size:13px;">Belum diatur</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email -->
             <div class="col-md-6">
                 <div class="info-item">
                     <div class="info-label">Email</div>
@@ -66,16 +83,32 @@
                 </div>
             </div>
 
+            <!-- Nomor HP -->
+            <div class="col-md-6">
+                <div class="info-item">
+                    <div class="info-label">Nomor HP / WhatsApp</div>
+                    <div class="info-value">
+                        <?php if (!empty($user['nomor_hp'])): ?>
+                            <?php echo esc($user['nomor_hp']) ?>
+                        <?php else: ?>
+                            <span class="text-muted fst-italic" style="font-size:13px;">Belum diatur</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bergabung Sejak -->
             <div class="col-md-6">
                 <div class="info-item">
                     <div class="info-label">Bergabung Sejak</div>
                     <div class="info-value">
                         <?php echo isset($user['created_at'])
-    ? date('d F Y', strtotime($user['created_at']))
-    : '-' ?>
+                            ? date('d F Y', strtotime($user['created_at']))
+                            : '-' ?>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>

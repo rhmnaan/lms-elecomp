@@ -897,7 +897,7 @@ function setSemuaAkses(val) {
 }
 
 // ============================================
-// VALIDASI FORM EDIT - CEgah error "Data tidak valid"
+// VALIDASI FORM EDIT - Cegah error "Data tidak valid"
 // ============================================
 
 // Validasi form edit sebelum submit

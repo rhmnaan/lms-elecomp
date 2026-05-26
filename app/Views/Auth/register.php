@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar — LMS Elecomp</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         *,
@@ -985,7 +987,8 @@
                         <label class="field-label" for="email">Alamat Email</label>
                         <div class="field-wrap">
                             <i class="fas fa-envelope field-icon"></i>
-                            <input type="email" id="email" class="field-input" placeholder="nama@elecomp.sch.id" autocomplete="email">
+                            <input type="email" id="email" class="field-input" placeholder="nama@elecomp.sch.id"
+                                autocomplete="email">
                             <i class="fas fa-check field-valid-icon" id="vi-email"></i>
                         </div>
                     </div>
@@ -994,7 +997,8 @@
                         <label class="field-label" for="password">Password</label>
                         <div class="field-wrap">
                             <i class="fas fa-lock field-icon"></i>
-                            <input type="password" id="password" class="field-input" placeholder="Buat password kuat" autocomplete="new-password">
+                            <input type="password" id="password" class="field-input" placeholder="Buat password kuat"
+                                autocomplete="new-password">
                             <button type="button" class="toggle-pw" id="toggle-pw1" tabindex="-1">
                                 <i class="fas fa-eye" id="eye1"></i>
                             </button>
@@ -1021,7 +1025,8 @@
                         <label class="field-label" for="confirm-pw">Konfirmasi Password</label>
                         <div class="field-wrap">
                             <i class="fas fa-lock field-icon"></i>
-                            <input type="password" id="confirm-pw" class="field-input" placeholder="Ulangi password Anda" autocomplete="new-password">
+                            <input type="password" id="confirm-pw" class="field-input"
+                                placeholder="Ulangi password Anda" autocomplete="new-password">
                             <button type="button" class="toggle-pw" id="toggle-pw2" tabindex="-1">
                                 <i class="fas fa-eye" id="eye2"></i>
                             </button>
@@ -1053,7 +1058,37 @@
                         <label class="field-label" for="nama">Nama Lengkap</label>
                         <div class="field-wrap">
                             <i class="fas fa-user field-icon"></i>
-                            <input type="text" id="nama" class="field-input" placeholder="Budi Santoso" autocomplete="name">
+                            <input type="text" id="nama" class="field-input" placeholder="Budi Santoso"
+                                autocomplete="name">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="username">
+                            Username
+                            <span class="required-star">*</span>
+                        </label>
+                        <div class="field-wrap">
+                            <i class="fas fa-at field-icon"></i>
+                            <input type="text" id="username" class="field-input" placeholder="budi_santoso"
+                                autocomplete="username" maxlength="50">
+                            <i class="fas fa-check field-valid-icon" id="vi-username"></i>
+                        </div>
+                        <div class="confirm-hint" id="username-hint">
+                            <i class="fas fa-circle-exclamation"></i>
+                            <span id="username-hint-text"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="nomor_hp">Nomor HP / WhatsApp</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-phone field-icon"></i>
+                            <input type="tel" id="nomor_hp" class="field-input" placeholder="08123456789"
+                                autocomplete="tel" maxlength="15">
+                            <i class="fas fa-check field-valid-icon" id="vi-hp"></i>
+                        </div>
+                        <div class="confirm-hint" id="hp-hint">
+                            <i class="fas fa-circle-exclamation"></i>
+                            <span id="hp-hint-text"></span>
                         </div>
                     </div>
 
@@ -1069,7 +1104,8 @@
                         <button class="btn-back" onclick="goToStep(1)">
                             <i class="fas fa-arrow-left"></i> Kembali
                         </button>
-                        <button class="btn-submit" id="btn-submit" style="margin-bottom:0; flex:1;" onclick="doRegister()">
+                        <button class="btn-submit" id="btn-submit" style="margin-bottom:0; flex:1;"
+                            onclick="doRegister()">
                             <span id="btn-label">Buat Akun</span>
                             <div class="spinner" id="spinner"></div>
                             <i class="fas fa-check" id="btn-icon"></i>
@@ -1080,10 +1116,13 @@
                 <!-- PANEL 3: Sukses -->
                 <div class="form-panel" id="panel-3">
                     <div style="text-align:center; padding: 20px 0;">
-                        <div style="width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--blue-sky));border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 12px 30px rgba(3,170,222,0.35);">
+                        <div
+                            style="width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--blue-sky));border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 12px 30px rgba(3,170,222,0.35);">
                             <i class="fas fa-check" style="font-size:30px;color:#fff;"></i>
                         </div>
-                        <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--blue-deep);margin-bottom:8px;">Pendaftaran Berhasil!</h2>
+                        <h2
+                            style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--blue-deep);margin-bottom:8px;">
+                            Pendaftaran Berhasil!</h2>
                         <p style="font-size:14px;color:var(--gray-muted);margin-bottom:24px;line-height:1.6;">
                             Akun Anda telah dibuat. Silakan login ke dashboard.
                         </p>
@@ -1106,7 +1145,8 @@
                 Mulai Perjalanan<br>
                 <span class="line-accent">Belajarmu Hari Ini</span>
             </h1>
-            <p class="hero-sub">Daftar gratis dan akses ratusan materi, kuis interaktif, serta sertifikat digital bersama ribuan siswa Elecomp.</p>
+            <p class="hero-sub">Daftar gratis dan akses ratusan materi, kuis interaktif, serta sertifikat digital
+                bersama ribuan siswa Elecomp.</p>
             <div class="benefit-list">
                 <div class="benefit-item">
                     <div class="benefit-icon teal"><i class="fas fa-infinity"></i></div>
@@ -1142,7 +1182,7 @@
     </div>
 
     <script>
-        (function() {
+        (function () {
             const wrap = document.getElementById('particles');
             for (let i = 0; i < 20; i++) {
                 const p = document.createElement('div');
@@ -1154,6 +1194,7 @@
                 wrap.appendChild(p);
             }
         })();
+
 
         // ── Fingerprint — set cookie sebelum register ──
         function generateFingerprint() {
@@ -1206,6 +1247,72 @@
 
         const $ = id => document.getElementById(id);
         let currentStep = 1;
+
+        // ── Username listener ──
+        $('username').addEventListener('input', function () {
+            hideError();
+            // Hanya huruf, angka, underscore, titik
+            this.value = this.value.replace(/[^a-zA-Z0-9_.]/g, '');
+
+            const val = this.value.trim();
+            const ok = /^[a-zA-Z0-9_.]{3,50}$/.test(val);
+            const hint = $('username-hint');
+            const txt = $('username-hint-text');
+            const ico = hint.querySelector('i');
+
+            this.classList.toggle('valid', ok);
+            this.classList.toggle('error-field', val.length > 0 && !ok);
+            $('vi-username').classList.toggle('show', ok);
+
+            if (val.length > 0 && val.length < 3) {
+                hint.classList.add('show', 'no-match');
+                hint.classList.remove('match');
+                ico.className = 'fas fa-circle-xmark';
+                txt.textContent = 'Username minimal 3 karakter';
+            } else if (val.length > 0 && !ok) {
+                hint.classList.add('show', 'no-match');
+                hint.classList.remove('match');
+                ico.className = 'fas fa-circle-xmark';
+                txt.textContent = 'Hanya huruf, angka, titik, dan underscore';
+            } else if (ok) {
+                hint.classList.add('show', 'match');
+                hint.classList.remove('no-match');
+                ico.className = 'fas fa-circle-check';
+                txt.textContent = 'Username tersedia';
+            } else {
+                hint.classList.remove('show', 'match', 'no-match');
+            }
+        });
+
+        // ── Nomor HP listener ── 
+        $('nomor_hp').addEventListener('input', function () {
+            hideError();
+            this.value = this.value.replace(/[^0-9]/g, '');
+            const val = this.value.trim();
+            const ok = /^[0-9]{9,15}$/.test(val);
+            const hint = $('hp-hint');
+            const txt = $('hp-hint-text');
+            const ico = hint.querySelector('i');
+
+            this.classList.toggle('valid', ok);
+            this.classList.toggle('error-field', val.length > 0 && !ok);
+            $('vi-hp').classList.toggle('show', ok);
+
+            if (val.length > 0 && !ok) {
+                hint.classList.add('show', 'no-match');
+                hint.classList.remove('match');
+                ico.className = 'fas fa-circle-xmark';
+                txt.textContent = 'Gunakan angka 9–15 digit (tanpa spasi/tanda)';
+            } else if (ok) {
+                hint.classList.add('show', 'match');
+                hint.classList.remove('no-match');
+                ico.className = 'fas fa-circle-check';
+                txt.textContent = 'Format nomor valid';
+            } else {
+                hint.classList.remove('show', 'match', 'no-match');
+            }
+        });
+
 
         function showError(msg) {
             $('error-msg-text').textContent = msg;
@@ -1269,14 +1376,14 @@
             });
         }
 
-        $('email').addEventListener('input', function() {
+        $('email').addEventListener('input', function () {
             hideError();
             const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value.trim());
             this.classList.toggle('valid', ok && this.value.length > 0);
             $('vi-email').classList.toggle('show', ok && this.value.length > 0);
         });
 
-        $('password').addEventListener('input', function() {
+        $('password').addEventListener('input', function () {
             hideError();
             updateStrengthUI(this.value);
             checkConfirm();
@@ -1408,6 +1515,25 @@
                 showError('Anda harus menyetujui syarat & ketentuan terlebih dahulu.');
                 return;
             }
+            const username = $('username').value.trim();
+            if (!username) {
+                showError('Username wajib diisi.');
+                return;
+            }
+            if (!/^[a-zA-Z0-9_.]{3,50}$/.test(username)) {
+                showError('Username tidak valid. Gunakan huruf, angka, titik, atau underscore (min. 3 karakter).');
+                return;
+            }
+
+            const nomorHp = $('nomor_hp').value.trim();
+            if (!nomorHp) {
+                showError('Nomor HP wajib diisi.');
+                return;
+            }
+            if (!/^[0-9]{9,15}$/.test(nomorHp)) {
+                showError('Format nomor HP tidak valid. Gunakan angka 9–15 digit.');
+                return;
+            }
 
             setLoading(true);
             try {
@@ -1415,6 +1541,8 @@
                 form.append('email_users', $('email').value.trim());
                 form.append('password_users', $('password').value);
                 form.append('nama_users', nama);
+                form.append('nomor_hp', nomorHp);
+                form.append('username', username);
 
                 const res = await fetch('<?= base_url("register") ?>', {
                     method: 'POST',
