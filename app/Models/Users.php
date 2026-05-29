@@ -14,9 +14,9 @@ class Users extends Model
     protected $protectFields = true;
     protected $allowedFields = [
         'nama_users',
-        'username', 
+        'username',
         'email_users',
-        'nomor_hp',            
+        'nomor_hp',
         'password_users',
         'role_users',
         'fingerprint_device',
@@ -24,6 +24,8 @@ class Users extends Model
         'email_verified',
         'verification_token',
         'token_expires_at',
+        'reset_token',
+        'reset_token_expires_at',
     ];
 
     protected $useTimestamps = true;
@@ -46,10 +48,10 @@ class Users extends Model
             'is_unique' => 'Email sudah terdaftar.',
         ],
         'username' => [
-        'is_unique'  => 'Username sudah digunakan.',
-        'min_length' => 'Username minimal 3 karakter.',
+            'is_unique'  => 'Username sudah digunakan.',
+            'min_length' => 'Username minimal 3 karakter.',
         ],
-        'nomor_hp' => [                                             
+        'nomor_hp' => [
             'is_unique'   => 'Nomor HP sudah terdaftar. Gunakan nomor lain.',
             'min_length'  => 'Nomor HP minimal 9 digit.',
             'max_length'  => 'Nomor HP maksimal 15 digit.',

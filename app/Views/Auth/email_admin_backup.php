@@ -67,7 +67,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>🔐 Backup Kredensial Pendaftar Baru</h2>
+        <h2>Backup Kredensial Pendaftar Baru</h2>
         
         <p>Halo Admin,</p>
         <p>Pengguna baru telah mendaftar di sistem LMS Elecomp. Berikut adalah detail kredensial untuk backup:</p>
@@ -100,7 +100,7 @@
         </div>
 
         <div class="warning">
-            ⚠️ <strong>PERHATIAN:</strong> Email ini berisi informasi sensitif. Harap simpan dengan aman dan jangan dibagikan kepada pihak lain. Segera hapus email ini setelah dicatat jika diperlukan.
+             <strong>PERHATIAN:</strong> Email ini berisi informasi sensitif. Harap simpan dengan aman dan jangan dibagikan kepada pihak lain. Segera hapus email ini setelah dicatat jika diperlukan.
         </div>
 
         <div class="footer">

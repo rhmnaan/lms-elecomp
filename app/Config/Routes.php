@@ -16,6 +16,11 @@ $routes->get('register', 'Register::index');
 $routes->post('register', 'Register::store');
 $routes->get('register/verify', 'Register::verify');
 $routes->get('register/verification-sent', 'Register::verificationSent');
+$routes->get('forgot-password',         'ForgotPassword::index');
+$routes->post('forgot-password/send',   'ForgotPassword::send');
+$routes->get('forgot-password/reset',   'ForgotPassword::resetForm');
+$routes->post('forgot-password/reset',  'ForgotPassword::reset');
+ 
 $routes->get('testemail', 'TestEmail::index');
 // Webhook / API ringan
 $routes->get('cekaction/(:segment)', 'Webhook::cekAction/$1');
