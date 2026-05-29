@@ -1370,7 +1370,7 @@ public function submitTugas()
             $aplikasi = $this->aplikasiModel->findAll();
         }
         
-        return view('dashboard/peserta/aplikasi_pendukung', [
+        return view('Dashboard/Peserta/aplikasi_pendukung', [
             'title' => 'Aplikasi Pendukung',
             'aplikasi' => $aplikasi
         ]);
