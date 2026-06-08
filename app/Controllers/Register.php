@@ -146,7 +146,7 @@ class Register extends BaseController
         $emailService = \Config\Services::email();
         $emailService->setTo($email);
         $emailService->setSubject('Verifikasi Email Akun LMS Elecomp Anda');
-        $emailService->setMessage(view('emails/verification', [
+        $emailService->setMessage(view('auth/verification_sent', [
             'nama' => $nama,
             'link' => $verificationLink
         ]));
