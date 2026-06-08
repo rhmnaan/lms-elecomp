@@ -77,15 +77,6 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
             <h3><?= esc($modul['judul_modul']) ?></h3>
             <p><?= count($materi_list) ?> materi &bull; Modul <?= $modul['urutan_modul'] ?? 1 ?></p>
         </div>
-        <?php if (! empty($has_pending_tugas)): ?>
-        <div class="materi-alert">
-            <div class="materi-alert-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
-            <div>
-                <strong>Perhatian:</strong> Anda harus mengerjakan tugas terlebih dahulu sebelum membuka materi
-                selanjutnya.
-            </div>
-        </div>
-        <?php endif; ?>
         <ul class="materi-list">
             <?php foreach ($materi_list as $index => $m):
                 $isActive = ($currentMateri && $m['id_materi'] == $currentMateri['id_materi']);
@@ -111,15 +102,19 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
                     $tipeLabel = 'Artikel';
                 }
                 ?>
-            <li class="materi-list-item <?= $isActive ? 'active' : '' ?> <?= !$m['is_accessible'] ? 'disabled' : '' ?>"
-                <?= $m['is_accessible'] ? 'onclick="loadMateri(' . $m['id_materi'] . ')"' : '' ?>>
+            <?php
+                $isCompleted  = $m['is_completed'] ?? false;
+                $isAccessible = $m['is_accessible'] || $isCompleted; // completed = selalu bisa dibuka
+                ?>
+            <li class="materi-list-item <?= $isActive ? 'active' : '' ?> <?= !$isAccessible ? 'disabled' : '' ?>"
+                <?= $isAccessible ? 'onclick="loadMateri(' . $m['id_materi'] . ')"' : '' ?>>
                 <div class="materi-list-number"><?= $index + 1 ?></div>
                 <div class="materi-list-info">
                     <div class="materi-list-title"><?= esc($m['judul_materi']) ?></div>
                     <div class="materi-list-meta"><?= $tipeIcon ?> <?= $tipeLabel ?></div>
                 </div>
-                <div class="status-icon <?= ($m['is_completed'] ?? false) ? 'completed' : '' ?>">
-                    <?php if ($m['is_completed'] ?? false): ?>
+                <div class="status-icon <?= $isCompleted ? 'completed' : '' ?>">
+                    <?php if ($isCompleted): ?>
                     <i class="bi bi-check-circle-fill"></i>
                     <?php endif; ?>
                 </div>
@@ -175,6 +170,11 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
         <div class="content-body">
 
             <!-- PRE TEST -->
+            <?php 
+                $preTestSoal = json_decode($currentMateri['pre_test'] ?? '', true);
+                $hasPreTest = !empty($preTestSoal) && is_array($preTestSoal);
+                ?>
+            <?php if ($hasPreTest): ?>
             <div class="content-section">
                 <div class="section-label">
                     <i class="bi bi-clipboard-check" style="color:#0ea5e9;"></i> Pre Test
@@ -197,7 +197,7 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
                         <p>Kerjakan pre test untuk mengetahui pemahaman awal kamu sebelum memulai materi.</p>
                     </div>
                     <a href="<?= base_url('dashboard/peserta/pretest/' . $currentMateri['id_materi']) .
-                                '?redirect=' . urlencode(
+                                    '?redirect=' . urlencode(
                                     base_url('dashboard/peserta/materi-modul/' . $modul['id_modul']) .
                                     '?materi=' . $currentMateri['id_materi']
                                 ) ?>" class="btn-pretest">
@@ -206,13 +206,14 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
                 </div>
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
 
             <!-- 1. VIDEO -->
             <?php if ($hasVideo): ?>
             <div class="content-section">
 
-                <?php if (!$has_pretest): ?>
-                <!-- VIDEO TERKUNCI -->
+                <?php if ($hasPreTest && !$has_pretest): ?>
+                <!-- VIDEO TERKUNCI — hanya kalau memang ada pre test -->
                 <div class="video-container locked">
                     <div class="locked-overlay">
                         <i class="bi bi-lock-fill"></i>
@@ -222,10 +223,20 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
 
                 <?php elseif ($isLocalVideo): ?>
                 <!-- ▶️ VIDEO LOKAL -->
-                <div class="video-container mb-4" style="border-radius:12px;overflow:hidden;">
-                    <video id="localVideo" controls preload="metadata"
-                        style="width:100%;max-width:100%;background:#000;" controlsList="nodownload noplaybackrate"
-                        disablePictureInPicture>
+                <div style="
+                                width:100%;
+                                background:#000;
+                                border-radius:12px;
+                                overflow:hidden;
+                                aspect-ratio:16/9;
+                                position:relative;
+                            ">
+                    <video id="localVideo" controls preload="auto" style="
+                                        width:100%;
+                                        height:100%;
+                                        display:block;
+                                        object-fit:contain;
+                                    " oncontextmenu="return false;">
                         <source src="<?= base_url('video/stream/' . esc($currentMateri['video_url_materi'])) ?>"
                             type="video/mp4">
                         Browser Anda tidak mendukung pemutar video.
@@ -256,7 +267,7 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
             <?php if ($hasFile): ?>
             <div class="content-section">
 
-                <?php if (!$has_pretest): ?>
+                <?php if ($hasPreTest && !$has_pretest): ?>
                 <!-- DOKUMEN TERKUNCI -->
                 <div class="file-preview locked">
                     <div class="file-icon locked">
@@ -380,18 +391,23 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
             <?php endif; ?>
 
             <!-- POST TEST -->
+            <?php 
+                $postTestSoal = json_decode($currentMateri['post_test'] ?? '', true);
+                $hasPostTest = !empty($postTestSoal) && is_array($postTestSoal);
+                ?>
+            <?php if ($hasPostTest): ?>
             <div class="content-section">
                 <div class="section-label">
                     <i class="bi bi-patch-question-fill" style="color:#7c3aed;"></i> Post Test
                 </div>
 
                 <?php if ($has_posttest):
-                    $posttestPassed = !empty($nilai_post['nilai']) && $nilai_post['nilai'] >= 70;
-                    $cardBg      = $posttestPassed ? '#ecfdf5' : '#fee2e2';
-                    $borderColor = $posttestPassed ? '#86efac' : '#fca5a5';
-                    $textColor   = $posttestPassed ? '#065f46' : '#991b1b';
-                    $statusLabel = $posttestPassed ? 'Lulus Post Test' : 'Belum Lulus Post Test';
-                ?>
+                            $posttestPassed = !empty($nilai_post['nilai']) && $nilai_post['nilai'] >= 70;
+                            $cardBg = $posttestPassed ? '#ecfdf5' : '#fee2e2';
+                            $borderColor = $posttestPassed ? '#86efac' : '#fca5a5';
+                            $textColor = $posttestPassed ? '#065f46' : '#991b1b';
+                            $statusLabel = $posttestPassed ? 'Lulus Post Test' : 'Belum Lulus Post Test';
+                            ?>
                 <div class="posttest-card"
                     style="background:<?= $cardBg ?>;border-color:<?= $borderColor ?>;display:flex;align-items:center;justify-content:space-between;">
                     <div class="posttest-info" style="max-width:calc(100% - 180px);">
@@ -454,7 +470,7 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
                         <p>Kerjakan test setelah menyelesaikan semua materi.</p>
                     </div>
                     <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] .
-                            '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
+                                        '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
                         Mulai Post Test
                     </a>
                 </div>
@@ -467,7 +483,7 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
                         <p>Kerjakan test setelah menyelesaikan semua materi.</p>
                     </div>
                     <a href="<?= base_url('dashboard/peserta/posttest/' . $currentMateri['id_materi'] .
-                            '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
+                                        '?redirect=' . urlencode(current_url())) ?>" class="btn-posttest">
                         Mulai Post Test
                     </a>
                 </div>
@@ -475,6 +491,7 @@ $currentFileInfo = $fileTypeMap[$currentExt] ?? ['bi-file-earmark-fill', strtoup
 
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
 
             <!-- NAVIGASI -->
             <div class="nav-buttons">
@@ -551,26 +568,156 @@ window.progressTerkirim = false;
    NAVIGASI
 ════════════════════════════════════════════════════════ */
 function loadMateri(idMateri) {
-    window.location.href =
-        '<?= base_url('dashboard/peserta/materi-modul') ?>/<?= $modul['id_modul'] ?>?materi=' + idMateri;
+
+    /* ── 1. Tandai item sidebar yang diklik ── */
+    document.querySelectorAll('.materi-list-item').forEach(el => {
+        el.style.pointerEvents = 'none'; // nonaktifkan semua klik selama loading
+    });
+
+    const clickedItem = document.querySelector(
+        `.materi-list-item[onclick*="loadMateri(${idMateri})"]`
+    );
+    if (clickedItem) {
+        clickedItem.classList.add('sidebar-loading');
+        const numEl = clickedItem.querySelector('.materi-list-number');
+        if (numEl) {
+            numEl.dataset.origText = numEl.textContent;
+            numEl.innerHTML = `<span class="sidebar-spinner"></span>`;
+        }
+    }
+
+    /* ── 2. Overlay fullscreen ── */
+    const overlay = document.createElement('div');
+    overlay.id = 'materLoadingOverlay';
+    overlay.style.cssText = `
+            position:fixed;inset:0;
+            background:rgba(255,255,255,0.92);
+            z-index:99999;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:20px;
+            font-family:system-ui,sans-serif;
+            animation:overlayFadeIn .2s ease;
+        `;
+
+    /* Ambil judul materi dari sidebar jika ada */
+    let judulMateri = 'Memuat materi...';
+    if (clickedItem) {
+        const titleEl = clickedItem.querySelector('.materi-list-title');
+        if (titleEl) judulMateri = titleEl.textContent.trim();
+    }
+
+    overlay.innerHTML = `
+            <style>
+                @keyframes overlayFadeIn { from { opacity:0 } to { opacity:1 } }
+                @keyframes spin { to { transform:rotate(360deg) } }
+                @keyframes progressSlide {
+                    0%   { width:0%;   margin-left:0 }
+                    50%  { width:60% }
+                    100% { width:20%; margin-left:100% }
+                }
+            </style>
+    
+            <div style="
+                background:#fff;
+                border:0.5px solid #e5e7eb;
+                border-radius:20px;
+                padding:36px 48px;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                gap:20px;
+                min-width:280px;
+                max-width:360px;
+                text-align:center;
+            ">
+                <!-- Spinner -->
+                <div style="position:relative;width:52px;height:52px">
+                    <div style="
+                        position:absolute;inset:0;
+                        border-radius:50%;
+                        border:3px solid #e5e7eb;
+                        border-top-color:#2563eb;
+                        animation:spin .7s linear infinite;
+                    "></div>
+                    <div style="
+                        position:absolute;inset:8px;
+                        border-radius:50%;
+                        border:2px solid #f3f4f6;
+                        border-top-color:#93c5fd;
+                        animation:spin 1.1s linear infinite reverse;
+                    "></div>
+                </div>
+    
+                <!-- Teks -->
+                <div>
+                    <div style="
+                        font-size:15px;
+                        font-weight:600;
+                        color:#111827;
+                        margin-bottom:6px;
+                        white-space:nowrap;
+                        overflow:hidden;
+                        text-overflow:ellipsis;
+                        max-width:240px;
+                    ">${judulMateri}</div>
+                    <div style="font-size:13px;color:#9ca3af;">Menyiapkan konten materi</div>
+                </div>
+    
+                <!-- Progress bar animasi -->
+                <div style="
+                    width:200px;height:3px;
+                    background:#f3f4f6;
+                    border-radius:99px;
+                    overflow:hidden;
+                ">
+                    <div style="
+                        height:100%;
+                        width:30%;
+                        background:#2563eb;
+                        border-radius:99px;
+                        animation:progressSlide 1.4s ease-in-out infinite;
+                    "></div>
+                </div>
+            </div>
+        `;
+    document.body.appendChild(overlay);
+
+    /* ── 3. Navigasi ── */
+    setTimeout(() => {
+        window.location.href =
+            '<?= base_url('dashboard/peserta/materi-modul') ?>/<?= $modul['id_modul'] ?>?materi=' + idMateri;
+    }, 80); // delay kecil biar overlay sempat render dulu
 }
 
 /* ══════════════════════════════════════
    INIT: VIDEO & NON-PDF FILE SELESAI
 ══════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-    // Video lokal
+    // Jika tidak ada file sama sekali, tandai pdfSelesai = true dari awal
+    if (!MATERI_PUNYA_FILE) {
+        window.pdfSelesai = true;
+    }
+
+    // Jika ada file non-PDF (Word/Excel/PPT): langsung tandai selesai
+    if (MATERI_PUNYA_FILE && FILE_EXT !== 'pdf') {
+        window.pdfSelesai = true;
+    }
+
+    // Jika tidak ada video sama sekali, tandai videoSelesai = true dari awal
+    if (!MATERI_PUNYA_VIDEO) {
+        window.videoSelesai = true;
+    }
+
+    // Video lokal — tandai selesai saat video habis
     const video = document.getElementById('localVideo');
     if (video) {
         video.addEventListener('ended', () => {
             window.videoSelesai = true;
             kirimProgressMateri();
         });
-    }
-
-    // Untuk file non-PDF (Word/Excel/PPT): langsung tandai selesai saat dibuka
-    if (MATERI_PUNYA_FILE && FILE_EXT !== 'pdf') {
-        window.pdfSelesai = true;
     }
 });
 
@@ -619,7 +766,7 @@ function kirimProgressMateri() {
     if (window.progressTerkirim) return;
     window.progressTerkirim = true;
 
-    const idMateri = <?= (int)($materi_aktif['id_materi'] ?? 0) ?>;
+    const idMateri = <?= (int) ($materi_aktif['id_materi'] ?? 0) ?>;
     const fd = new FormData();
     fd.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
     fd.append('id_materi', idMateri);
@@ -634,9 +781,27 @@ function kirimProgressMateri() {
         .then(r => r.json())
         .then(res => {
             if (res.success) {
-                showSuccessNotification();
-                unlockPosttest();
-                setTimeout(() => location.reload(), 1500);
+                const hasPostTest = <?= $hasPostTest ? 'true' : 'false' ?>;
+                const nextMateriId = <?= $nextMateri ? $nextMateri['id_materi'] : 'null' ?>;
+                const idModul = <?= $modul['id_modul'] ?>;
+
+                if (hasPostTest) {
+                    // Ada posttest → unlock posttest dulu, tidak redirect
+                    showSuccessNotification('Materi selesai! Kerjakan Post Test terlebih dahulu.');
+                    unlockPosttest();
+                } else if (nextMateriId) {
+                    // Tidak ada posttest & ada materi berikutnya → redirect langsung
+                    showSuccessNotification('Materi selesai! Menuju materi selanjutnya...');
+                    setTimeout(() => {
+                        window.location.href = BASE_URL_JS +
+                            'dashboard/peserta/materi-modul/' + idModul +
+                            '?materi=' + nextMateriId;
+                    }, 1500);
+                } else {
+                    // Materi terakhir di modul
+                    showSuccessNotification('Selamat! Kamu telah menyelesaikan semua materi di modul ini.');
+                    setTimeout(() => location.reload(), 1500);
+                }
             } else {
                 window.progressTerkirim = false;
                 showErrorNotification(res.error || 'Gagal menyimpan progress');
@@ -650,13 +815,14 @@ function kirimProgressMateri() {
 /* ════════════════════════════════════════════════════════
    UI HELPERS
 ════════════════════════════════════════════════════════ */
-function showSuccessNotification() {
+function showSuccessNotification(msg) {
+    msg = msg || 'Materi selesai!';
     const n = document.createElement('div');
     n.innerHTML = `<div style="position:fixed;top:20px;right:20px;background:#10b981;color:#fff;
-        padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);
-        z-index:10000;font-family:system-ui,sans-serif;">
-        <strong>✓ Sukses!</strong> Materi selesai. Posttest sekarang tersedia.
-    </div>`;
+            padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);
+            z-index:10000;font-family:system-ui,sans-serif;">
+            <strong>✓ Sukses!</strong> ${msg}
+        </div>`;
     document.body.appendChild(n);
     setTimeout(() => n.remove(), 3000);
 }

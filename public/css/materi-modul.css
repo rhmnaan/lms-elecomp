@@ -1418,3 +1418,29 @@
     object-fit: contain;  /* ← video tidak terpotong */
     border-radius: 12px;
 }
+
+/* Sidebar item saat loading */
+.materi-list-item.sidebar-loading {
+    background: #f0f9ff !important;
+    animation: sidebarPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes sidebarPulse {
+    0%, 100% { background: #f0f9ff; }
+    50%       { background: #dbeafe; }
+}
+
+.sidebar-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #bfdbfe;
+    border-top-color: #2563eb;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

@@ -620,28 +620,40 @@ class DashboardPeserta extends BaseController
             if ($index == 0) {
                 $materi['is_accessible'] = true;
             } else {
-                $prevMateri = $materi_list[$index - 1];
-        
-                $prevPostTestSoal = json_decode($prevMateri['post_test'] ?? '', true);
-                $prevHasPostTest  = !empty($prevPostTestSoal) && is_array($prevPostTestSoal);
-        
-                $prevSelesai = $db->table('user_materi_progress')
-                    ->where('id_materi', $prevMateri['id_materi'])
+                // Cek apakah materi ini sendiri sudah pernah completed
+                $sudahSelesaiSendiri = $db->table('user_materi_progress')
+                    ->where('id_materi', $materi['id_materi'])
                     ->where('id_users', $this->idUsers)
                     ->where('is_completed', 1)
                     ->countAllResults();
         
-                if ($prevHasPostTest) {
-                    $prevPosttest = $db->table('materi_quiz_results')
+                // Jika materi ini sudah pernah selesai, selalu accessible
+                if ($sudahSelesaiSendiri > 0) {
+                    $materi['is_accessible'] = true;
+                } else {
+                    // Belum pernah selesai → cek syarat dari materi sebelumnya
+                    $prevMateri = $materi_list[$index - 1];
+        
+                    $prevPostTestSoal = json_decode($prevMateri['post_test'] ?? '', true);
+                    $prevHasPostTest  = !empty($prevPostTestSoal) && is_array($prevPostTestSoal);
+        
+                    $prevSelesai = $db->table('user_materi_progress')
                         ->where('id_materi', $prevMateri['id_materi'])
                         ->where('id_users', $this->idUsers)
-                        ->where('jenis_test', 'post')
-                        ->where('nilai >=', 70)
+                        ->where('is_completed', 1)
                         ->countAllResults();
-                    $materi['is_accessible'] = $prevPosttest > 0 && !$hasPendingTugas;
-                } else {
-                    // Tidak ada posttest → cukup materi selesai
-                    $materi['is_accessible'] = $prevSelesai > 0 && !$hasPendingTugas;
+        
+                    if ($prevHasPostTest) {
+                        $prevPosttest = $db->table('materi_quiz_results')
+                            ->where('id_materi', $prevMateri['id_materi'])
+                            ->where('id_users', $this->idUsers)
+                            ->where('jenis_test', 'post')
+                            ->where('nilai >=', 70)
+                            ->countAllResults();
+                        $materi['is_accessible'] = $prevPosttest > 0 && !$hasPendingTugas;
+                    } else {
+                        $materi['is_accessible'] = $prevSelesai > 0 && !$hasPendingTugas;
+                    }
                 }
             }
         }

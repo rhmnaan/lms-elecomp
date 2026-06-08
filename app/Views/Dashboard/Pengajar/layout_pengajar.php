@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><?php echo isset($title) ? esc($title) : 'LMS — Pengajar'; ?></title>
+    <title><?php echo isset($title) ? esc($title) : 'LMS'; ?></title>
 
     <?php echo $this->renderSection('meta'); ?>
 
@@ -15,131 +15,272 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link rel="stylesheet" href="<?php echo base_url('css/pengajar-layout.css') ?>">
+    <link rel="stylesheet" href="<?php echo base_url('css/peserta-layout.css') ?>">
+
+    <!-- Preconnect ke CDN yang sering dipakai -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
     <style>
-        /* ── SIDEBAR STRUCTURE ── */
+    /* =============================================
+       RESPONSIVE OVERRIDES — Mobile & Tablet
+       ============================================= */
+
+    /* ── SIDEBAR LOGO ── */
+    .sidebar-logo .logo-image {
+        width: 110px !important;
+        max-width: 110px !important;
+        height: auto !important;
+        object-fit: contain !important;
+        display: block !important;
+        margin: 0 !important;
+    }
+
+    /* ── SIDEBAR LAYOUT ── */
+    .sidebar {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
+    .sidebar-logo,
+    .sidebar .menu-label,
+    .sidebar .sidebar-nav {
+        flex-shrink: 0 !important;
+    }
+
+    .sidebar .sidebar-logout {
+        flex-shrink: 0 !important;
+        position: sticky !important;
+        bottom: 0 !important;
+        background: #ffffff !important;
+        border-top: 1px solid rgba(0, 0, 0, 0.07) !important;
+        padding: 10px 12px 20px !important;
+        margin-top: auto !important;
+        z-index: 2 !important;
+    }
+
+    /* ── SIDEBAR: off-canvas on tablet/mobile ── */
+    @media (max-width: 1024px) {
         .sidebar {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            position: fixed !important;
+            left: 0;
+            top: 0;
+            height: 100% !important;
+            z-index: 200;
+            transform: translateX(-100%);
+            transition: transform 0.24s cubic-bezier(.4, 0, .2, 1);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.10);
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+        .hamburger-btn {
+            display: flex !important;
+        }
+
+        .main {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            overflow-x: hidden !important;
+        }
+    }
+
+    /* Pastikan konten tidak meluber */
+    .wrapper {
+        overflow-x: hidden !important;
+    }
+
+    .admin-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    .admin-content>* {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+    }
+
+    .stat-cards,
+    .bottom-grid,
+    .dash-card,
+    .welcome-banner,
+    .page-header {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* ── HAMBURGER ── */
+    .hamburger-btn {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #475569;
+        font-size: 22px;
+        flex-shrink: 0;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .hamburger-btn:hover {
+        background: #f1f5f9;
+        color: #2563eb;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+        display: flex !important;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* ── OVERLAY ── */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 100;
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+    }
+
+    .sidebar-overlay.show {
+        display: block;
+    }
+
+    /* ── MOBILE (≤ 640px) ── */
+    @media (max-width: 640px) {
+        .topbar {
+            padding: 0 12px !important;
+            gap: 8px !important;
+            height: 56px !important;
+        }
+
+        /* Search bar selalu tampil, flex-grow mengisi sisa ruang */
+        .search-wrap {
+            flex: 1 !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            overflow: visible !important;
+        }
+
+        .search-wrap input {
+            font-size: 13px !important;
+            width: 100% !important;
+            padding: 9px 12px 9px 36px !important;
+            border-radius: 10px !important;
+        }
+
+        #searchIcon {
+            cursor: default !important;
+        }
+
+        .user-meta {
+            display: none !important;
+        }
+
+        .user-info {
+            padding: 4px !important;
+            border-radius: 50% !important;
+        }
+
+        /* Tanpa bottom nav, tidak perlu padding-bottom ekstra */
+        .admin-content {
+            padding: 14px 12px !important;
         }
 
         .sidebar-logo {
-            flex-shrink: 0;
+            padding: 18px 14px 12px !important;
         }
 
-        .sidebar-nav-wrapper {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding-bottom: 10px;
+        .menu-label {
+            padding: 12px 14px 4px !important;
         }
 
-        .sidebar-nav-wrapper::-webkit-scrollbar { width: 6px; }
-        .sidebar-nav-wrapper::-webkit-scrollbar-track { background: rgba(0,0,0,.03); }
-        .sidebar-nav-wrapper::-webkit-scrollbar-thumb { background: rgba(0,0,0,.12); border-radius: 3px; }
-        .sidebar-nav-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.2); }
+        .sidebar-nav {
+            padding: 4px 8px !important;
+        }
 
         .sidebar-logout {
-            flex-shrink: 0;
+            padding: 10px 8px 20px !important;
+        }
+    }
+
+    /* ── PAGE LOADING BAR ── */
+    #page-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        width: 0%;
+        background: #2563eb;
+        z-index: 99999;
+        transition: width 0.1s ease;
+        border-radius: 0 2px 2px 0;
+        display: none;
+    }
+
+    #page-loader.loading {
+        display: block;
+        animation: loaderProgress 1.2s ease-in-out forwards;
+    }
+
+    #page-loader.done {
+        width: 100% !important;
+        animation: none;
+        opacity: 0;
+        transition: opacity 0.3s ease, width 0.1s ease;
+    }
+
+    @keyframes loaderProgress {
+        0% {
+            width: 0%;
         }
 
-        /* ── HAMBURGER BUTTON ── */
-        .hamburger-btn {
-            display: none;
-            background: transparent;
-            border: none;
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            cursor: pointer;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            flex-shrink: 0;
-            border-radius: 8px;
-            transition: background .15s;
+        30% {
+            width: 35%;
         }
 
-        .hamburger-btn:hover { background: #f3f4f6; }
-
-        .hamburger-btn span {
-            display: block;
-            width: 22px;
-            height: 2px;
-            background: #374151;
-            border-radius: 99px;
-            transition: transform .3s ease, opacity .3s ease;
-            pointer-events: none;
+        60% {
+            width: 65%;
         }
 
-        .hamburger-btn.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-        .hamburger-btn.active span:nth-child(2) { opacity: 0; }
-        .hamburger-btn.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-        /* ── SIDEBAR OVERLAY ── */
-        .sidebar-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.45);
-            z-index: 998;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity .3s ease, visibility .3s ease;
+        85% {
+            width: 85%;
         }
 
-        .sidebar-overlay.show {
-            opacity: 1;
-            visibility: visible;
+        100% {
+            width: 90%;
         }
-
-        /* ── MOBILE RESPONSIVE ── */
-        @media (max-width: 1024px) {
-            .hamburger-btn {
-                display: flex;
-            }
-
-            .sidebar {
-                position: fixed !important;
-                left: 0;
-                top: 0;
-                height: 100% !important;
-                z-index: 999;
-                transform: translateX(-100%);
-                transition: transform .3s cubic-bezier(.4,0,.2,1);
-                box-shadow: 4px 0 24px rgba(0,0,0,.10);
-                visibility: visible !important; /* override apapun */
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .mobile-brand { display: flex; }
-
-            .main { width: 100% !important; }
-
-            .topbar {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .topbar { padding: 12px 16px; }
-            .search-wrap { flex: 1; }
-            .user-meta { display: none; }
-        }
+    }
     </style>
 
     <?php echo $this->renderSection('styles'); ?>
 </head>
 
 <body class="protected-page">
+
+    <div id="page-loader"></div>
 
     <!-- Overlay logout fullscreen -->
     <div id="logout-overlay">
@@ -158,139 +299,70 @@
         </div>
     </div>
 
-    <!-- ── SIDEBAR OVERLAY (backdrop mobile) ── -->
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
     <div class="wrapper">
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
         <!-- ── SIDEBAR ── -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
-                <div class="logo-mark d-flex align-items-center">
-                    <img src="<?php echo base_url('logo/image.png') ?>" alt="Elecomp LMS" class="logo-image mr-2">
+                <div class="logo-mark">
+                    <img src="<?= base_url('logo/image.png') ?>" alt="Elecomp LMS" class="logo-image">
                 </div>
                 <p class="logo-tagline">Learning Management System</p>
             </div>
+            <div class="menu-label">Menu Utama</div>
 
-            <!-- Wrapper untuk menu yang bisa scroll -->
-            <div class="sidebar-nav-wrapper">
-                <div class="menu-label">Menu Utama</div>
+            <ul class="sidebar-nav">
+                <li <?php echo uri_string() === 'dashboard/peserta/beranda' ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/peserta/beranda') ?>">
+                        <i class="bi bi-house-fill"></i> Beranda
+                        <?php if (uri_string() === 'dashboard/peserta/beranda'): ?>
+                        <span class="dot"></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
 
-                <?php
-                $isPeserta = str_starts_with(uri_string(), 'dashboard/pengajar/peserta');
-                $isKelas   = str_starts_with(uri_string(), 'dashboard/pengajar/kelas')
-                    || str_starts_with(uri_string(), 'dashboard/pengajar/modul')
-                    || str_starts_with(uri_string(), 'dashboard/pengajar/materi');
-                ?>
+                <li <?php echo str_starts_with(uri_string(), 'dashboard/peserta/program') ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/peserta/program') ?>">
+                        <i class="bi bi-search"></i> Temukan Kelas
+                        <?php if (str_starts_with(uri_string(), 'dashboard/peserta/program')): ?>
+                        <span class="dot"></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
 
-                <ul class="sidebar-nav">
+                <li <?php echo str_starts_with(uri_string(), 'dashboard/peserta/kelas') ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/peserta/kelas') ?>">
+                        <i class="bi bi-mortarboard-fill"></i> Kelas Saya
+                        <?php if (str_starts_with(uri_string(), 'dashboard/peserta/kelas')): ?>
+                        <span class="dot"></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
 
-                    <!-- Beranda -->
-                    <li <?php echo (uri_string() === 'dashboard/pengajar/beranda') ? 'class="active"' : '' ?>>
-                        <a href="<?php echo base_url('dashboard/pengajar/beranda') ?>">
-                            <i class="bi bi-house-fill"></i> Beranda
-                            <?php if (uri_string() === 'dashboard/pengajar/beranda'): ?>
-                                <span class="dot"></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
+                <li class="<?= str_starts_with(uri_string(), 'dashboard/peserta/aplikasi') ? 'active' : '' ?>">
+                    <a href="<?= base_url('dashboard/peserta/aplikasi') ?>">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>Aplikasi Pendukung</span>
+                        <?php if (str_starts_with(uri_string(), 'dashboard/peserta/aplikasi')): ?>
+                        <span class="dot"></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+            </ul>
 
-                    <!-- Manajemen Kelas dengan submenu dropdown -->
-                    <?php $isKelas = str_starts_with(uri_string(), 'dashboard/pengajar/kelas')
-                        || str_starts_with(uri_string(), 'dashboard/pengajar/modul')
-                        || str_starts_with(uri_string(), 'dashboard/pengajar/materi'); ?>
-                    <li class="has-sub <?= $isKelas ? 'open' : '' ?>">
-                        <a href="#" onclick="toggleSub(this); return false;">
-                            <i class="bi bi-book-fill"></i> Manajemen Kelas
-                            <i class="bi bi-chevron-down sub-arrow"
-                                style="margin-left:auto;font-size:11px;transition:transform .2s;"></i>
-                        </a>
-                        <ul class="sub-nav">
-                            <li <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/program') ? 'class="sub-active"' : '' ?>>
-                                <a href="<?php echo base_url('dashboard/pengajar/program') ?>">
-                                    <i class="bi bi-grid-1x2-fill"></i> Program
-                                </a>
-                            </li>
-                            <li <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/kelas') ? 'class="sub-active"' : '' ?>>
-                                <a href="<?php echo base_url('dashboard/pengajar/kelas') ?>">
-                                    <i class="bi bi-mortarboard-fill"></i> Daftar Kelas
-                                </a>
-                            </li>
-                            <li <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/modul') ? 'class="sub-active"' : '' ?>>
-                                <a href="<?php echo base_url('dashboard/pengajar/modul') ?>">
-                                    <i class="bi bi-journal-bookmark-fill"></i> Modul
-                                </a>
-                            </li>
-                            <li <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/tugas') ? 'class="sub-active"' : '' ?>>
-                                <a href="<?php echo base_url('dashboard/pengajar/tugas') ?>">
-                                    <i class="bi bi-pencil-square"></i> Tugas
-                                </a>
-                            </li>
-                            <li <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/materi') ? 'class="sub-active"' : '' ?>>
-                                <a href="<?php echo base_url('dashboard/pengajar/materi-list') ?>">
-                                    <i class="bi bi-play-circle-fill"></i> Materi
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+            <div class="menu-label" style="margin-top:12px;">Akun</div>
+            <ul class="sidebar-nav">
+                <li <?php echo uri_string() === 'dashboard/peserta/profil' ? 'class="active"' : '' ?>>
+                    <a href="<?php echo base_url('dashboard/peserta/profil') ?>">
+                        <i class="bi bi-person-circle"></i> Profil Saya
+                        <?php if (uri_string() === 'dashboard/peserta/profil'): ?>
+                        <span class="dot"></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+            </ul>
 
-                    <!-- Aplikasi Pendukung -->
-                    <li <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/aplikasi-pendukung') ? 'class="active"' : '' ?>>
-                        <a href="<?php echo base_url('dashboard/pengajar/aplikasi-pendukung') ?>">
-                            <i class="bi bi-puzzle-fill"></i> Aplikasi Pendukung
-                            <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/aplikasi-pendukung')): ?>
-                                <span class="dot"></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-
-                    <!-- Peserta (submenu) -->
-                    <li class="has-sub <?php echo $isPeserta ? 'open' : '' ?>">
-                        <a href="#" onclick="toggleSub(this); return false;">
-                            <i class="bi bi-people-fill"></i> Peserta
-                            <i class="bi bi-chevron-down sub-arrow"
-                                style="margin-left:auto;font-size:11px;transition:transform .2s;"></i>
-                        </a>
-                        <ul class="sub-nav">
-                            <li <?php echo uri_string() === 'dashboard/pengajar/peserta' ? 'class="sub-active"' : '' ?>>
-                                <a href="<?php echo base_url('dashboard/pengajar/peserta') ?>">
-                                    <i class="bi bi-person-lines-fill"></i> Daftar Peserta
-                                </a>
-                            </li>
-                            <li <?php echo str_starts_with(uri_string(), 'dashboard/pengajar/peserta/verifikasi') ? 'class="sub-active"' : '' ?>>
-                                <a href="<?php echo base_url('dashboard/pengajar/peserta/verifikasi') ?>">
-                                    <i class="bi bi-shield-check"></i> Verifikasi Email
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <!-- Voucher -->
-                    <li <?= (str_starts_with(uri_string(), 'dashboard/pengajar/voucher')) ? 'class="active"' : '' ?>>
-                        <a href="<?= base_url('dashboard/pengajar/voucher') ?>">
-                            <i class="bi bi-ticket-perforated-fill"></i> Voucher
-                            <?php if (str_starts_with(uri_string(), 'dashboard/pengajar/voucher')): ?>
-                                <span class="dot"></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-
-                </ul>
-
-                <div class="menu-label" style="margin-top:12px;">Akun</div>
-                <ul class="sidebar-nav">
-                    <li <?php echo uri_string() === 'dashboard/pengajar/profil' ? 'class="active"' : '' ?>>
-                        <a href="<?php echo base_url('dashboard/pengajar/profil') ?>">
-                            <i class="bi bi-person-circle"></i> Profil Saya
-                            <?php if (uri_string() === 'dashboard/pengajar/profil'): ?>
-                                <span class="dot"></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Logout tetap di bawah, tidak ikut scroll -->
             <div class="sidebar-logout">
                 <a href="<?php echo base_url('/logout') ?>">
                     <i class="bi bi-box-arrow-right"></i> Keluar Akun
@@ -303,22 +375,13 @@
 
             <!-- TOPBAR -->
             <div class="topbar">
-
-                <!-- ✅ HAMBURGER BUTTON — harus ada di sini -->
-                <button id="hamburger-btn" class="hamburger-btn" aria-label="Toggle sidebar">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Buka menu">
+                    <i class="bi bi-list"></i>
                 </button>
 
-                <!-- Mobile brand (logo kecil di topbar saat mobile) -->
-                <div class="mobile-brand">
-                    <img src="<?php echo base_url('logo/image.png') ?>" alt="Elecomp LMS">
-                </div>
-
-                <div class="search-wrap">
-                    <i class="bi bi-search"></i>
-                    <input type="text" placeholder="Cari kelas, materi, atau peserta...">
+                <div class="search-wrap" id="searchWrap">
+                    <i class="bi bi-search" id="searchIcon"></i>
+                    <input type="text" placeholder="Cari materi, modul,..." id="searchInput">
                 </div>
 
                 <div class="topbar-right">
@@ -327,141 +390,232 @@
                         <span class="badge-dot"></span>
                     </div>
 
-                    <a href="<?php echo base_url('dashboard/pengajar/profil') ?>" class="user-info" style="text-decoration:none;">
+                    <a href="<?php echo base_url('dashboard/peserta/profil') ?>" class="user-info"
+                        style="text-decoration:none;">
                         <div class="avatar">
-                            <?php echo strtoupper(substr(session()->get('nama') ?? 'P', 0, 1)) ?>
+                            <?php echo strtoupper(substr(session()->get('nama') ?? 'S', 0, 1)) ?>
                         </div>
                         <div class="user-meta">
-                            <div class="user-name"><?php echo esc(session()->get('nama') ?? 'Pengajar') ?></div>
-                            <div class="user-role">Pengajar</div>
+                            <div class="user-name"><?php echo esc(session()->get('nama') ?? 'Siswa') ?></div>
+                            <div class="user-role">Peserta Didik</div>
                         </div>
                     </a>
                 </div>
             </div>
 
             <!-- CONTENT -->
-            <div class="pengajar-content">
+            <div class="admin-content">
                 <?php echo $this->renderSection('content'); ?>
             </div>
 
-        </div><!-- /main -->
-    </div><!-- /wrapper -->
+        </div><!-- /.main -->
+    </div><!-- /.wrapper -->
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        <?php if (session()->getFlashdata('success')): ?>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: '<?php echo esc(session()->getFlashdata('success')) ?>',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        <?php endif; ?>
-        <?php if (session()->getFlashdata('error')): ?>
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: '<?php echo esc(session()->getFlashdata('error')) ?>'
-            });
-        <?php endif; ?>
+    // ── SIDEBAR TOGGLE ──
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('show');
+        document.querySelector('.sidebar-overlay').classList.toggle('show');
+    }
+
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('show');
+        document.querySelector('.sidebar-overlay').classList.remove('show');
+    }
+    document.querySelectorAll('.sidebar-nav a, .sidebar-logout a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 1024) closeSidebar();
+        });
+    });
+
+    // ── SUB-MENU TOGGLE ──
+    function toggleSub(el) {
+        el.closest('.has-sub').classList.toggle('open');
+    }
+
+    // ── USER DROPDOWN TOGGLE ──
+    function toggleUserDropdown(e) {
+        e.stopPropagation();
+        const menu = document.getElementById('userDropdownMenu');
+        const chevron = document.getElementById('dropdownChevron');
+        const isOpen = menu.classList.contains('open');
+        closeUserDropdown();
+        if (!isOpen) {
+            menu.classList.add('open');
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+        }
+    }
+
+    function closeUserDropdown() {
+        const menu = document.getElementById('userDropdownMenu');
+        const chevron = document.getElementById('dropdownChevron');
+        if (menu) menu.classList.remove('open');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown && !dropdown.contains(e.target)) closeUserDropdown();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeUserDropdown();
+    });
     </script>
 
-    <script src="<?= base_url('js/realtime.js') ?>"></script>
-
     <script>
-        /* ── REALTIME / LOGOUT ── */
-        let logoutTriggered = false;
-        let monitor;
+    <?php if (session()->getFlashdata('success')): ?>
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: '<?php echo esc(session()->getFlashdata('success')) ?>',
+        timer: 2000,
+        showConfirmButton: false
+    });
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+    Swal.fire({
+        icon: 'error',
+        title: 'Gagal',
+        text: '<?php echo esc(session()->getFlashdata('error')) ?>'
+    });
+    <?php endif; ?>
+    </script>
 
-        function triggerAutoLogout() {
-            if (logoutTriggered) return;
-            logoutTriggered = true;
-            if (monitor) monitor.stop();
-            const logoutOverlay = document.getElementById('logout-overlay');
-            logoutOverlay.classList.add('show');
+    <!-- Device fingerprint -->
+    <script>
+    (function() {
+        function hashStr(str) {
+            let h = 0;
+            for (let i = 0; i < str.length; i++) {
+                h = (h << 5) - h + str.charCodeAt(i);
+                h = h & h;
+            }
+            return Math.abs(h).toString(36);
+        }
+
+        function generateFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillText('fp', 2, 2);
+            return hashStr([
+                navigator.userAgent,
+                navigator.language,
+                screen.colorDepth,
+                screen.width + 'x' + screen.height,
+                new Date().getTimezoneOffset(),
+                !!window.sessionStorage,
+                !!window.localStorage,
+                canvas.toDataURL(),
+            ].join('|||'));
+        }
+
+        function getCookie(name) {
+            const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+            return m ? decodeURIComponent(m[1]) : null;
+        }
+
+        function setCookieFP(value) {
+            const exp = new Date();
+            exp.setFullYear(exp.getFullYear() + 1);
+            document.cookie = `device_fp=${value}; expires=${exp.toUTCString()}; path=/; SameSite=Strict`;
+        }
+
+        if (!getCookie('device_fp')) {
+            setCookieFP(generateFingerprint());
+        }
+    })();
+    </script>
+
+    <script src="<?php echo base_url('js/realtime.js') ?>"></script>
+    <script>
+    let logoutTriggered = false;
+    let monitor;
+
+    function triggerAutoLogout() {
+        if (logoutTriggered) return;
+        logoutTriggered = true;
+        if (monitor) monitor.stop();
+        const overlay = document.getElementById('logout-overlay');
+        overlay.classList.add('show');
+        requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    document.getElementById('logout-progress').style.width = '100%';
+                document.getElementById('logout-progress').style.width = '100%';
+            });
+        });
+        setTimeout(async () => {
+            try {
+                await fetch('<?php echo base_url("/logout") ?>', {
+                    method: 'GET',
+                    redirect: 'manual'
                 });
-            });
-            setTimeout(async () => {
-                try {
-                    await fetch('<?php echo base_url("/logout") ?>', {
-                        method: 'GET',
-                        redirect: 'manual'
-                    });
-                } catch (_) {}
-                window.location.replace('<?php echo base_url("/login") ?>');
-            }, 2000);
+            } catch (_) {}
+            window.location.replace('<?php echo base_url("/login") ?>');
+        }, 2000);
+    }
+
+    monitor = new RealtimeMonitor({
+        baseUrl: "<?php echo base_url() ?>",
+        user: "<?php echo esc(session()->get('email_users')) ?>",
+        onConnected: () => console.log('[SSE] Terhubung'),
+        onDisconnected: () => console.log('[SSE] Terputus, mencoba reconnect...'),
+        onError: (e) => console.warn('[SSE] Error:', e),
+        onNewAttendance: (data) => console.log('[SSE] Notif baru:', data),
+        onUpdateAttendance: (data) => {
+            console.log('[SSE] Sesi diambil alih:', data);
+            triggerAutoLogout();
+        },
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.body.classList.contains('protected-page')) monitor.start();
+    });
+
+    window.addEventListener('beforeunload', () => monitor.stop());
+
+
+    (function() {
+        const loader = document.getElementById('page-loader');
+        if (!loader) return;
+
+        function startLoader() {
+            loader.classList.remove('done');
+            loader.classList.add('loading');
         }
 
-        monitor = new RealtimeMonitor({
-            baseUrl: "<?php echo base_url() ?>",
-            user: "<?php echo esc(session()->get('email')) ?>",
-            onConnected: () => console.log('[SSE] Terhubung'),
-            onDisconnected: () => console.log('[SSE] Terputus, mencoba reconnect...'),
-            onError: (e) => console.warn('[SSE] Error:', e),
-            onNewAttendance: (data) => console.log('[SSE] Absensi baru:', data),
-            onUpdateAttendance: (data) => {
-                console.log('[SSE] Sesi diambil alih:', data);
-                triggerAutoLogout();
-            },
+        function finishLoader() {
+            loader.classList.add('done');
+            setTimeout(() => {
+                loader.classList.remove('loading', 'done');
+                loader.style.width = '0%';
+            }, 350);
+        }
+
+        // Semua link biasa (bukan anchor, bukan target blank, bukan javascript:)
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a[href]');
+            if (!link) return;
+
+            const href = link.getAttribute('href');
+            if (
+                !href ||
+                href.startsWith('#') ||
+                href.startsWith('javascript') ||
+                link.target === '_blank' ||
+                e.ctrlKey || e.metaKey || e.shiftKey
+            ) return;
+
+            startLoader();
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.body.classList.contains('protected-page')) monitor.start();
-        });
-
-        window.addEventListener('beforeunload', () => monitor.stop());
-
-        /* ── HAMBURGER / MOBILE SIDEBAR ── */
-        const hamburgerBtn   = document.getElementById('hamburger-btn');
-        const sidebar        = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay'); // ← rename, bukan 'overlay' agar tidak konflik logout
-
-        function openSidebar() {
-            sidebar.classList.add('open');
-            sidebarOverlay.classList.add('show');  // ← CSS pakai .show
-            hamburgerBtn.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeSidebar() {
-            sidebar.classList.remove('open');
-            sidebarOverlay.classList.remove('show');
-            hamburgerBtn.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        if (hamburgerBtn) {
-            hamburgerBtn.addEventListener('click', () => {
-                sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
-            });
-        }
-
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', closeSidebar);
-        }
-
-        // Tutup sidebar saat link diklik di mobile (kecuali link submenu)
-        sidebar.querySelectorAll('a:not(.has-sub > a)').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 1024) closeSidebar();
-            });
-        });
-
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeSidebar();
-        });
-
-        /* ── SUBMENU TOGGLE ── */
-        function toggleSub(el) {
-            el.closest('.has-sub').classList.toggle('open');
-        }
+        // Selesai saat halaman baru sudah load
+        window.addEventListener('pageshow', finishLoader);
+        window.addEventListener('load', finishLoader);
+    })();
     </script>
 
     <?php echo $this->renderSection('scripts'); ?>
