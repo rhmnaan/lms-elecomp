@@ -152,9 +152,6 @@ td.muted{color:var(--text-secondary);font-size:11px}
     <h4><i class="bi bi-graph-up-arrow me-2" style="color:#7c3aed"></i>Riset Pasar Ekspor</h4>
     <p>Isi data produk, negara tujuan, dan buyer untuk riset ekspor kamu</p>
   </div>
-  <a href="<?= base_url('dashboard/peserta/riset-ekspor/hasil') ?>" class="btn-lihat-hasil">
-    <i class="bi bi-table"></i> Lihat Data Tersimpan
-  </a>
 </div>
 
 <?php if (session()->getFlashdata('success')): ?>
@@ -183,9 +180,9 @@ td.muted{color:var(--text-secondary);font-size:11px}
     <button class="btn-preview" onclick="generateTable()">
       <i class="bi bi-eye"></i> Preview Tabel
     </button>
-    <button class="btn-simpan" id="btnSimpan" onclick="simpanKeDB()">
-      <i class="bi bi-cloud-upload-fill"></i> Simpan ke Database
-    </button>
+    <!--<button class="btn-simpan" id="btnSimpan" onclick="simpanKeDB()">-->
+    <!--  <i class="bi bi-cloud-upload-fill"></i> Simpan ke Database-->
+    <!--</button>-->
   </div>
 </div>
 

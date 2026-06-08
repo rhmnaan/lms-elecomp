@@ -7,7 +7,13 @@ use CodeIgniter\Router\RouteCollection;
 // ─────────────────────────────────────────
 // PUBLIC ROUTES
 // ─────────────────────────────────────────
-$routes->get('/', 'Auth::index');
+// /lms → controller LMS (sama seperti / sekarang)
+$routes->get('lms', 'Auth::index');
+$routes->get('lms/(:any)', 'Auth::index');
+
+// / → controller Maintenance
+$routes->get('/', 'Maintenance::index');
+
 $routes->get('login', 'Auth::index');
 $routes->get('logout', 'Auth::logout');
 $routes->post('auth/authenticate', 'Auth::authenticate');
@@ -16,6 +22,11 @@ $routes->get('register', 'Register::index');
 $routes->post('register', 'Register::store');
 $routes->get('register/verify', 'Register::verify');
 $routes->get('register/verification-sent', 'Register::verificationSent');
+$routes->get('forgot-password',         'ForgotPassword::index');
+$routes->post('forgot-password/send',   'ForgotPassword::send');
+$routes->get('forgot-password/reset',   'ForgotPassword::resetForm');
+$routes->post('forgot-password/reset',  'ForgotPassword::reset');
+ 
 $routes->get('testemail', 'TestEmail::index');
 // Webhook / API ringan
 $routes->get('cekaction/(:segment)', 'Webhook::cekAction/$1');
@@ -23,8 +34,8 @@ $routes->get('api/realtime/attendance-stream', 'RealtimeDatabaseMonitoring::atte
 // Routes.php
 $routes->get('api/check-session', 'RealtimeDatabaseMonitoring::checkSession');
 $routes->post('cekfingerprint', 'Webhook::cekFingerprint');
-
-
+$routes->post('lms/webhook/lynk', 'Webhook::webhookLynk');
+$routes->get('lms/webhook/lynk/test', 'Webhook::testEndpoint');
 // ─────────────────────────────────────────
 // PROTECTED ROUTES (LOGIN REQUIRED)
 // ─────────────────────────────────────────
@@ -39,6 +50,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     // ═══════════════════════════════════════════════════════
     $routes->get('video/player', 'VideoStream::player');
     $routes->get('api/videos/stream/(:segment)', 'VideoStream::stream/$1');
+    $routes->get('video/stream/(:segment)', 'VideoStream::stream/$1'); 
     $routes->get('api/videos/info/(:segment)', 'VideoStream::info/$1');
     $routes->get('api/videos/key', 'VideoStream::getKey');
 
@@ -69,6 +81,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('kelas/tugas/(:num)', 'DashboardPeserta::kelasTugas/$1');
         $routes->get('kelas-tugas', 'DashboardPeserta::kelasTugas');
         $routes->get('tugas-riwayat/(:num)', 'DashboardPeserta::tugasRiwayat/$1');
+        
 
         // ── Halaman utama kalkulator ──
         $routes->get('kalkulator', 'KalkulatorPeserta::index');
@@ -202,13 +215,12 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('tugas/komentar/simpan', 'DashboardPengajar::simpanKomentar');
 
         // Materi
-        $routes->get('materi', 'DashboardPengajar::materi');
-        $routes->post('materi/store', 'DashboardPengajar::materiStore');
-        $routes->post('materi/update/(:num)', 'DashboardPengajar::materiUpdate/$1');
-        $routes->post('materi/delete/(:num)', 'DashboardPengajar::materiDelete/$1');
-        $routes->get('materi-list', 'DashboardPengajar::materiList');
+        $routes->get('materi',                    'DashboardPengajar::materiList');
+        $routes->post('materi/store',             'DashboardPengajar::materiStore');
+        $routes->post('materi/update/(:num)',     'DashboardPengajar::materiUpdate/$1');
+        $routes->post('materi/delete/(:num)',     'DashboardPengajar::materiDelete/$1');
+        $routes->get('materi-list',              'DashboardPengajar::materiList');
 
-        // Program
         $routes->get('program', 'DashboardPengajar::program');
         $routes->post('program/store', 'DashboardPengajar::programStore');
         $routes->post('program/update/(:num)', 'DashboardPengajar::programUpdate/$1');
@@ -261,6 +273,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
         $routes->get('peserta', 'Dashboard\PesertaController::index');
         $routes->post('peserta/resend-verifikasi', 'Dashboard\PesertaController::resendVerifikasi');
+        
+        
+        $routes->post('video/chunk-upload', 'VideoStream::chunkUpload');
+        
     });
 });
 

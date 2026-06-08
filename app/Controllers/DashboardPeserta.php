@@ -481,15 +481,6 @@ class DashboardPeserta extends BaseController
                 $deadlineAt = $deadlinePeserta['deadline_at'];
             }
             // =========================
-            // 2️⃣ DEADLINE DEFAULT TUGAS
-            // =========================
-            elseif (! empty($task['deadline_hari'])) {
-                $deadlineAt = date(
-                    'Y-m-d H:i:s',
-                    strtotime("+{$task['deadline_hari']} days", strtotime($joinDate))
-                );
-            }
-            // =========================
             // 3️⃣ TANPA DEADLINE
             // =========================
             else {
@@ -629,14 +620,29 @@ class DashboardPeserta extends BaseController
             if ($index == 0) {
                 $materi['is_accessible'] = true;
             } else {
-                $prevMateri   = $materi_list[$index - 1];
-                $prevPosttest = $db->table('materi_quiz_results')
+                $prevMateri = $materi_list[$index - 1];
+        
+                $prevPostTestSoal = json_decode($prevMateri['post_test'] ?? '', true);
+                $prevHasPostTest  = !empty($prevPostTestSoal) && is_array($prevPostTestSoal);
+        
+                $prevSelesai = $db->table('user_materi_progress')
                     ->where('id_materi', $prevMateri['id_materi'])
                     ->where('id_users', $this->idUsers)
-                    ->where('jenis_test', 'post')
-                    ->where('nilai >=', 70)
+                    ->where('is_completed', 1)
                     ->countAllResults();
-                $materi['is_accessible'] = $prevPosttest > 0 && ! $hasPendingTugas;
+        
+                if ($prevHasPostTest) {
+                    $prevPosttest = $db->table('materi_quiz_results')
+                        ->where('id_materi', $prevMateri['id_materi'])
+                        ->where('id_users', $this->idUsers)
+                        ->where('jenis_test', 'post')
+                        ->where('nilai >=', 70)
+                        ->countAllResults();
+                    $materi['is_accessible'] = $prevPosttest > 0 && !$hasPendingTugas;
+                } else {
+                    // Tidak ada posttest → cukup materi selesai
+                    $materi['is_accessible'] = $prevSelesai > 0 && !$hasPendingTugas;
+                }
             }
         }
         unset($materi);
@@ -774,12 +780,12 @@ public function submitTugas()
     }
 
     // Cek deadline
-    if (isset($tugas['deadline_hari']) && ! empty($tugas['deadline_hari'])) {
-        $deadlineAt = date('Y-m-d H:i:s', strtotime("+{$tugas['deadline_hari']} days", strtotime($kelasPeserta['tanggal_daftar_kelas_peserta'])));
-        if (strtotime($deadlineAt) < time()) {
-            return redirect()->back()->with('error', 'Batas waktu pengumpulan tugas telah berakhir.');
-        }
-    }
+    // if (isset($tugas['deadline_hari']) && ! empty($tugas['deadline_hari'])) {
+    //     $deadlineAt = date('Y-m-d H:i:s', strtotime("+{$tugas['deadline_hari']} days", strtotime($kelasPeserta['tanggal_daftar_kelas_peserta'])));
+    //     if (strtotime($deadlineAt) < time()) {
+    //         return redirect()->back()->with('error', 'Batas waktu pengumpulan tugas telah berakhir.');
+    //     }
+    // }
 
     // Cek semua quiz selesai
     if (! $this->hasCompletedAllQuizInKelas($tugas['id_kelas'])) {
@@ -989,17 +995,6 @@ public function submitTugas()
         $isExpired = false;
         $canSubmit = true;
 
-        if ($tugas['deadline_hari'] !== null && $tugas['deadline_hari'] !== '') {
-            $deadlineAt = date('Y-m-d H:i:s', strtotime("+{$tugas['deadline_hari']} days", strtotime($kelasPeserta['tanggal_daftar_kelas_peserta'])));
-            $isExpired = strtotime($deadlineAt) < time();
-            $canSubmit = ! $isExpired;
-        }
-
-        // Check posttest requirement
-        if ($tugas['is_wajib_posttest'] && ! $this->hasPassedModulePosttest($tugas['id_modul'])) {
-            $canSubmit = false;
-        }
-
         // Get history
         $pengumpulanModel = new TugasPengumpulanModel();
         $history = $pengumpulanModel->getHistory($id_tugas, $this->idUsers);
@@ -1048,27 +1043,24 @@ public function submitTugas()
 
         foreach ($tugasRows as $task) {
             $deadlineAt = null;
-            $isExpired = false;
-            if (! empty($task['deadline_hari']) || $task['deadline_hari'] === '0') {
-                $deadlineAt = date('Y-m-d H:i:s', strtotime("+{$task['deadline_hari']} days", strtotime($joinDate)));
-                $isExpired = strtotime($deadlineAt) < time();
-            }
-
+            $isExpired  = false;
+            $canSubmit  = true;
+        
             $history = $pengumpulanModel->getHistory($task['id_tugas'], $this->idUsers);
             $hasSubmission = ! empty($history);
-            $canSubmit = ! $isExpired && (! $task['is_wajib_posttest'] || $hasModulePosttest);
+        
             if (! $isExpired && $canSubmit && ! $hasSubmission) {
                 $hasPending = true;
             }
-
+        
             $tugasList[] = array_merge($task, [
-                'deadline_at'             => $deadlineAt,
-                'is_expired'              => $isExpired,
-                'can_submit'              => $canSubmit,
-                'has_submission'          => $hasSubmission,
-                'last_submission'         => $history[0] ?? null,
-                'history'                 => $history,
-                'available_after_posttest' => $task['is_wajib_posttest'] && ! $hasModulePosttest,
+                'deadline_at'              => $deadlineAt,
+                'is_expired'               => $isExpired,
+                'can_submit'               => $canSubmit,
+                'has_submission'           => $hasSubmission,
+                'last_submission'          => $history[0] ?? null,
+                'history'                  => $history,
+                'available_after_posttest' => false,
             ]);
         }
 
@@ -1244,7 +1236,7 @@ public function submitTugas()
             ->orderBy('created_at', 'DESC')
             ->get()->getRowArray();
 
-        $redirect = $this->request->getGet('redirect') ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
+        $redirect = $this->request->getGet('redirect') ?? base_url('Dashboard/Peserta/materi-modul/' . $materi['id_modul']);
 
         return view('Dashboard/Peserta/pretest_view', [
             'materi'      => $materi,
@@ -1303,7 +1295,7 @@ public function submitTugas()
             ->orderBy('created_at', 'DESC')
             ->get()->getRowArray();
 
-        $redirect = $this->request->getGet('redirect') ?? base_url('dashboard/peserta/materi-modul/' . $materi['id_modul']);
+        $redirect = $this->request->getGet('redirect') ?? base_url('Dashboard/Peserta/materi-modul/' . $materi['id_modul']);
 
         return view('Dashboard/Peserta/posttest_view', [
             'materi'       => $materi,
@@ -1365,9 +1357,13 @@ public function submitTugas()
             ->where('aplikasi_user.id_users', $userId)
             ->findAll();
         
-        // Tidak ada fallback — kalau kosong ya kosong, view sudah handle empty state
-        return view('dashboard/peserta/aplikasi_pendukung', [
-            'title'    => 'Aplikasi Pendukung',
+        // Jika tidak ada akses spesifik, tampilkan semua aplikasi
+        if (empty($aplikasi)) {
+            $aplikasi = $this->aplikasiModel->findAll();
+        }
+        
+        return view('Dashboard/Peserta/aplikasi_pendukung', [
+            'title' => 'Aplikasi Pendukung',
             'aplikasi' => $aplikasi
         ]);
     }

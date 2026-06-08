@@ -2014,25 +2014,29 @@ document.getElementById('filePdfEdit').addEventListener('change', function () {
         ══════════════════════════════════════ */
         document.querySelectorAll('.btn-edit-materi').forEach(btn => {
             btn.addEventListener('click', async function () {
-                const d = getRowData(this.dataset.rowId);
-                if (!d) return;
-
-                document.getElementById('formEdit').action = `${BASE_URL}/update/${d.id}`;
-                document.getElementById('edit_judul_materi').value = d.judul;
-                document.getElementById('edit_id_modul').value = d.modul;
-                // Pre-fill Program & Kelas
-                const editRow = document.querySelector(`tr[data-id="${this.dataset.rowId}"]`);
-                const rowProgram = editRow?.dataset.program;
-                const rowKelas = editRow?.dataset.kelas;
-
-                const progSel = document.getElementById('edit_id_program');
-                if (progSel && rowProgram) {
-                    progSel.value = rowProgram;
-                    populateKelas(rowProgram, 'edit_id_kelas');
-                    const kelasSel = document.getElementById('edit_id_kelas');
-                    if (kelasSel) kelasSel.value = rowKelas;
-                    populateModul(rowKelas, 'edit_id_modul', null);
-                }
+            const d = getRowData(this.dataset.rowId);
+            if (!d) return;
+    
+            document.getElementById('formEdit').action = `${BASE_URL}/update/${d.id}`;
+            document.getElementById('edit_judul_materi').value = d.judul;
+    
+            const editRow = document.querySelector(`tr[data-id="${this.dataset.rowId}"]`);
+            const rowProgram = editRow?.dataset.program;
+            const rowKelas   = editRow?.dataset.kelas;
+    
+            const progSel = document.getElementById('edit_id_program');
+            if (progSel && rowProgram) {
+                progSel.value = rowProgram;
+    
+                // populate kelas lalu set value
+                populateKelas(rowProgram, 'edit_id_kelas');
+                const kelasSel = document.getElementById('edit_id_kelas');
+                if (kelasSel) kelasSel.value = rowKelas;
+    
+                // populate modul lalu SET VALUE modul yang sedang diedit
+                populateModul(rowKelas, 'edit_id_modul', null);
+                document.getElementById('edit_id_modul').value = d.modul; // ← INI YANG KURANG
+            }
 
                 const cfDiv = document.getElementById('currentFileEdit');
                 const cfName = document.getElementById('currentFileName');
@@ -2164,6 +2168,13 @@ document.getElementById('filePdfEdit').addEventListener('change', function () {
             kSel.disabled = true;
             document.getElementById('wrapModulTambah').style.display = 'none';
         });
+        
+        document.getElementById('formTambah')
+            ?.querySelector('[type="submit"]')
+            ?.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('formTambah').requestSubmit();
+            });
 
     });
 </script>

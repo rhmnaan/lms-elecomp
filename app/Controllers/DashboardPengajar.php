@@ -895,7 +895,7 @@ class DashboardPengajar extends BaseController
         return compact('modul', 'program', 'kelas');
     }
 
-    public function materi()
+    public function materiList()
     {
         if ($r = $this->guardPengajar()) {
             return $r;
@@ -1729,4 +1729,30 @@ class DashboardPengajar extends BaseController
     }
 
     // Note: Method buildQuizJsonFor() kemungkinan ada di BaseController
+    private function buildQuizJsonFor(string $prefix): ?string
+    {
+        $soalList = $this->request->getPost($prefix) ?? [];
+    
+        if (empty($soalList) || !is_array($soalList)) {
+            return null;
+        }
+    
+        $questions = [];
+    
+        foreach ($soalList as $soal) {
+            $pertanyaan = trim($soal['pertanyaan'] ?? '');
+            $pilihan    = $soal['pilihan'] ?? [];
+            $jawaban    = $soal['jawaban_benar'] ?? 0;
+    
+            if ($pertanyaan === '') continue;
+    
+            $questions[] = [
+                'pertanyaan'   => $pertanyaan,
+                'pilihan'      => array_values($pilihan),
+                'jawaban_benar' => (int) $jawaban,
+            ];
+        }
+    
+        return empty($questions) ? null : json_encode($questions, JSON_UNESCAPED_UNICODE);
+    }
 }

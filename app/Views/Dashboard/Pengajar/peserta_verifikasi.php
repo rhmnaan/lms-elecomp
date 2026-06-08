@@ -532,7 +532,7 @@
                         <th>Peserta</th>
                         <th>Tanggal Daftar</th>
                         <th>Status Verifikasi</th>
-                        <th>Aksi</th>
+                        <!--<th>Aksi</th>-->
                     </tr>
                 </thead>
                 <tbody>
@@ -585,18 +585,18 @@
                         </td>
 
                         <!-- Aksi -->
-                        <td>
-                            <?php if ($isVerified): ?>
-                            <button class="pv-action-btn verified-done" disabled>
-                                <i class="bi bi-shield-check"></i> Sudah Aktif
-                            </button>
-                            <?php else: ?>
-                            <button class="pv-action-btn resend"
-                                onclick="resendVerifikasi(<?= $p['id_users'] ?>, '<?= esc($p['email_users']) ?>', this)">
-                                <i class="bi bi-send-fill"></i> Kirim Ulang
-                            </button>
-                            <?php endif; ?>
-                        </td>
+                        <!--<td>-->
+                        <!--    <?php if ($isVerified): ?>-->
+                        <!--    <button class="pv-action-btn verified-done" disabled>-->
+                        <!--        <i class="bi bi-shield-check"></i> Sudah Aktif-->
+                        <!--    </button>-->
+                        <!--    <?php else: ?>-->
+                            <!--<button class="pv-action-btn resend"-->
+                            <!--    onclick="resendVerifikasi(<?= $p['id_users'] ?>, '<?= esc($p['email_users']) ?>', this)">-->
+                            <!--    <i class="bi bi-send-fill"></i> Kirim Ulang-->
+                            <!--</button>-->
+                        <!--    <?php endif; ?>-->
+                        <!--</td>-->
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

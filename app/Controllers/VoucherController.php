@@ -28,6 +28,8 @@ class VoucherController extends BaseController
      */
     public function claim()
     {
+        log_message('debug', print_r(session()->get(), true));
+        
         // Hanya terima AJAX request
         if (!$this->request->isAJAX()) {
             return $this->response->setJSON([
@@ -125,12 +127,6 @@ class VoucherController extends BaseController
                     strtotime($tanggalMulai . " +{$durasiTugas} days")
                 );
             }
-
-            log_message('debug', 'Voucher durasi_hari  = ' . $durasiHari);
-            log_message('debug', 'Voucher durasi_tugas = ' . $durasiTugas);
-            log_message('debug', 'Tanggal mulai        = ' . $tanggalMulai);
-            log_message('debug', 'Tanggal berakhir     = ' . ($tanggalBerakhir ?? 'NULL'));
-            log_message('debug', 'Deadline tugas       = ' . ($deadlineTugas ?? 'NULL'));
 
             // c. INSERT kelas_peserta
             $idKelasPeserta = $this->kelasPesertaModel->insert([

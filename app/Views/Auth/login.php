@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — LMS Elecomp</title>
+    <title>Login — LMS</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
         rel="stylesheet">
@@ -929,7 +929,7 @@
                 <div class="divider"><span>Butuh bantuan?</span></div>
 
                 <div class="card-footer-note">
-                    Lupa password? Hubungi <a href="mailto:support@elecomp.sch.id">support@elecomp.sch.id</a><br>
+                    Lupa password? <a href="<?= base_url('/forgot-password') ?>">Reset di sini</a><br>
                     Belum punya akun? <a href="<?= base_url('/register') ?>">Daftar Sekarang</a>
                 </div>
             </div>
@@ -1056,48 +1056,106 @@
         }
     });
 
-    // Resend Verification
-    async function resendVerification(email) {
-        const btn = $('btn-resend');
-        const label = $('resend-label');
-        btn.disabled = true;
-        label.textContent = 'Mengirim...';
+    // Resend Verification with Enhanced Feedback and Cooldown
+async function resendVerification(email) {
+    const btn = $('btn-resend');
+    if (!btn || btn.disabled) return;
 
-        try {
-            const form = new FormData();
-            form.append('email', email);
+    // 1. Ubah UI saat status loading (Sedang Mengirim)
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'not-allowed';
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span id="resend-label">Sedang mengirim email verifikasi...</span>`;
 
-            const res = await fetch(BASE_URL + '/auth/resend-verification', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken()
-                },
-                body: form,
-            });
-            const data = await res.json();
+    try {
+        const form = new FormData();
+        form.append('email', email);
 
-            if (data.status === 'successful') {
-                const box = $('error-box');
-                box.style.background = '#F0FDF4';
-                box.style.borderColor = '#BBF7D0';
-                box.style.color = '#16A34A';
-                box.innerHTML = `
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <i class="fas fa-circle-check"></i>
-                            <span>${data.message}</span>
-                        </div>
-                    `;
-            } else {
-                label.textContent = 'Kirim Ulang Email Verifikasi';
-                btn.disabled = false;
-                showError(data.message);
-            }
-        } catch (err) {
-            label.textContent = 'Kirim Ulang Email Verifikasi';
-            btn.disabled = false;
-            showError('Gagal mengirim. Coba lagi.');
+        const res = await fetch(BASE_URL + '/auth/resend-verification', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: form,
+        });
+        
+        if (!res.ok) throw new Error('Server error: ' + res.status);
+        const data = await res.json();
+
+        if (data.status === 'successful') {
+            const box = $('error-box');
+            // Mengubah box menjadi alert sukses hijau yang informatif
+            box.style.background = '#ECFDF5';
+            box.style.borderColor = '#A7F3D0';
+            box.style.color = '#065F46';
+            box.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:8px; font-weight:700;">
+                        <i class="fas fa-circle-check" style="color:#10B981; font-size:16px;"></i>
+                        <span>Email Berhasil Dikirim!</span>
+                    </div>
+                    <p style="font-size:12.5px; color:#047857; margin:0; line-height:1.5;">
+                        Sistem telah mengirimkan tautan verifikasi baru ke <strong>${email}</strong>. 
+                        Silakan periksa kotak masuk (Inbox) Anda.
+                    </p>
+                    <div style="margin-top:6px; padding:8px 10px; background:#F0FDF4; border-radius:6px; font-size:11.5px; color:#15803D;">
+                        <i class="fas fa-circle-info"></i> Tidak menemukan email? Periksa folder <strong>Spam</strong> atau <strong>Promosi</strong> Anda.
+                    </div>
+                    <button id="btn-resend" disabled 
+                        style="width:100%; padding:10px 14px; background:#D1D5DB; color:#9CA3AF; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:not-allowed; display:flex; align-items:center; justify-content:center; gap:6px; margin-top:6px;">
+                        <i class="fas fa-clock"></i>
+                        <span id="resend-countdown">Kirim ulang dalam 60s</span>
+                    </button>
+                </div>
+            `;
+            
+            // 2. Jalankan fungsi Cooldown / Countdown Timer (60 Detik)
+            startResendCooldown(email, 300);
+
+        } else {
+            // Jika backend mengembalikan status gagal
+            resetResendButton(btn, 'Kirim Email Verifikasi');
+            showError(data.message || 'Gagal mengirim email verifikasi.');
         }
+    } catch (err) {
+        console.error(err);
+        resetResendButton(btn, 'Kirim Email Verifikasi');
+        showError('Terjadi gangguan koneksi. Gagal mengirim ulang verifikasi.');
     }
+}
+
+// Fungsi Helper untuk mengembalikan kondisi tombol jika gagal
+function resetResendButton(btn, labelText) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.innerHTML = `<i class="fas fa-paper-plane"></i> <span id="resend-label">${labelText}</span>`;
+}
+
+// Fungsi untuk menghitung mundur (Cooldown) agar tidak di-spam oleh user
+function startResendCooldown(email, seconds) {
+    let timeLeft = seconds;
+    const countdownLabel = document.getElementById('resend-countdown');
+    const resendBtn = document.getElementById('btn-resend');
+
+    const timer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+            if (countdownLabel) countdownLabel.textContent = `Kirim ulang dalam ${timeLeft}s`;
+        } else {
+            clearInterval(timer);
+            // Ketika waktu habis, bangun ulang struktur tombol ke kondisi aktif
+            if (resendBtn) {
+                resendBtn.disabled = false;
+                resendBtn.style.background = 'linear-gradient(135deg, #03AADE, #0D2656)';
+                resendBtn.style.color = '#fff';
+                resendBtn.style.cursor = 'pointer';
+                resendBtn.setAttribute('onclick', `resendVerification('${email}')`);
+                resendBtn.innerHTML = `<i class="fas fa-paper-plane"></i> <span>Kirim Ulang Email Verifikasi</span>`;
+            }
+        }
+    }, 1000);
+}
 
     // Main Login Flow
     async function fetchHandler(email, pass, action = '') {

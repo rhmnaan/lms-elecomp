@@ -373,18 +373,16 @@
 </div>
 
 <script>
-const API_ROOT = '<?= base_url() ?>';
+const API_ROOT   = '<?= base_url() ?>';
+const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB per chunk
 
 /* ════════════════════════════════════════════════════
-   DROP ZONE
-   FIX: input file adalah overlay transparan di atas drop-zone,
-   sehingga klik langsung ke input tanpa onclick manual.
-   Ini menghindari double-trigger yang menyebabkan file = null.
+   DROP ZONE (sama seperti sebelumnya)
 ════════════════════════════════════════════════════ */
-const dz = document.getElementById('dropZone');
+const dz    = document.getElementById('dropZone');
 const input = document.getElementById('videoFileInput');
-const fnEl = document.getElementById('selectedFileName');
-const btn = document.getElementById('btnUpload');
+const fnEl  = document.getElementById('selectedFileName');
+const btn   = document.getElementById('btnUpload');
 
 function setFile(file) {
     fnEl.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)';
@@ -393,27 +391,15 @@ function setFile(file) {
     btn.disabled = false;
 }
 
-// FIX: dengarkan change di input (sudah menutupi drop-zone sebagai overlay)
-input.addEventListener('change', () => {
-    if (input.files[0]) setFile(input.files[0]);
-});
+input.addEventListener('change', () => { if (input.files[0]) setFile(input.files[0]); });
 
-// Drag & drop
-dz.addEventListener('dragover', e => {
-    e.preventDefault();
-    dz.classList.add('dragover');
-});
-dz.addEventListener('dragleave', e => {
-    e.preventDefault();
-    dz.classList.remove('dragover');
-});
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', e => { e.preventDefault(); dz.classList.remove('dragover'); });
 dz.addEventListener('drop', e => {
     e.preventDefault();
     dz.classList.remove('dragover');
     const f = e.dataTransfer.files[0];
     if (!f) return;
-
-    // FIX: assign file ke input via DataTransfer agar input.files[0] terisi
     const dt = new DataTransfer();
     dt.items.add(f);
     input.files = dt.files;
@@ -426,124 +412,96 @@ dz.addEventListener('drop', e => {
 function showAlert(type, msg) {
     const el = document.getElementById('vuAlert');
     el.className = 'vu-alert ' + type;
-    el.innerHTML =
-        `<i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'}"></i> ${msg}`;
+    el.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'}"></i> ${msg}`;
     el.style.display = 'flex';
     el.style.opacity = '1';
     el.style.transition = '';
     setTimeout(() => {
         el.style.transition = 'opacity .4s';
         el.style.opacity = '0';
-        setTimeout(() => {
-            el.style.display = 'none';
-            el.style.opacity = '';
-        }, 400);
+        setTimeout(() => { el.style.display = 'none'; el.style.opacity = ''; }, 400);
     }, 6000);
 }
 
 /* ════════════════════════════════════════════════════
-   UPLOAD
-   FIX utama: gunakan FormData yang menyertakan file
-   dari input.files[0] secara eksplisit.
-   Jangan set Content-Type header — biarkan browser
-   set boundary multipart secara otomatis.
+   CHUNKED UPLOAD
 ════════════════════════════════════════════════════ */
-function doUpload() {
+async function doUpload() {
     const file = input.files[0];
-    if (!file) {
-        showAlert('danger', 'Pilih file video terlebih dahulu!');
-        return;
-    }
+    if (!file) { showAlert('danger', 'Pilih file video terlebih dahulu!'); return; }
 
-    // FIX: append file langsung (bukan dari input element)
-    const formData = new FormData();
-    formData.append('video', file, file.name); // nama field harus 'video'
-    formData.append('judul_video', document.getElementById('judulVideo').value.trim() || file.name);
-    formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>'); // CSRF CI4
+    const ext         = file.name.split('.').pop().toLowerCase();
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const uploadId    = 'up_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+    const judulVideo  = document.getElementById('judulVideo').value.trim() || file.name;
+    const csrfToken   = '<?= csrf_token() ?>';
 
-    const xhr = document.createElement('span'); // dummy — pakai XMLHttpRequest di bawah
-    const xr = new XMLHttpRequest();
     const prog = document.getElementById('uploadProgress');
     const fill = document.getElementById('upBarFill');
-    const lbl = document.getElementById('upLabelText');
-    const pct = document.getElementById('upLabelPct');
+    const lbl  = document.getElementById('upLabelText');
+    const pct  = document.getElementById('upLabelPct');
 
     btn.disabled = true;
     prog.style.display = 'block';
-    fill.style.width = '0%';
-    pct.textContent = '0%';
-    lbl.textContent = 'Mengupload...';
 
-    xr.withCredentials = true;
+    for (let i = 0; i < totalChunks; i++) {
+        const start = i * CHUNK_SIZE;
+        const end   = Math.min(start + CHUNK_SIZE, file.size);
+        const chunk = file.slice(start, end);
 
-    xr.upload.onprogress = e => {
-        if (e.lengthComputable) {
-            const p = Math.round(e.loaded / e.total * 100);
-            fill.style.width = p + '%';
-            pct.textContent = p + '%';
-            lbl.textContent = p < 100 ? 'Mengupload...' : 'Mengenkripsi... harap tunggu';
-        }
-    };
+        const formData = new FormData();
+        formData.append('chunk',        chunk, file.name);
+        formData.append('chunk_index',  i);
+        formData.append('total_chunks', totalChunks);
+        formData.append('upload_id',    uploadId);
+        formData.append('ext',          ext);
+        formData.append('judul_video',  judulVideo);
+        formData.append(csrfToken,      '<?= csrf_hash() ?>');
 
-    xr.onload = () => {
-        prog.style.display = 'none';
-        btn.disabled = false;
-
-        // FIX: cek status HTTP dulu sebelum parse JSON
-        if (xr.status === 401) {
-            showAlert('danger', 'Sesi habis. Silakan refresh halaman dan login ulang.');
-            return;
-        }
-        if (xr.status === 403) {
-            showAlert('danger', 'Akses ditolak. Pastikan Anda login sebagai pengajar.');
-            return;
-        }
-
-        let data;
         try {
-            data = JSON.parse(xr.responseText);
+            const res  = await fetch(API_ROOT + 'dashboard/pengajar/video/chunk-upload', {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: formData,
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                showAlert('danger', 'Gagal chunk ke-' + (i + 1) + ': ' + data.message);
+                btn.disabled = false;
+                prog.style.display = 'none';
+                return;
+            }
+
+            // Chunk terakhir — selesai
+            if (data.finished) {
+                fill.style.width = '100%';
+                pct.textContent  = '100%';
+                prog.style.display = 'none';
+                btn.disabled = true;
+                showAlert('success',
+                    `&#10003; Berhasil! Video ID: <strong>${data.data.video_id}</strong> — salin dan tempel di form materi.`
+                );
+                loadVideoList();
+                input.value = '';
+                fnEl.style.display = 'none';
+                dz.classList.remove('has-file');
+                document.getElementById('judulVideo').value = '';
+                return;
+            }
+
         } catch (e) {
-            console.error('Raw server response:', xr.responseText.substring(0, 500));
-            showAlert('danger', 'Response tidak valid dari server (HTTP ' + xr.status +
-                '). Cek console untuk detail.');
+            showAlert('danger', 'Koneksi terputus saat chunk ke-' + (i + 1));
+            btn.disabled = false;
+            prog.style.display = 'none';
             return;
         }
 
-        if (data.success) {
-            showAlert('success',
-                `&#10003; Berhasil! Video ID: <strong>${data.data.video_id}</strong> &mdash; salin dan tempel di form materi.`
-            );
-            loadVideoList();
-            // Reset form
-            input.value = '';
-            fnEl.style.display = 'none';
-            dz.classList.remove('has-file');
-            document.getElementById('judulVideo').value = '';
-            btn.disabled = true;
-        } else {
-            const errs = data.errors ?
-                Object.values(data.errors).join('<br>') :
-                (data.message || 'Gagal upload');
-            showAlert('danger', errs);
-            console.error('Upload error detail:', data);
-        }
-    };
-
-    xr.onerror = () => {
-        prog.style.display = 'none';
-        btn.disabled = false;
-        showAlert('danger', 'Koneksi terputus saat upload.');
-    };
-
-    xr.ontimeout = () => {
-        prog.style.display = 'none';
-        btn.disabled = false;
-        showAlert('danger', 'Upload timeout. Coba lagi atau gunakan file yang lebih kecil.');
-    };
-
-    // FIX: jangan set Content-Type — browser set otomatis dengan boundary
-    xr.open('POST', API_ROOT + 'dashboard/pengajar/video/upload');
-    xr.send(formData);
+        const percent = Math.round((i + 1) / totalChunks * 100);
+        fill.style.width = percent + '%';
+        pct.textContent  = percent + '%';
+        lbl.textContent  = 'Mengupload ' + (i + 1) + ' / ' + totalChunks + ' bagian...';
+    }
 }
 
 /* ════════════════════════════════════════════════════

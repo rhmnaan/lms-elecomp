@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class BuyerEkspor extends Model
 {
-    protected $table         = 'buyer_ekspor';
+    protected $table         = 'buyer';
     protected $primaryKey    = 'id';
     protected $useTimestamps = true;
     protected $allowedFields = [

@@ -7,7 +7,7 @@ use CodeIgniter\Model;
 class TugasDeadlinePesertaModel extends Model
 {
     protected $table            = 'tugas_deadline_peserta';
-    protected $primaryKey       = 'id';
+    protected $primaryKey       = 'id_deadline';
     protected $useAutoIncrement = true;
 
     protected $returnType     = 'array';
@@ -38,21 +38,19 @@ class TugasDeadlinePesertaModel extends Model
      */
     public function setDeadline($id_kelas, $id_users, $deadline_at)
     {
-        $data = [
+        $existing = $this->getDeadline($id_kelas, $id_users);
+    
+        if ($existing) {
+            return $this->where('id_deadline', $existing['id_deadline'])
+                        ->set('deadline_at', $deadline_at)
+                        ->update();
+        }
+    
+        return $this->insert([
             'id_kelas'    => $id_kelas,
             'id_users'    => $id_users,
             'deadline_at' => $deadline_at,
             'created_at'  => date('Y-m-d H:i:s')
-        ];
-
-        $existing = $this->getDeadline($id_kelas, $id_users);
-
-        if ($existing) {
-            return $this->where('id', $existing['id'])
-                        ->set('deadline_at', $deadline_at)
-                        ->update();
-        }
-
-        return $this->insert($data);
+        ]);
     }
 }

@@ -14,7 +14,9 @@ class Users extends Model
     protected $protectFields = true;
     protected $allowedFields = [
         'nama_users',
+        'username',
         'email_users',
+        'nomor_hp',
         'password_users',
         'role_users',
         'fingerprint_device',
@@ -22,6 +24,8 @@ class Users extends Model
         'email_verified',
         'verification_token',
         'token_expires_at',
+        'reset_token',
+        'reset_token_expires_at',
     ];
 
     protected $useTimestamps = true;
@@ -31,16 +35,27 @@ class Users extends Model
     protected $deletedField = 'deleted_at';
 
     protected $validationRules = [
-        'nama_users' => 'required|min_length[3]|max_length[100]',
-        'email_users' => 'required|valid_email|is_unique[users.email_users,id_users,{id_users}]',
+        'nama_users'     => 'required|min_length[3]|max_length[100]',
+        'username' => 'permit_empty|min_length[3]|max_length[50]|is_unique[users.username,id_users,{id_users}]',
+        'email_users'    => 'required|valid_email|is_unique[users.email_users,id_users,{id_users}]',
+        'nomor_hp'       => 'permit_empty|min_length[9]|max_length[15]|is_unique[users.nomor_hp,id_users,{id_users}]', // ← TAMBAHAN
         'password_users' => 'required|min_length[6]',
-        'role_users' => 'required|in_list[admin,pengajar,peserta]'
+        'role_users'     => 'required|in_list[admin,pengajar,peserta]',
     ];
 
     protected $validationMessages = [
         'email_users' => [
-            'is_unique' => 'Email sudah terdaftar'
-        ]
+            'is_unique' => 'Email sudah terdaftar.',
+        ],
+        'username' => [
+            'is_unique'  => 'Username sudah digunakan.',
+            'min_length' => 'Username minimal 3 karakter.',
+        ],
+        'nomor_hp' => [
+            'is_unique'   => 'Nomor HP sudah terdaftar. Gunakan nomor lain.',
+            'min_length'  => 'Nomor HP minimal 9 digit.',
+            'max_length'  => 'Nomor HP maksimal 15 digit.',
+        ],
     ];
 
     /**

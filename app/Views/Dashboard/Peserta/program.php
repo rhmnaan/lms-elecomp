@@ -15,8 +15,8 @@
     --card: #ffffff;
     --border: #e8e6ff;
     --r: 18px;
-    --sh: 0 2px 20px rgba(99, 102, 241, .07);
-    --sh2: 0 12px 40px rgba(99, 102, 241, .15);
+    --sh: 0 2px 20px rgba(99,102,241,.07);
+    --sh2: 0 12px 40px rgba(99,102,241,.15);
 }
 
 .pg-wrap {
@@ -33,7 +33,6 @@
     align-items: flex-start;
     margin-bottom: 2.5rem;
 }
-
 .pg-eyebrow {
     font-size: .68rem;
     font-weight: 600;
@@ -42,9 +41,8 @@
     text-transform: uppercase;
     margin: 0 0 .35rem;
 }
-
 .pg-h1 {
-    font-family: 'Syne', sans-serif;
+    font-family: sans-serif;
     font-size: 2.4rem;
     font-weight: 800;
     color: var(--txt);
@@ -52,21 +50,13 @@
     letter-spacing: -.04em;
     margin: 0 0 .4rem;
 }
-
-.pg-h1 .acc {
-    color: var(--acc);
-}
-
+.pg-h1 .acc { color: var(--acc); }
 .pg-sub {
     font-size: .84rem;
     color: var(--muted);
     margin: 0;
 }
-
-.pg-ctr {
-    text-align: right;
-}
-
+.pg-ctr { text-align: right; }
 .pg-ctr-num {
     font-family: 'Syne', sans-serif;
     font-size: 3.6rem;
@@ -76,7 +66,6 @@
     -webkit-text-stroke: 2px var(--acc-mid);
     letter-spacing: -.06em;
 }
-
 .pg-ctr-lbl {
     font-size: .65rem;
     color: var(--meta);
@@ -103,34 +92,26 @@
     position: relative;
     overflow: hidden;
     box-shadow: var(--sh);
-    transition: transform .35s cubic-bezier(.175, .885, .32, 1.275), box-shadow .35s ease, border-color .3s ease;
+    transition: transform .35s cubic-bezier(.175,.885,.32,1.275), box-shadow .35s ease, border-color .3s ease;
     opacity: 0;
     animation: fadeUp .5s ease forwards;
 }
-
 .pg-card::after {
     content: '';
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 0; left: 0; right: 0;
     height: 3px;
     background: linear-gradient(90deg, var(--acc), #a5b4fc);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform .4s ease;
 }
-
 .pg-card:hover {
     transform: translateY(-6px);
     box-shadow: var(--sh2);
     border-color: var(--acc-mid);
 }
-
-.pg-card:hover::after {
-    transform: scaleX(1);
-}
-
+.pg-card:hover::after { transform: scaleX(1); }
 .pg-card:hover .pg-arrow {
     background: var(--acc);
     border-color: var(--acc);
@@ -145,43 +126,24 @@
     align-items: flex-start;
     margin-bottom: 1.1rem;
 }
-
 .pg-num {
     font-size: .65rem;
     font-weight: 700;
     color: var(--acc-mid);
     letter-spacing: .16em;
 }
-
 .pg-icon {
-    width: 44px;
-    height: 44px;
+    width: 44px; height: 44px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 20px;
 }
-
-.ic-p {
-    background: #eef2ff;
-    color: #6366f1;
-}
-
-.ic-g {
-    background: #ecfdf5;
-    color: #059669;
-}
-
-.ic-a {
-    background: #fffbeb;
-    color: #d97706;
-}
-
-.ic-r {
-    background: #fff1f2;
-    color: #e11d48;
-}
+.ic-p { background: #eef2ff; color: #6366f1; }
+.ic-g { background: #ecfdf5; color: #059669; }
+.ic-a { background: #fffbeb; color: #d97706; }
+.ic-r { background: #fff1f2; color: #e11d48; }
 
 .pg-title {
     font-family: 'Syne', sans-serif;
@@ -191,26 +153,22 @@
     line-height: 1.3;
     margin: 0 0 .35rem;
 }
-
 .pg-meta {
     font-size: .75rem;
     color: var(--meta);
     margin: 0 0 1.2rem;
 }
-
 .pg-hr {
     height: 1px;
     background: var(--border);
     margin: 0 0 1.2rem;
 }
-
 .pg-card-bot {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: auto;
 }
-
 .pg-pill {
     background: var(--acc-soft);
     color: var(--acc);
@@ -222,10 +180,8 @@
     align-items: center;
     gap: 5px;
 }
-
 .pg-arrow {
-    width: 34px;
-    height: 34px;
+    width: 34px; height: 34px;
     border-radius: 50%;
     border: 1.5px solid var(--border);
     display: flex;
@@ -246,10 +202,8 @@
     background: var(--card);
     box-shadow: var(--sh);
 }
-
 .pg-empty-icon {
-    width: 64px;
-    height: 64px;
+    width: 64px; height: 64px;
     margin: 0 auto 1.25rem;
     border-radius: 18px;
     background: var(--acc-soft);
@@ -260,7 +214,6 @@
     font-size: 26px;
     color: var(--acc);
 }
-
 .pg-empty h3 {
     font-family: 'Syne', sans-serif;
     font-size: 1.1rem;
@@ -268,47 +221,19 @@
     color: var(--txt);
     margin: 0 0 .5rem;
 }
-
-.pg-empty p {
-    font-size: .82rem;
-    color: var(--muted);
-    margin: 0;
-}
+.pg-empty p { font-size: .82rem; color: var(--muted); margin: 0; }
 
 @keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 768px) {
-    .pg-wrap {
-        padding: 1.5rem 1rem 2.5rem;
-    }
-
-    .pg-header {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .pg-h1 {
-        font-size: 1.9rem;
-    }
-
-    .pg-ctr {
-        text-align: left;
-    }
-
-    .pg-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
+    .pg-wrap { padding: 1.5rem 1rem 2.5rem; }
+    .pg-header { flex-direction: column; gap: 1rem; }
+    .pg-h1 { font-size: 1.9rem; }
+    .pg-ctr { text-align: left; }
+    .pg-grid { grid-template-columns: 1fr; gap: 14px; }
 }
 </style>
 <?= $this->endSection() ?>
@@ -361,8 +286,9 @@ $total = count($program_list);
             $ic  = $icons[$i % count($icons)];
             $num = str_pad($i + 1, 2, '0', STR_PAD_LEFT);
         ?>
-        <a href="<?= base_url('dashboard/peserta/program/' . $p['id_program']) ?>" class="pg-card"
-            style="animation-delay:<?= $i * 0.07 ?>s">
+        <a href="<?= base_url('dashboard/peserta/program/' . $p['id_program']) ?>"
+           class="pg-card"
+           style="animation-delay:<?= $i * 0.07 ?>s">
 
             <div class="pg-card-top">
                 <span class="pg-num"><?= $num ?></span>

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Models\Users;
@@ -44,17 +45,19 @@ class Auth extends BaseController
             ]);
         }
 
-        // Cek email verified
-        $emailVerified = array_key_exists('email_verified', $user) ? $user['email_verified'] : null;
+        // 🛠️ PERBAIKAN: Konversi paksa nilai dari DB ke Boolean (bool)
+        // Mengatasi masalah string "1" atau integer 1 dari driver database agar tidak gagal di strict comparison
+        $emailVerified = isset($user['email_verified']) ? (bool)$user['email_verified'] : false;
 
-        if ($emailVerified === false) {
+        if (!$emailVerified) {
             return $this->response->setJSON([
                 'status'  => 'unverified',
-                'message' => 'Email belum diverifikasi. Silakan cek inbox email Anda.',
+                'message' => 'Email belum diverifikasi. Silakan cek inbox email Anda untuk verifikasi.',
                 'email'   => $user['email_users'],
             ]);
         }
 
+        // Jika sampai sini, berarti email sudah verified, lanjut set session
         session()->set([
             'logged_in'   => true,
             'id_users'    => $user['id_users'],
@@ -71,7 +74,7 @@ class Auth extends BaseController
         if ($currentFP) {
             $syncData['fingerprint_device'] = $currentFP;
             if ($dbFP && $dbFP !== $currentFP) {
-                $syncData['action'] = 'switched';
+                $syncData['action'] = 'switched'; // Memicu modal konflik sesi di frontend jika device berbeda
             }
         }
 
@@ -115,9 +118,10 @@ class Auth extends BaseController
             ]);
         }
 
-        $emailVerified = array_key_exists('email_verified', $user) ? $user['email_verified'] : null;
+        // 🛠️ PERBAIKAN: Gunakan konversi boolean yang sama di sini demi konsistensi
+        $emailVerified = isset($user['email_verified']) ? (bool)$user['email_verified'] : false;
 
-        if ($emailVerified === true) {
+        if ($emailVerified) {
             return $this->response->setJSON([
                 'status'  => 'failed',
                 'message' => 'Email sudah terverifikasi. Silakan login.',

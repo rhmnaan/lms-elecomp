@@ -1,4 +1,11 @@
-<?= $this->extend('dashboard/peserta/layout_peserta'); ?>
+<?php
+// Deteksi role user dari session
+$userRole = session()->get('role') ?? 'peserta';
+$layoutPath = ($userRole === 'pengajar') 
+    ? 'Dashboard/Pengajar/layout_pengajar' 
+    : 'Dashboard/Peserta/layout_peserta';
+?>
+<?= $this->extend($layoutPath); ?>
 <?= $this->section('content'); ?>
 
 <?php
@@ -9,7 +16,11 @@ $fob             = $fob             ?? [];
 $cfr             = $cfr             ?? [];
 $cif             = $cif             ?? [];
 
-$routeBase = 'dashboard/peserta/kalkulator';
+// Route base juga disesuaikan dengan role
+$userRole  = session()->get('role') ?? 'peserta';
+$routeBase = ($userRole === 'pengajar') 
+    ? 'dashboard/pengajar/kalkulator' 
+    : 'dashboard/peserta/kalkulator';
 
 $sections = [
     [
@@ -107,6 +118,14 @@ foreach ($sections as $s) {
         ];
     }
 }
+
+// Breadcrumb juga disesuaikan dengan role
+$berandaUrl = ($userRole === 'pengajar') 
+    ? base_url('dashboard/pengajar/beranda') 
+    : base_url('dashboard/peserta/beranda');
+$aplikasiUrl = ($userRole === 'pengajar') 
+    ? base_url('dashboard/pengajar/aplikasi') 
+    : base_url('dashboard/peserta/aplikasi');
 ?>
 
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"/>
@@ -353,11 +372,11 @@ foreach ($sections as $s) {
 
         <!-- Breadcrumb -->
         <div class="calc-breadcrumb" data-aos="fade-right" data-aos-duration="400">
-            <a href="<?= base_url('dashboard/peserta/beranda') ?>">
+            <a href="<?= $berandaUrl ?>">
                 <i class="bi bi-house-fill"></i> Beranda
             </a>
             <span class="sep"><i class="bi bi-chevron-right"></i></span>
-            <a href="<?= base_url('dashboard/peserta/aplikasi') ?>">Aplikasi Pendukung</a>
+            <a href="<?= $aplikasiUrl ?>">Aplikasi Pendukung</a>
             <span class="sep"><i class="bi bi-chevron-right"></i></span>
             <span>Kalkulator Ekspor</span>
         </div>
@@ -594,7 +613,7 @@ const autosaveSatuan = debounce(async () => {
         });
         const json = await res.json();
         if (res.ok && json.ok) { NS.set('satuan', val); setSatuanStatus('✓ Tersimpan', true); recalcAll(); }
-        else setSatuanStatus('Gagal menyimpan', false);
+        else setSatuanStatus('', false);
     } catch(e) { setSatuanStatus('', false); }
 }, 500);
 document.getElementById('satuan')?.addEventListener('input', autosaveSatuan);

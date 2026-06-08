@@ -6,17 +6,17 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = 'no-reply@lms.fernandesraymond.id';
-    public string $fromName   = 'LMS Elecomp';
+    public string $fromEmail  = 'no-reply@institute.absys.id';
+    public string $fromName   = 'LMS';
     public string $recipients = '';
     public string $userAgent = 'CodeIgniter';
     public string $protocol = 'smtp';
     public string $mailPath = '/usr/sbin/sendmail';
     
-    public string $SMTPHost       = 'mail.fernandesraymond.id';
+    public string $SMTPHost       = 'institute.absys.id';
     public string $SMTPAuthMethod = 'login';
-    public string $SMTPUser       = 'no-reply@lms.fernandesraymond.id';
-    public string $SMTPPass       = 'Tb=xFoMN@iXC!3_)';
+    public string $SMTPUser       = 'no-reply@institute.absys.id';
+    public string $SMTPPass       = '9#7=;s9C^;KxI?9i';
     public int    $SMTPPort       = 465;
     public int    $SMTPTimeout    = 60;
     public bool   $SMTPKeepAlive  = false;
