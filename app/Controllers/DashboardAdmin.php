@@ -12,14 +12,10 @@ use App\Models\Users;
 class DashboardAdmin extends BaseController
 {
     protected Users $userModel;
-    protected KelasModel $kelasModel;
-    protected MateriModel $materiModel;
     
     public function __construct()
     {
         $this->userModel = new Users();
-        $this->kelasModel = new KelasModel();
-        $this->materiModel = new MateriModel();
     }
     
     private function guardAdmin()
@@ -32,29 +28,9 @@ class DashboardAdmin extends BaseController
     
     public function beranda()
     {
-        if ($r = $this->guardAdmin()) return $r;
-        
-        $total_peserta = $this->userModel->where('role_users', 'peserta')->countAllResults();
-        $total_pengajar = $this->userModel->where('role_users', 'pengajar')->countAllResults();
-        $total_kelas = $this->kelasModel->countAllResults();
-        $total_materi = $this->materiModel->countAllResults();
-        $total_quiz = $this->quizModel->countAllResults();
-        
-        $distribution = $this->quizResultsModel->getDistribution();
-        $leaderboard = $this->quizResultsModel->getLeaderboard();
-        $aktivitas_terbaru = $this->quizResultsModel->getWithQuizInfo(null, 6);
         
         return view('Dashboard/Admin/beranda', [
-            'total_peserta' => $total_peserta,
-            'total_pengajar' => $total_pengajar,
-            'total_kelas' => $total_kelas,
-            'total_materi' => $total_materi,
-            'total_quiz' => $total_quiz,
-            'dist_lulus' => $distribution['lulus'],
-            'dist_cukup' => $distribution['cukup'],
-            'dist_kurang' => $distribution['kurang'],
-            'leaderboard' => $leaderboard,
-            'aktivitas_terbaru' => $aktivitas_terbaru,
+          
         ]);
     }
     
